@@ -1389,7 +1389,7 @@ const HEAD_DEF={sy:1.13,cfTop:0.56};
 const EYE_DEF={k:1.25,ky:0.75,sep:1.15,hiOn:1,hik:1.4,blush:1,th:2.2,brow:1};   // wide eyes, big highlight, blush, thick arcs; brows only when zoomed in   // head 13% taller, crown chamfered deeper
 const PROP_DEF={hk:1.3,bk:0.92,tw:0.9,sl:1,head:'oct'};
 /* 사각사각 people (the default now): big cube head, short boxy body. ?blocky=0 brings back the old rounder, taller people */
-const BLOCKY=!/[?&]blocky=0/.test(location.search); if(BLOCKY) Object.assign(PROP_DEF,{hk:1.62,bk:0.66,tw:1.04,sl:0,head:'oct'});   // head: chamfered box, one rule with the boxy body
+const BLOCKY=!/[?&]blocky=0/.test(location.search); /* no bald heads */ if(BLOCKY) Object.assign(PROP_DEF,{hk:1.62,bk:0.66,tw:1.04,sl:0,head:'oct'});   // head: chamfered box, one rule with the boxy body
 // tiny 3D convex hull (brute force over triangles; fine for a few dozen points) → non-indexed BufferGeometry with flat normals
 function hull3(P){ const n=P.length, tris=[], v=new T3.Vector3(), nrm=new T3.Vector3(), e1=new T3.Vector3(), e2=new T3.Vector3(); const EPS=1e-6;
  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) for(let k=j+1;k<n;k++){ e1.subVectors(P[j],P[i]); e2.subVectors(P[k],P[i]); nrm.crossVectors(e1,e2); if(nrm.lengthSq()<1e-12) continue; nrm.normalize();
@@ -1412,7 +1412,7 @@ function capLogoMat(){ if(_capLogo) return _capLogo; const B=['.###.........','#
 /* push every vertex out to the surface of a cube (keeps partial shells like hair caps partial) */
 function cubify(g,r){ g=g.index?g.toNonIndexed():g.clone(); const P=g.attributes.position; for(let i=0;i<P.count;i++){ const x=P.getX(i),y=P.getY(i),z=P.getZ(i), m=Math.max(Math.abs(x),Math.abs(y),Math.abs(z))||1, k=r/m; P.setXYZ(i,x*k,y*k,z*k); } P.needsUpdate=true; g.computeVertexNormals(); return g; }
 /* ---- pixel eyes drawn on the face (no pixel filter needed to read them): ?eyes=mid / ?eyes=low ---- */
-const EYES_MODE=(location.search.match(/[?&]eyes=(mid|low|old)/)||[])[1]||'old';
+const EYES_MODE=(location.search.match(/[?&]eyes=(mid|low|old)/)||[])[1]||'low';   /* new pixel eyes, low on the face (the default) */
 /* cute pixel eyes on a 32x32 face. expr: normal happy content wink closed sparkle surprised love teary yum sleepy. low: eyes sit lower on the face */
 function drawFaceTex(g,expr,low,skin){
  const INK='#1b1f24', W='#ffffff', BL='#f2a0a8', P=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w||1,h||1); };
@@ -1511,7 +1511,7 @@ class Rig{
    if(yB>-0.999) Q.push(...[[-k,yB,-k],[k,yB,-k],[k,yB,k],[-k,yB,k],[-1,yB,0],[1,yB,0],[0,yB,-1],[0,yB,1]].map(p=>new T3.Vector3(p[0],p[1],open&&p[2]>0.2?0.2:p[2])));
    const g=hull3(Q); g.scale(r,r,r); return g; };  const sph=(r,c,x,y,z,p,o)=>{ o=o||{}; const useOct=HS==='oct'&&!o.round; let g=useOct?octGeo(r,o):new T3.SphereGeometry(r,o.ws||12,o.hs||9,o.p0||0,o.pl||Math.PI*2,o.t0||0,o.tl||Math.PI); if(BLOCKY) g=cubify(g,r); const m=new T3.Mesh(g,mat(c,o.ds?{side:T3.DoubleSide}:undefined)); m.position.set(x,y,z); if(o.sc) m.scale.set(...o.sc); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
    };
-  const PR=window.PROP||PROP_DEF; const HV=window.HEADV||HEAD_DEF, HSY=HV.sy; const HR=0.115*PR.hk, HY=0.045+HR*HSY, N=this.neck, H=L.hair, hs0=L.hs||(L.long?'long':'short'), hs=hs0==='long'?pick(['longA','longB','longC']):hs0, SK=L.skin;
+  const PR=window.PROP||PROP_DEF; const HV=window.HEADV||HEAD_DEF, HSY=HV.sy; const HR=0.115*PR.hk, HY=0.045+HR*HSY, N=this.neck, H=L.hair, hs0=(L.hs==='bald'?'short':L.hs)||(L.long?'long':'short'), hs=hs0==='long'?pick(['longA','longB','longC']):hs0, SK=L.skin;
   this.head=sph(HR,SK,0,HY,0,N,{sc:[1,HSY,0.96]});
   sph(0.03,SK,HR*0.98,HY-0.01,0,N,{ws:6,hs:5,sc:[0.5,1,1]}); sph(0.03,SK,-HR*0.98,HY-0.01,0,N,{ws:6,hs:5,sc:[0.5,1,1]});   // ears
   const ht=L.hatT||(L.hat?1:0), hood=!!L.hood&&!ht;
@@ -1904,7 +1904,7 @@ function lookFor(kind){ const L={shirt:pick(SHIRTS),pants:pick(PANTS),skin:pick(
  if(L.top==='hoodie'&&!L.hat&&Math.random()<0.45) L.hood=true;
  if(kind==='kid'){ L.scale=0.62; L.kid=true; L.shirt=pick(['#f5e08a','#e0607c','#5fb0e0','#4cb889','#f29db0']); L.hs=pick(['short','twin','bob','pony','buzz','spiky','bangs']); L.top=pick(['tee','stripe','overalls','hoodie']); L.bot=pick(['pants','shorts','skirt']); }
  if(kind==='grandpa'||kind==='grandma'){ L.hair=pick(['#d2d8dd','#aab2ba','#f4f6f7']); L.cane=Math.random()<0.7; L.shirt=pick(['#8f5e3a','#5f7436','#848d96','#7a2338']);
-  if(kind==='grandpa'){ L.hs=pick(['buzz','short','side','bald','bald','slick']); L.top=pick(['vest','cardigan','jacket','shirt']); L.bot='pants'; if(Math.random()<0.5){ L.hat='#633d24'; L.hatT=pick([1,3,4]); } }
+  if(kind==='grandpa'){ L.hs=pick(['buzz','short','side','side','slick','slick']); L.top=pick(['vest','cardigan','jacket','shirt']); L.bot='pants'; if(Math.random()<0.5){ L.hat='#633d24'; L.hatT=pick([1,3,4]); } }
   else { L.hs=pick(['curly','bun','short','bob','perm','perm']); L.top=pick(['cardigan','tee','stripe']); L.bot=pick(['pants','longskirt']); } }
  if(kind==='preg'){ L.belly=true; L.hs=pick(['long','bob','pony','bun','wavy','bangs']); L.top='tee'; L.bot=pick(['pants','longskirt']); L.shirt=pick(['#fbd3dc','#e7c6f0','#cff2e0']); }
  if(kind==='worker'){ L.shirt=pick(['#f4f6f7','#b3cdf2','#d2d8dd']); L.pants=pick(['#1b1f24','#2c3238','#434a52']); L.tie=pick(['#2a4b7e','#b33a55','#1b1f24']); L.hs=pick(['side','short','bob','pony','buzz','spiky','afro','wavy','undercut']); L.top=pick(['shirt','vest','jacket']); L.bot=pick(['pants','pants','skirt']); L.hat=null; }
