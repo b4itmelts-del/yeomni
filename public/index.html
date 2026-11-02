@@ -1036,7 +1036,7 @@ const HOOD=(()=>{ const m=findDio('wallC','c373','ffb060'); if(!m) return null; 
 
 /* ---- 쇼케이스: grey cabinet against the right wall, built in real metres inside its own group (the building stretch does not touch it) ----
         back row: 3 long pans (left-right), front row: 7 pans running front-back. 이천쌀 = white, centre of the back row; milk flavours sit to the staff's left (wall side), fruit to the staff's right. */
-const SH_L=clamp(TUNE.s,1.4,3.4), SH_D=1.0, SH_H=0.91;
+const SH_L=clamp(TUNE.s,1.4,3.4), SH_D=1.0, SH_H=/[?&]blocky=0/.test(location.search)?0.91:0.74;   /* lower for the shorter 사각사각 people */
 const SCR=3.03, SCL=SCR-SH_L/TUNE.w, SCX=(SCL+SCR)/2, SCZ=ZF(-0.35-2*TILE2);   // moved two floor tiles toward the curtain
 const SHG=new T3.Group(); SHG.userData.own=true; SHG.userData.noZ=true; SHG.position.set(SCX,FLOOR,SCZ); SHG.scale.set(1/TUNE.w,1/TUNE.h,1/TUNE.d); scene.add(SHG);
 const SB=(w,h,d,c,x,y,z)=>B(w,h,d,c,x,y,z,SHG);
@@ -1411,6 +1411,38 @@ function capLogoMat(){ if(_capLogo) return _capLogo; const B=['.###.........','#
  _capLogo=new T3.MeshLambertMaterial({map:t,transparent:false,alphaTest:0.5,side:T3.DoubleSide}); return _capLogo; }
 /* push every vertex out to the surface of a cube (keeps partial shells like hair caps partial) */
 function cubify(g,r){ g=g.index?g.toNonIndexed():g.clone(); const P=g.attributes.position; for(let i=0;i<P.count;i++){ const x=P.getX(i),y=P.getY(i),z=P.getZ(i), m=Math.max(Math.abs(x),Math.abs(y),Math.abs(z))||1, k=r/m; P.setXYZ(i,x*k,y*k,z*k); } P.needsUpdate=true; g.computeVertexNormals(); return g; }
+/* ---- pixel eyes drawn on the face (no pixel filter needed to read them): ?eyes=mid / ?eyes=low ---- */
+const EYES_MODE=(location.search.match(/[?&]eyes=(mid|low|old)/)||[])[1]||'old';
+/* cute pixel eyes on a 32x32 face. expr: normal happy content wink closed sparkle surprised love teary yum sleepy. low: eyes sit lower on the face */
+function drawFaceTex(g,expr,low,skin){
+ const INK='#1b1f24', W='#ffffff', BL='#f2a0a8', P=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w||1,h||1); };
+ g.clearRect(0,0,32,32); if(skin){ g.fillStyle=skin; g.fillRect(0,0,32,32); }
+ const cy=low?19:14, L=9, R=23;   /* eye centres */
+ const blushY=low?24:20; P(L-4,blushY,4,2,BL); P(R+1,blushY,4,2,BL);
+ const oval=(cx,big)=>{ const w=big?7:6, h=big?9:8, x=cx-(w>>1), y=cy-(h>>1); P(x+1,y,w-2,h,INK); P(x,y+1,w,h-2,INK); return {x,y,w,h}; };
+ const shine=(e,star)=>{ P(e.x+e.w-3,e.y+1,2,2,W); P(e.x+1,e.y+e.h-3,1,1,W); if(star){ P(e.x+e.w-3,e.y+2,2,1,W); P(e.x+2,e.y+e.h-4,2,2,'#bfe3ff'); } };
+ const arcUp=(cx)=>{ P(cx-3,cy+1,2,2,INK); P(cx-2,cy-1,2,2,INK); P(cx,cy-2,1,2,INK); P(cx+1,cy-1,2,2,INK); P(cx+2,cy+1,2,2,INK); };   /* ^ */
+ const arcDn=(cx)=>{ P(cx-3,cy-1,2,2,INK); P(cx-2,cy+1,2,2,INK); P(cx,cy+2,1,1,INK); P(cx+1,cy+1,2,2,INK); P(cx+2,cy-1,2,2,INK); };   /* u */
+ const line=(cx)=>{ P(cx-3,cy,7,2,INK); };
+ const gt=(cx,d)=>{ for(let i=0;i<3;i++){ P(cx-2*d+i*d-(d<0?1:0),cy-3+i,2,1,INK); P(cx-2*d+i*d-(d<0?1:0),cy+3-i,2,1,INK); } P(cx+d-(d<0?1:0)+ (d>0?0:0),cy,2,1,INK); };   /* > or < */
+ const heart=(cx)=>{ const c='#e8466a'; P(cx-3,cy-2,2,2,c); P(cx+1,cy-2,2,2,c); P(cx-4,cy-1,8,2,c); P(cx-3,cy+1,6,1,c); P(cx-2,cy+2,4,1,c); P(cx-1,cy+3,2,1,c); P(cx-3,cy-2,1,1,W); };
+ const ring=(cx)=>{ P(cx-2,cy-3,4,1,INK); P(cx-2,cy+2,4,1,INK); P(cx-3,cy-2,1,4,INK); P(cx+2,cy-2,1,4,INK); P(cx-1,cy-1,2,2,INK); };
+ const half=(cx)=>{ const e={x:cx-3,y:cy-1,w:6,h:4}; P(e.x,e.y,6,4,INK); P(e.x-1,e.y-1,8,1,INK); P(e.x+4,e.y+1,1,1,W); };
+ if(expr==='normal'){ [L,R].forEach(cx=>shine(oval(cx))); }
+ else if(expr==='sparkle'){ [L,R].forEach(cx=>shine(oval(cx,true),true)); P(L-6,cy-6,1,3,'#ffd75e'); P(L-7,cy-5,3,1,'#ffd75e'); P(R+5,cy-7,1,3,'#ffd75e'); P(R+4,cy-6,3,1,'#ffd75e'); }
+ else if(expr==='happy'){ arcUp(L); arcUp(R); }
+ else if(expr==='content'){ arcDn(L); arcDn(R); }
+ else if(expr==='wink'){ shine(oval(L)); gt(R,-1); }
+ else if(expr==='closed'){ line(L); line(R); }
+ else if(expr==='surprised'){ ring(L); ring(R); }
+ else if(expr==='love'){ heart(L); heart(R); }
+ else if(expr==='teary'){ [L,R].forEach(cx=>{ const e=oval(cx,true); shine(e,true); P(e.x+1,e.y+e.h-2,e.w-2,1,'#7fc3f0'); }); P(R+3,cy+4,2,3,'#7fc3f0'); P(R+3,cy+7,1,1,'#7fc3f0'); }
+ else if(expr==='yum'){ gt(L,1); gt(R,-1); }
+ else if(expr==='sleepy'){ half(L); half(R); }
+}
+
+const _faceMat={}; function faceMat(expr){ const k=expr+(EYES_MODE==='low'?1:0); if(_faceMat[k]) return _faceMat[k]; const c=document.createElement('canvas'); c.width=c.height=32; drawFaceTex(c.getContext('2d'),expr,EYES_MODE==='low',null);
+ const t=new T3.CanvasTexture(c); t.magFilter=T3.NearestFilter; t.minFilter=T3.NearestFilter; t.generateMipmaps=false; return _faceMat[k]=new T3.MeshBasicMaterial({map:t,transparent:true,alphaTest:0.5,depthWrite:false}); }
 class Rig{
  constructor(L){
   const box=(w,h,d,c,x,y,z,p)=>{ const m=new T3.Mesh(new T3.BoxGeometry(w,h,d),mat(c)); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; p.add(m); return m; };
@@ -1546,8 +1578,10 @@ class Rig{
    const l=box(EW+0.012,0.016*(EV.th||1),0.014,ink,x,EY-0.004,EZ,N); l.visible=false; this.eyes.line.push(l);
    const h=box(0.016*(EV.hik||1),0.02*(EV.hik||1),0.004,'#ffffff',x+0.012*(EV.k||1),EY+0.018*(EV.k||1),EZ+0.008,N); h.visible=!!EV.hiOn; this.eyes.hi.push(h); });
   this.mouth={visible:false}; this.blush=[];
-  this.setFace=(f)=>{ const e=this.eyes; e.dot.forEach((m,i)=>m.visible=f==='normal'||f==='sparkle'||(f==='wink'&&i===0)); e.arc.forEach(m=>m.visible=f==='happy'); e.line.forEach((m,i)=>m.visible=f==='closed'||(f==='wink'&&i===1)); e.hi.forEach(m=>m.visible=f==='sparkle'||(!!(window.EYEV||{}).hiOn&&(f==='normal'||(f==='wink'&&m===e.hi[0])))); };
-  if(L.glasses){ box(HR*1.5,0.014,0.01,'#1b1f24',0,EY+0.03,EZ+0.004,N); [-1,1].forEach(sd=>{ const fr=new T3.Mesh(new T3.TorusGeometry(0.048,0.007,5,10),mat('#1b1f24')); fr.position.set(sd*EX,EY,EZ+0.006); N.add(fr); }); }
+  if(EYES_MODE!=='old'){ const all=[...this.eyes.dot,...this.eyes.arc,...this.eyes.line,...this.eyes.hi,...this.eyes.brow]; all.forEach(m=>{ m.parent&&m.parent.remove(m); }); N.children.slice().forEach(m=>{ if(m.isMesh&&m.material&&m.material.color&&/f2a0a8|fbfbf7/.test(m.material.color.getHexString())&&Math.abs(m.position.z-EZ)<0.02) N.remove(m); });
+   const fz=(HS==='oct'?HR*0.96:HR*0.9)+0.004, fh=HR*2*HSY*0.96, fp=new T3.Mesh(new T3.PlaneGeometry(HR*1.92,fh),faceMat('normal')); fp.position.set(0,HY,fz); fp.renderOrder=3; N.add(fp); this.facePlane=fp; this.eyes={dot:[],arc:[],line:[],hi:[],brow:[]}; }
+  this.setFace=(f)=>{ if(this.facePlane){ this.facePlane.material=faceMat(f); return; } f=f==='love'||f==='teary'?'sparkle':f==='content'||f==='yum'?'happy':f==='surprised'||f==='sleepy'?'normal':f; const e=this.eyes; e.dot.forEach((m,i)=>m.visible=f==='normal'||f==='sparkle'||(f==='wink'&&i===0)); e.arc.forEach(m=>m.visible=f==='happy'); e.line.forEach((m,i)=>m.visible=f==='closed'||(f==='wink'&&i===1)); e.hi.forEach(m=>m.visible=f==='sparkle'||(!!(window.EYEV||{}).hiOn&&(f==='normal'||(f==='wink'&&m===e.hi[0])))); };
+  const GEY=EYES_MODE==='old'?EY:HY+(16-(EYES_MODE==='low'?19:14)-0.5)/16*HR*HSY*0.96; if(L.glasses){ const EY=GEY; box(HR*1.5,0.014,0.01,'#1b1f24',0,EY+0.03,EZ+0.004,N); [-1,1].forEach(sd=>{ const fr=new T3.Mesh(new T3.TorusGeometry(0.048,0.007,5,10),mat('#1b1f24')); fr.position.set(sd*EX,EY,EZ+0.006); N.add(fr); }); }
   this.arms=[-1,1].map(s=>{ const sh=new V3(s*(SL?0.2:0.22),SL?0.44:0.47,0); const up=new T3.Group(); up.position.copy(sh); this.spine.add(up);
    if(L.puff){ box(0.085,0.27,0.095,L.skin,0,-0.135,0,up); box(0.12,0.11,0.125,L.shirt,0,-0.05,0,up); } else box(0.09,0.27,0.1,L.sleeve||(L.top==='cardigan'?L.cardi:L.top==='jacket'?L.jk:L.shirt),0,-0.135,0,up); const fo=new T3.Group(); fo.position.y=-0.27; up.add(fo);
    box(0.08,0.25,0.09,L.skin,0,-0.125,0,fo); const hand=new T3.Group(); hand.position.y=-0.26; fo.add(hand);
@@ -1982,7 +2016,7 @@ function guestSit(g,seat,bites){
 const BITE=[[0,[0.06,0.2,0.28]],[0.16,[-0.03,0.28,0.3]],[0.26,[-0.05,0.25,0.29]],[0.36,[-0.02,0.31,0.3]],[0.54,[0.02,0.57,0.15]],[0.7,[0.02,0.56,0.15]],[0.86,[0.06,0.34,0.26]],[1,[0.06,0.2,0.28]]];
 function biteCup(a){ const cp=a.held[0]&&a.held[0].userData.cupRef; if(cp){ const t=cp.scoops.find(s=>s.onSpoon&&s.eaten<1); if(t&&a.spoon&&!cp.tSpoon){ t.eaten=1; } else { const s=cp.scoops.filter(s=>!s.onSpoon&&s.vol>0.04).pop(); if(s) s.eaten=Math.min(1,s.eaten+(s.taste?0.5:0.12)); } }
  // reaction: a happy face (first bite winks), and a little note / heart / sparkle drifting up from the head
- a.exprT=S.simT; a.rig.setFace(a._bites?'happy':'wink'); a._bites=(a._bites||0)+1; }
+ a.exprT=S.simT; a.rig.setFace(a._bites?pick(['happy','content','yum']):'wink'); a._bites=(a._bites||0)+1; }
 /* one bite, then a pause (beats); fx = what pops over the head after that bite */
 const EATSEQ=[{fx:'one',b:4.5,rest:3},{fx:'none',b:3,rest:0},{fx:'bigsmall',b:3,rest:3.5},{fx:'many',b:4.5,rest:3},{fx:'big',b:4.5,rest:4}];
 function eatFX(a,fx){ if(window.__eatLog) window.__eatLog.push([Math.round(S.simT*10)/10,a.agentNo||agents.indexOf(a),a.pose.sit>0.5?'sit':'walk',fx]); if(!fx||fx==='none') return; const k=a._fxk||(a._fxk=pick(['heart','note','spark']));
@@ -2115,7 +2149,7 @@ function pickupSteps(g){ const sp=g.pickSp||SPOTS[0], o=g.order; g.waitSpot=null
  g.then(walk(sp.pick,Math.PI,'받으러 가는 중,,'),face(angTo(sp.pick,sp.glass)),
   act(1.6,(p,a)=>{ const U=HAND_UP+(o.kind==='pack'?0.26:0); a.extT=S.simT; kfV(p,[[0,REST_R],[0.35,[0.02,U,0.42]],[0.5,[0.0,U-0.03,0.5]],[0.75,[0.04,U,0.2]],[1,CARRY_R]],a.want.rh); a.want.lean=kfN(p,[[0,0],[0.5,0.2],[1,0]]); },
    {task:'받는 중,,',marks:[{at:0.5,fn:a=>{ const c=o.onGlass; if(c){ c.parent&&c.parent.remove(c); holdItem(a,1,c); } o.onGlass=null; if(sp.gl.cup===o) sp.gl.cup=null; o.status='done'; o.tDone=S.simT;
-     a.rig.setFace('sparkle'); a.exprT=S.simT; headFX(a,'heart'); if(!a.player) say(a,a.look.foreign?pick(['Thank you!','Looks amazing!','Thanks so much,,']):pick(['감사합니다,,','와 맛있겠다,,','잘 먹을게요,,']),3); const st=o.server; if(st&&!st.dead){ st.rig.setFace('happy'); st.exprT=S.simT; byeLine(st,o,a); } }}]}),
+     a.rig.setFace('love'); a.exprT=S.simT; headFX(a,'heart'); if(!a.player) say(a,a.look.foreign?pick(['Thank you!','Looks amazing!','Thanks so much,,']):pick(['감사합니다,,','와 맛있겠다,,','잘 먹을게요,,']),3); const st=o.server; if(st&&!st.dead){ st.rig.setFace('happy'); st.exprT=S.simT; byeLine(st,o,a); } }}]}),
   call(a=>{ a.state='atPick'; guestAfterPickup(a); })); }
 const GREET1='안녕하세요, 한컵에 두가지맛 담아드리고 있습니다', GREET2='끝에 맛보기도 하나 얹어드리는데요, 어떤 맛으로 하시겠어요?';
 function scriptTakeOrder(st,g){
