@@ -1801,9 +1801,10 @@ seats.forEach(s=>{ s.who=null; const d=v(Math.sin(s.f),Math.cos(s.f));
 /* the garden furniture: pale wood, boxy, sitting on the lawn (shop units; the group lives in worldG so it scales with the diorama) */
 (function lawnFurniture(){ const G=new T3.Group(); G.name='lawnSeats'; worldG.add(G); const W='#e6cfa6', Wd='#cfb084', Y0=FY;
  const bx=(w,h,d,c,x,y,z,ry)=>{ const m=new T3.Mesh(new T3.BoxGeometry(w,h,d),mat(c)); m.position.set(x,Y0+y,z); if(ry) m.rotation.y=ry; m.castShadow=true; m.receiveShadow=true; G.add(m); return m; };
- LAWN_SETS.forEach(T=>{ /* round table: 12-sided top on a pedestal with a flat foot */
-  const top=new T3.Mesh(new T3.CylinderGeometry(0.42,0.42,0.05,12),mat(W)); top.position.set(T.x,Y0+0.72,T.z); top.castShadow=true; G.add(top);
-  bx(0.09,0.68,0.09,Wd,T.x,0.35,T.z); bx(0.5,0.04,0.5,Wd,T.x,0.02,T.z,Math.PI/4);
+ const cy=(rt,rb,h,c,x,y,z)=>{ const m=new T3.Mesh(new T3.CylinderGeometry(rt,rb,h,40),mat(c)); m.position.set(x,Y0+y,z); m.castShadow=true; m.receiveShadow=true; G.add(m); return m; };
+ LAWN_SETS.forEach(T=>{ /* round table: a smooth round top with a thin rim underneath, a round pedestal and a round foot */
+  cy(0.42,0.42,0.05,W,T.x,0.72,T.z); cy(0.38,0.38,0.03,Wd,T.x,0.68,T.z);
+  cy(0.05,0.06,0.66,Wd,T.x,0.35,T.z); cy(0.2,0.26,0.04,Wd,T.x,0.02,T.z);
   [-1,1].forEach(sd=>{ const cx=T.x+sd*0.78, cz=T.z, f=sd<0?Math.PI/2:-Math.PI/2;   /* chair: seat, four legs, a backrest on the side away from the table */
    bx(0.42,0.05,0.42,W,cx,0.45,cz); [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>bx(0.05,0.43,0.05,Wd,cx+a*0.17,0.215,cz+b*0.17));
    const bxp=cx+sd*0.19; bx(0.05,0.42,0.42,W,bxp,0.69,cz); bx(0.04,0.06,0.36,Wd,bxp,0.56,cz); }); }); })();
