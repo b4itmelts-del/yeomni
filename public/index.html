@@ -1435,11 +1435,19 @@ class Rig{
   if(top==='vest'){ [-1,1].forEach(s=>box(0.15,0.38,0.012,L.vest,s*0.095,0.2,0.112,SP)); box(0.36,0.38,0.012,L.vest,0,0.2,-0.112,SP); }
   if(top==='cardigan'){ [-1,1].forEach(s=>box(0.13,0.48,0.014,L.cardi,s*0.118,0.24,0.112,SP)); box(0.37,0.48,0.012,L.cardi,0,0.24,-0.112,SP); [0.14,0.26,0.38].forEach(y=>box(0.02,0.02,0.01,'#f4f0e6',0.06,y,0.12,SP)); }
   if(top==='stripe') [0.08,0.18,0.28,0.38].forEach(y=>box(0.366,0.035,0.216,L.stripe,0,y,0,SP));
-  if(L.logo){ const lt=canvasTex(32,16,(g,w,h)=>{ g.clearRect(0,0,w,h); g.fillStyle='#1b1f24'; g.font='900 13px Galmuri,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L.logo,w/2,h/2+1); }); lt.magFilter=T3.NearestFilter; const lp=new T3.Mesh(new T3.PlaneGeometry(0.2,0.1),new T3.MeshBasicMaterial({map:lt,transparent:true})); lp.position.set(0,0.32,0.108); SP.add(lp); }
+  if(L.logo){ const lt=canvasTex(32,16,(g,w,h)=>{ g.clearRect(0,0,w,h); g.fillStyle=L.logoC||'#1b1f24'; g.font='900 13px Galmuri,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L.logo,w/2,h/2+1); }); lt.magFilter=T3.NearestFilter; const lp=new T3.Mesh(new T3.PlaneGeometry(0.2,0.1),new T3.MeshBasicMaterial({map:lt,transparent:true})); lp.position.set(0,0.32,0.108); SP.add(lp); }
   if(top==='overalls'){ box(0.21,0.2,0.012,L.pants,0,0.11,0.111,SP); [-1,1].forEach(s=>{ box(0.04,0.3,0.012,L.pants,s*0.09,0.33,0.111,SP); box(0.04,0.3,0.012,L.pants,s*0.09,0.33,-0.111,SP); box(0.025,0.025,0.01,'#e3cf9e',s*0.09,0.2,0.118,SP); }); }
   if(top==='jacket'){ [-1,1].forEach(s=>{ box(0.14,0.5,0.014,L.jk,s*0.115,0.25,0.112,SP); box(0.06,0.12,0.014,dk(L.jk,0.8),s*0.06,0.44,0.12,SP); }); box(0.37,0.5,0.012,L.jk,0,0.25,-0.112,SP); }
   if(L.apron){ box(0.32,0.46,0.02,L.apron,0,0.13,0.115,this.spine); box(0.3,0.03,0.22,L.apron,0,0.12,0,this.spine); }
   if(L.tie) box(0.05,0.18,0.02,L.tie,0,0.36,0.118,this.spine);
+  /* school uniforms: shirt collar, ribbon bow, V-neck trim on a knit vest, white piping on a blazer, chest badge, varsity jacket bands */
+  if(L.collar){ box(0.2,0.045,0.05,'#f4f6f7',0,0.49,0.088,SP); [-1,1].forEach(sd=>{ const c=box(0.07,0.05,0.012,'#f4f6f7',sd*0.04,0.46,0.114,SP); c.rotation.z=sd*0.5; }); }
+  if(L.bow){ [-1,1].forEach(sd=>{ const w=box(0.07,0.05,0.016,L.bow,sd*0.042,0.44,0.124,SP); w.rotation.z=sd*0.28; if(L.bow2) box(0.012,0.05,0.004,L.bow2,sd*0.042,0.44,0.133,SP).rotation.z=sd*0.28; const t=box(0.025,0.06,0.012,L.bow,sd*0.022,0.39,0.122,SP); t.rotation.z=sd*0.35; }); box(0.026,0.03,0.02,L.bow2||dk(L.bow,0.8),0,0.44,0.13,SP); }
+  if(L.vtrim){ [-1,1].forEach(sd=>{ const t=box(0.022,0.2,0.006,L.vtrim,sd*0.045,0.4,0.122,SP); t.rotation.z=-sd*0.36; }); }
+  if(L.piping){ [-1,1].forEach(sd=>{ box(0.012,0.46,0.006,'#f2f2ee',sd*0.047,0.25,0.121,SP); const l=box(0.012,0.2,0.006,'#f2f2ee',sd*0.075,0.43,0.13,SP); l.rotation.z=sd*0.35; }); }
+  if(L.badge) box(0.05,0.055,0.008,L.badge,0.1,0.34,0.13,SP);
+  if(L.varsity){ const T=L.varsity; [0.03].forEach(y=>{ box(0.372,0.06,0.222,T[0],0,y,0,SP); box(0.374,0.012,0.224,T[1],0,y+0.01,0,SP); box(0.374,0.012,0.224,T[1],0,y-0.012,0,SP); });
+   box(0.24,0.05,0.18,T[0],0,0.5,0,SP); box(0.242,0.01,0.182,T[1],0,0.505,0,SP); [0.12,0.24,0.36].forEach(y=>box(0.02,0.02,0.01,'#f4f2ee',0,y,0.112,SP)); }
   if(L.vneck){ const v=box(0.09,0.12,0.012,L.skin,0,0.44,0.113,SP); v.rotation.z=Math.PI/4; v.scale.set(0.8,0.8,1); }   // V neckline (a rotated square of skin)
   if(L.waist) box(0.37,0.025,0.22,dk(L.shirt,0.72),0,0.04,0,SP);   // waist seam
   if(L.turtle){ box(0.2,0.08,0.16,L.shirt,0,0.53,0,SP); }   // roll neck
@@ -1864,12 +1872,12 @@ function codeLook(c){ const hs=['short','bob','long','pony','curly','bun'][c.hs]
   hat:c.hat?MP_PAL[c.hatc]:null,hatT:c.hat||0,accT:c.acc||0,acc:MP_PAL[c.accc],glasses:!!c.gl,belly:!!c.preg,umb:'#2a4b7e',kind:'code',name:c.name||'손님'}; }
 
 /* ---- guests ---- */
-function spawnGuest(opt){ opt=opt||{}; if(S.mp&&!opt.player) return null;   /* 같이 보기: only real people */ if(!opt.force&&(!shopOpen()||queue.length>=QSLOT.length-1)) return null;
+function spawnGuest(opt){ opt=opt||{}; if(S.mp&&!opt.player&&!opt.npc) return null;   /* 같이 보기: only real people */ if(!opt.force&&(!shopOpen()||queue.length>=QSLOT.length-1)) return null;
  const look=opt.look||lookFor(opt.kind||'normal'); const g=new Agent('guest',look);
  const side=opt.side||(Math.random()<0.5?-1:1); g.place(opt.at||v(side*6.0,5.15+Math.random()*0.3),side>0?-Math.PI/2:Math.PI/2);
  g.speed=look.cane?0.55:(look.kind==='grandpa'||look.kind==='grandma'||look.belly)?0.85:look.kid?1.75:1.45+Math.random()*0.45;
  g.order=Object.assign(makeOrder(opt.pack?'pack':(Math.random()<0.18&&!look.kid?'pack':'cup')),{guest:g}); if(look.belly&&Math.random()<0.4) g.order=Object.assign(makeOrder('pack'),{guest:g});
- g.player=!!opt.player; g.state='queue'; queue.push(g); g.slot=-1; g.alpha=opt.player?1:0; S.visitNo++;
+ g.player=!!opt.player; if(opt.npc&&S.mp) g.npcId='n'+(++S.npcN||(S.npcN=1)); g.state='queue'; queue.push(g); g.slot=-1; g.alpha=opt.player?1:0; S.visitNo++;
  if(look.name) setTag(g,look.name,opt.player?'me':'');
  return g; }
 // step aside after ordering: the nearest free wait spot, facing the showcase, with a slow idle sway — nobody stands with their back to the counter
@@ -2009,17 +2017,18 @@ const STAFF_LOOKS={3:{shirt:'#f4f6f7',sleeve:'#f4f6f7',apron:'#2a4b7e',pants:'#1
  4:{shirt:'#1b1f24',sleeve:'#1b1f24',apron:'#0b0d10',pants:'#1b1f24',skin:'#f2c9a4',hair:'#2d1d12',shoe:'#0b0d10',cap:'#0b0d10'}};
 let staffSel=lsGet('yeomni3-staff',4); if(OKS.indexOf(staffSel)<0) staffSel=4;
 const POS_SPOT=v(SCX-(SH_L/2-0.55)/TUNE.w,STF_Z), CAB_HOME=SPOTS[0].s, CUPS=v(2.42,-1.72-2*TILE2), PACKS=v(2.42,-1.12-2*TILE2), FRZ=v(1.05,-1.85), SINK=v(2.0,-1.85);
+const SCOOP_LOOK=()=>Object.assign({},STAFF_LOOKS[staffSel],{hair:'#121212',cap:'#8e949b',hs:'short',long:false});   /* 녹건: grey cap, black hair */
 function spawnStaff(walkIn){
- const a=new Agent('staff',Object.assign({},STAFF_LOOKS[staffSel])); a.role='scoop';
+ const a=new Agent('staff',SCOOP_LOOK()); a.role='scoop';
  const mk=new Agent('staff',Object.assign({},STAFF_LOOKS[3],{hair:'#4a2f1c',long:true,skin:'#f7d7bb'})); mk.role='maker';
- staff.push(a,mk); setTag(a,STAFF[staffSel],'emo');
+ staff.push(a,mk); setTag(a,'녹건','st'); setTag(mk,'녹진','st');
  mk.place(KM,Math.PI); if(walkIn) mk.alpha=0;
  if(walkIn){ a.place(CAB_HOME,0); a.alpha=0; say(a,'오늘도 녹기 전에,,',4,'st'); }
  else { a.place(CAB_HOME,0); } }
 function restyleStaff(){ /* maker keeps her look */ const old=staff.slice(); old.forEach(s=>{ const st={pos:s.pos.clone(),face:s.face,role:s.role}; }); /* rebuild looks in place */
- staff.forEach(s=>{ if(s.role==='maker') return; const L=s.role==='scoop'?STAFF_LOOKS[staffSel]:Object.assign({},STAFF_LOOKS[staffSel===4?3:4],{long:true,skin:'#f7d7bb'});
+ staff.forEach(s=>{ if(s.role==='maker') return; const L=s.role==='scoop'?SCOOP_LOOK():Object.assign({},STAFF_LOOKS[staffSel===4?3:4],{long:true,skin:'#f7d7bb'});
   const held=s.held.slice(); held.forEach((o,i)=>{ if(o) dropItem(s,i); }); if(_fpHidden===s) _fpHidden=null; scene.remove(s.rig.root); s.look=L; s.rig=capRig(new Rig(L),true); scene.add(s.rig.root); held.forEach((o,i)=>{ if(o) holdItem(s,i,o); }); });
- const sc=staff.find(s=>s.role==='scoop'); if(sc) setTag(sc,STAFF[staffSel],'emo'); }
+ const sc=staff.find(s=>s.role==='scoop'); if(sc) setTag(sc,'녹건','st'); }
 function tubSpot(t){ return v(clamp(t.x,SCL+0.4/TUNE.w,SCR-0.4/TUNE.w),STF_Z); }
 // a staff member stays at their own place: at most a small side step, then reaches/leans for the pan
 function reachSpot(st,t){ return (st.home||SPOTS[0]).s; }   // she never walks along the showcase: lean and reach from her place
@@ -2848,7 +2857,27 @@ let spawnT=3, clockMin=-1, walkT=1;
 function rateNow(){ const h=hourOf(simDate()); let r= h<12.3?0.8 : h<13.5?1.7 : h<15.5?0.9 : h<18?1.25 : h<21?1.4 : 0.9; if(S.rain) r*=0.55; if(S.season===5) r*=0.75; if(S.season===3) r*=1.3; return r; }
 // groups: the first member leads; others stand beside (pair), clump round (trio) or in single file
 function groupUp(arr,mode){ arr=arr.filter(Boolean); if(arr.length<2) return arr; arr.forEach((g,i)=>{ g.grp=arr; g.gi=i; if(i) g.lead=arr[0]; }); arr[0].grpMode=mode; return arr; }
-function spawnTick(){ if(!shopOpen()) return; const code=popCodeGuest(); if(code){ const look=codeLook(code.c); const g=spawnGuest({look}); if(g){ toast(`${look.name} 님이 오셨어요,,`); } return; }
+/* students in school uniforms: 서강대 과잠, 디자인고, 서울여고, 성심여고. They come in twos and threes, now and then five together. */
+const SCHOOLS={
+ sogang:{n:'서강대',f:(L,w)=>Object.assign(L,{top:'tee',shirt:'#6b1b28',sleeve:'#f2efe8',varsity:['#6b1b28','#f2efe8'],logo:'SG',logoC:'#f4f2ee',bot:w&&Math.random()<0.3?'skirt':'pants',pants:pick(['#3b4f6e','#2f3d55','#1b1f24']),shoe:pick(['#f4f6f7','#1b1f24'])})},
+ design:{n:'디자인고',f:(L,w)=>Object.assign(L,{top:'jacket',jk:'#6e7074',lapel:true,shirt:'#55585d',collar:true,tie:'#7a1f2c',badge:'#3f6a3a',bot:w?'skirt':'pants',pants:w?'#16181d':'#2a2c30',pleats:true,shoe:'#f4f6f7'})},
+ seoulg:{n:'서울여고',f:(L,w)=>Object.assign(L,{top:'jacket',jk:'#1c2440',piping:true,shirt:'#8a8d92',collar:true,bow:'#c23a4a',bow2:'#1c2440',badge:'#c9a14a',bot:'skirt',pants:'#1c2440',pleats:true,shoe:'#1b1f24'}),girls:1},
+ sungsim:{n:'성심여고',f:(L,w)=>Object.assign(L,{top:'vest',vest:'#6b1f33',shirt:'#f4f6f7',vtrim:'#cbbcb4',bow:'#5b2a5e',bow2:'#d7a83a',bot:'skirt',pants:'#a99a8e',pleats:true,shoe:'#f4f6f7'}),girls:1}};
+function studentLook(key){ const S_=SCHOOLS[key], w=S_.girls||Math.random()<0.55, L=lookFor('normal'); Object.assign(L,{hat:null,hatT:0,hood:false,stripe:null,cardi:null,jk:null,vest:null,glasses:Math.random()<0.2,
+  hs:w?pick(['long','bob','pony','bangs','long','bun']):pick(['short','side','buzz','spiky','undercut']),hair:pick(['#16110d','#22140c','#2d1d12','#3e2516','#16110d']),school:key});
+ S_.f(L,w); L.skirt=L.bot==='skirt'; L.long=L.hs==='long'; return L; }
+function spawnStudents(asGuests){ const keys=Object.keys(SCHOOLS), key=pick(keys), n=Math.random()<0.2?5:2+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, out=[];
+ if(asGuests&&!S.mp){ for(let i=0;i<n;i++){ const g=spawnGuest({look:studentLook(key),side,force:true}); if(g){ g.pos.x+=side*i*0.6; g.pos.z+=(i%2)*0.2; out.push(g); } } if(out.length&&typeof groupUp==='function') groupUp(out,n>3?'file':'trio'); return out.length; }
+ const z=5.5+Math.random()*1.0, chat=Math.random()<0.45?{x:-1.4+Math.random()*3.4,z:5.35,n,lead:0}:null, plan=chat?'chat':(Math.random()<0.5?'look':'pass');
+ for(let i=0;i<n;i++) spawnWalker({look:studentLook(key),side,z:z+(i%2)*0.42,off:Math.floor(i/2)*0.7,speed:1.35,chat,ci:i,plan:i===0||chat?plan:'pass'}); return n; }
+/* office workers in suits: 4-5 at once, same suits, only the tie colour differs. They come in, line up and order like anyone else. */
+const TIES=['#b33a55','#2a4b7e','#4cb889','#c99a36','#7a4bb0','#e0607c','#1b1f24'];
+function suitLook(i,woman,suit,tie){ const L=lookFor('worker'); Object.assign(L,{top:'jacket',jk:suit,pants:suit,shirt:'#f4f6f7',sleeve:suit,tie,lapel:true,shoe:'#16181b',hat:null,hatT:0,glasses:Math.random()<0.25,hood:false,bot:woman?pick(['skirt','pants']):'pants',hs:woman?pick(['bob','pony','long','bun']):pick(['side','short','slick','undercut']),hair:pick(['#16110d','#22140c','#2d1d12','#3e2516'])});
+ L.skirt=L.bot==='skirt'; L.long=L.hs==='long'; L.suit=1; return L; }
+function spawnSuits(){ const n=4+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, suit=pick(['#23272e','#2c3445','#3a3f47','#1d2a3f']), ties=TIES.slice().sort(()=>Math.random()-0.5), W=[];
+ for(let i=0;i<n;i++){ const g=spawnGuest({look:suitLook(i,Math.random()<0.45,suit,ties[i%ties.length]),side,force:true,npc:true}); if(g){ g.pos.x+=side*i*0.62; g.pos.z+=(i%2)*0.22; g.speed=1.5; W.push(g); } }
+ if(W.length&&typeof groupUp==='function') groupUp(W,'file'); return W.length; }
+function spawnTick(){ if(!shopOpen()) return; if(Math.random()<0.04&&queue.length<3){ spawnSuits(); return; } if(Math.random()<0.08&&queue.length<4){ spawnStudents(true); return; } const code=popCodeGuest(); if(code){ const look=codeLook(code.c); const g=spawnGuest({look}); if(g){ toast(`${look.name} 님이 오셨어요,,`); } return; }
  const h=hourOf(simDate()); const r=Math.random();
  if(h>=12&&h<13.5&&r<0.35&&queue.length<4){ const n=3+((Math.random()*2)|0); const side=Math.random()<0.5?-1:1; const W=[]; for(let i=0;i<n;i++){ const g=spawnGuest({kind:'worker',side}); if(g){ g.pos.x+=side*i*0.7; W.push(g); } } groupUp(W,pick(['trio','trio','file'])); return; }
  if(r<0.045&&!car&&mood()==='day'){ carDrop(lookFor(Math.random()<0.11?pick(['grandma','grandpa']):Math.random()<0.1?'preg':'normal')); return; }   // guests arriving by car: as often as elderly guests
@@ -2871,7 +2900,7 @@ function tick(dt){
  updShopPhase();
  if(shopOpen()&&!S.mp){ spawnT-=dt; if(spawnT<=0){ spawnTick(); spawnT=(22+Math.random()*26)/rateNow(); } }
  walkT-=dt; if(walkT<=0){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=S.mp?(md==='night'?30:14)+Math.random()*16:(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;   /* 같이 보기: passers-by now and then (each screen has its own), they never come in */
-  if(n<(S.mp?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
+  if(n<(S.mp?6:10)&&md!=='night'&&Math.random()<0.22){ spawnStudents(false); } else if(n<(S.mp?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
  if(S.visitNo>=lastVisit+10){ lastVisit=S.visitNo; cleanDue=true; }
  agents.slice().forEach(a=>{ const think=!S.mp||MP.isHost(); if(a.kind==='guest'){ if(think) guestBrain(a,dt); } else if(a.kind==='walker') walkerBrain(a,dt); else if(!a.leaving&&(think||!a.netPose)) staffBrain(a); a.update(dt); if(a.dead){ if(a.kind==='staff'){ const i=staff.indexOf(a); if(i>=0) staff.splice(i,1); } if(a===player) tourEnd(); a.remove(); } });
  const h=hourOf(simDate()); let tmp=(h>11&&h<17?1.15:0.95)*(S.rain?0.8:1); if(S.season===3) tmp*=1.9; if(S.season===5) tmp*=0.45; if(S.season===4) tmp*=0.8;
@@ -2924,7 +2953,7 @@ function scenePalette(n){ n=n||64; const rt=pipe.rt; const w=rt.width,h=rt.heigh
 function setLook(o){ const u=pipe.mat.uniforms; Object.keys(o).forEach(k=>{ if(k==='tint'){ u.pxTint.value.set(...o[k]); } else if(u['px'+k]||u[k]){ (u['px'+k]||u[k]).value=o[k]; } }); if(pipe.mat2){ ['pxMode','pxMix','pxSat','pxLev','pxEdge','pxVig','pxTint','pxRamp','pxGlow','dither','outline'].forEach(k=>{ const v=u[k].value; if(v&&v.isVector3) pipe.mat2.uniforms[k].value.copy(v); else pipe.mat2.uniforms[k].value=v; }); } }
 // debug: aim the ortho camera at a world point (inside view): pan is relative to the room centre target (0, 0.9h, -0.5d)
 window.lookAtWorld=(p,zoom,yaw,pitch)=>{ S.forceIn=true; S.zoom=zoom||6; S.panX=p.x; S.panZ=p.z+0.5*TUNE.d; if(yaw!=null){ S.yawT=yaw; S.camAng=yaw; } if(pitch!=null) S.pitchT=pitch; S._cx=S.panX; S._cz=p.z; S._cy=p.y; S._zm=S.zoom; S._cyOvr=p.y; };
-window.__dbg={S,scene,T3,GROUND,CURTU,FDOOR,FLAVORS,cups,get MP(){ return MP; },get player(){ return player; },staff,pipeObj:()=>pipe,holdItem,guestLeave,headFX,agents,get WALLA(){ return WALLA; },get KITCH(){ return KITCH; },spawnCar,mkVehicle,cars,groupUp,isFollower,slotOf,Cup,spawnWalker,spawnGuest,tourStart,workStart,getPlayer:()=>player,SPOTS,LAY:()=>({SPOTS:SPOTS.map(s=>[s.g,s.s]),WAITS,Q:QSLOT.slice(0,5),SCL,SCR,SCX,SCZ,STF_Z,SPOT_GZ,RACK_CUP,RACK_BAG,PACK_SPOT,DOOR_IN,LANE_IN,glass:[SW_Z(-0.18),SW_Z(0.04)]}),rayStyle:v=>{ PXL.STYLE.value=v; lsSet('yeomni11-raystyle',v); },MINIS:()=>MINIS,MINI_LOOKS,scenePalette,setLook,pipe:()=>pipe,CSS0v:v=>{ CSS0_OVR=v; },fpCam:()=>fpCam,setPx:l=>{pxLv=l;},LG,sun,hemi,washL,roomLight,jarL,pend,spawnCar,Rig,lookFor,codeLook,tick,orders,S,agents,seats,staff,spawnGuest,guestSit,igBump,cups,queue,dio:dioGroups,scene,worldG,T3,TUNE,cam};
+window.__dbg={S,scene,spawnSuits,spawnStudents,studentLook,SCHOOLS,T3,GROUND,CURTU,FDOOR,FLAVORS,cups,get MP(){ return MP; },get player(){ return player; },staff,pipeObj:()=>pipe,holdItem,guestLeave,headFX,agents,get WALLA(){ return WALLA; },get KITCH(){ return KITCH; },spawnCar,mkVehicle,cars,groupUp,isFollower,slotOf,Cup,spawnWalker,spawnGuest,tourStart,workStart,getPlayer:()=>player,SPOTS,LAY:()=>({SPOTS:SPOTS.map(s=>[s.g,s.s]),WAITS,Q:QSLOT.slice(0,5),SCL,SCR,SCX,SCZ,STF_Z,SPOT_GZ,RACK_CUP,RACK_BAG,PACK_SPOT,DOOR_IN,LANE_IN,glass:[SW_Z(-0.18),SW_Z(0.04)]}),rayStyle:v=>{ PXL.STYLE.value=v; lsSet('yeomni11-raystyle',v); },MINIS:()=>MINIS,MINI_LOOKS,scenePalette,setLook,pipe:()=>pipe,CSS0v:v=>{ CSS0_OVR=v; },fpCam:()=>fpCam,setPx:l=>{pxLv=l;},LG,sun,hemi,washL,roomLight,jarL,pend,spawnCar,Rig,lookFor,codeLook,tick,orders,S,agents,seats,staff,spawnGuest,guestSit,igBump,cups,queue,dio:dioGroups,scene,worldG,T3,TUNE,cam};
 (function(){ const box=$('#tuneRows'), lab={}, inps={};
  const pct=v=>Math.round(v*100)+'%';
  const ROWS=[['h','바깥 (실외)'],['sun','햇빛 세기',0,2,0.05,pct],['sky','하늘빛 (전체 밝기)',0,2,0.05,pct],['auto','햇빛 각도 시간 따라 자동','chk'],['az','햇빛 방향',-180,180,1,v=>(LG.auto?(S.sunAz??v):v)+'° · '+dirName(LG.auto?(S.sunAz??v):v)],['el','햇빛 높이',5,85,1,v=>(LG.auto?(S.sunEl??v):v)+'°'],
@@ -3427,16 +3456,21 @@ const MP=(()=>{
    if(s==='free'&&(prev==='pickup'||prev==='atPick')){ itemGet(d.held&&d.held.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); S.fp=false; narr('주문 완료! 이제 자유롭게 이동이 가능해요,,\n빈 자리를 누르면 앉을 수 있어요'); }
    if(s==='eating') narr('천천히 드세요,,\n다른 곳을 누르면 일어나요'); bar(); } }
  /* ---- staff puppets on a non-host screen ---- */
- function applyStaff(m){ (m.s||[]).forEach(sd=>{ const s=staff.find(x=>x.role===sd.r); if(!s) return; s.netTo={x:sd.x,z:sd.z,f:sd.f}; s.netPose={lh:sd.lh,rh:sd.rh,ln:sd.ln,cr:sd.cr,nd:sd.nd,st:0}; s.task=sd.task||s.task; s.alpha=1;
+ const NPCS=new Map(), NLOOK=new Map(); api.NPCS=NPCS;
+ function applyNpcs(list){ const seen=new Set(); seats.forEach(se=>{ if(se.who&&se.who.npcPup) se.who=null; });
+  list.forEach(n=>{ seen.add(n.i); if(n.L) NLOOK.set(n.i,n.L); let a=NPCS.get(n.i); if(!a){ const L=NLOOK.get(n.i); if(!L) return; a=new Agent('guest',Object.assign({},L)); a.npcPup=1; a.mpSt='free'; a.state='free'; a.order=Object.assign(makeOrder('cup'),{guest:a}); a.place(v(n.x,n.z),n.f); NPCS.set(n.i,a); }
+   a.netTo={x:n.x,z:n.z,f:n.f}; a.alpha=n.al; a.netSit=n.s>0.5?1:0; if(n.si>=0&&seats[n.si]) seats[n.si].who=a; buildHeld(a,n.h); });
+  NPCS.forEach((a,id)=>{ if(!seen.has(id)){ a.dead=true; a.remove(); NPCS.delete(id); } }); }
+ function applyStaff(m){ if(m.n) applyNpcs(m.n); (m.s||[]).forEach(sd=>{ const s=staff.find(x=>x.role===sd.r); if(!s) return; s.netTo={x:sd.x,z:sd.z,f:sd.f}; s.netPose={lh:sd.lh,rh:sd.rh,ln:sd.ln,cr:sd.cr,nd:sd.nd,st:0}; s.task=sd.task||s.task; s.alpha=1;
    if(sd.hy!=null) s.headYaw=sd.hy; if(sd.bub&&sd.bub!==s._nb){ s._nb=sd.bub; say(s,sd.bub,3,'st'); } if(!sd.bub) s._nb='';
    [0,1].forEach(i=>{ const d=sd.h[i]; const cur=s.held[i]; if(!d){ if(cur){ if(cur.userData.cupRef) cups.delete(cur.userData.cupRef); dropItem(s,i); } return; }
     if(d.k==='cup'){ const c=cur&&cur.userData.cupRef; if(c&&c.order.kind===d.kind&&c.scoops.length===d.n&&!!c.packed===!!d.packed) return; if(cur){ if(cur.userData.cupRef) cups.delete(cur.userData.cupRef); dropItem(s,i); }
      const o={kind:d.kind,fl:d.fl,taste:d.taste,n:d.fl.length,status:'making'}; const c2=new Cup(o); o.cup=c2; cups.add(c2); for(let k=0;k<d.n;k++){ const fi=d.fl[k]!=null?d.fl[k]:d.fl[0]; const tst=d.kind==='cup'&&k>=2; c2.addScoop(FLAVORS[tst?(d.taste!=null?d.taste:fi):fi],tst?30:(d.kind==='pack'?120:90),tst); } if(d.packed) c2.pack(); holdItem(s,i,c2.g); }
     else { if(cur&&cur.userData.mpk===d.k) return; if(cur) dropItem(s,i); const b=new T3.Mesh(new T3.BoxGeometry(d.k==='tray'?0.24:0.12,d.k==='tray'?0.08:0.06,d.k==='tray'?0.13:0.12),capMat(mat(d.k==='tray'?'#b9c0c6':d.k==='box'?'#c9a77a':'#f3efe6'),true)); b.userData.mpk=d.k; b.castShadow=true; holdItem(s,i,b); } }); });
-  if(m.q){ queue.length=0; m.q.forEach(id=>{ const e=st.players.get(id); if(e) queue.push(e.p); }); } }
+  if(m.q){ queue.length=0; m.q.forEach(id=>{ const e=st.players.get(id); if(e) queue.push(e.p); else if(NPCS.has(id)) queue.push(NPCS.get(id)); }); } }
  /* ---- host side ---- */
  function hostInit(takeover){ st.players.forEach((e,id)=>{ const a=e.p; a.netTo=id===st.me?null:a.netTo; a.mpSt=a.mpSt||'free'; if(takeover){ /* everyone starts over as free: the previous host's shop state is gone */ a.clear(); a.state='free'; a.mpSt='free'; a.netSit=null; a.spot=null; a.slot=-1; if(a.seat){ a.seat.who=null; a.seat=null; } } });
-  queue.length=0; orders.length=0; staff.forEach(s=>{ s.netPose=null; s.netTo=null; }); st.lastSt.clear(); }
+  NPCS.forEach(a=>{ a.dead=true; a.remove(); }); NPCS.clear(); queue.length=0; orders.length=0; staff.forEach(s=>{ s.netPose=null; s.netTo=null; }); st.lastSt.clear(); }
  function hostDrop(a){ freeSpot(a); const qi=queue.indexOf(a); if(qi>=0) queue.splice(qi,1); if(a.order){ a.order.canceled=true; const oi=orders.indexOf(a.order); if(oi>=0&&a.order.status==='todo') orders.splice(oi,1); } if(a.seat){ a.seat.who=null; a.seat=null; } }
  function hostReq(id,k,d){ const e=st.players.get(id); if(!e) return; const a=e.p; act(a,k,d); }
  /* what a player may do, run on the host for whoever asked (including the host's own character) */
@@ -3472,7 +3506,12 @@ const MP=(()=>{
    paintCount(); }
   if(api.isHost()){ st.tStaff+=dt; if(st.tStaff>=0.1){ st.tStaff=0; const sd=staff.map(s=>({r:s.role,x:+s.pos.x.toFixed(3),z:+s.pos.z.toFixed(3),f:+s.face.toFixed(3),hy:s.headYaw!=null?+s.headYaw.toFixed(2):null,lh:[...s.want.lh.toArray()].map(v=>+v.toFixed(3)),rh:[...s.want.rh.toArray()].map(v=>+v.toFixed(3)),ln:+s.want.lean.toFixed(3),cr:+s.want.crouch.toFixed(3),nd:+s.want.nod.toFixed(3),task:s.task,bub:s.bub?s.bub.text:'',
      h:[0,1].map(i=>{ const o=s.held[i]; if(!o) return null; const c=o.userData.cupRef; if(c) return {k:'cup',kind:c.order.kind,fl:c.order.fl,taste:c.order.taste,n:c.scoops.length,packed:!!c.packed}; return {k:o.userData.bag?'bag':o.userData.mpk||'box'}; })}));
-    send({t:'staff',s:sd,q:queue.map(a=>a.mpId).filter(Boolean)}); } }
+    st._nk=((st._nk||0)+1)%10; const nl=agents.filter(a=>a.npcId&&!a.dead);
+    const n=nl.map(a=>{ const si=a.seat?seats.indexOf(a.seat):-1; const o={i:a.npcId,x:+a.pos.x.toFixed(3),z:+a.pos.z.toFixed(3),f:+a.face.toFixed(3),s:+a.pose.sit.toFixed(2),al:+a.alpha.toFixed(2),h:heldDesc(a),si}; if(st._nk===0||!st._nSent||!st._nSent.has(a.npcId)) o.L=a.look; return o; });
+    st._nSent=new Set(st._nk===0?[]:nl.map(a=>a.npcId)); nl.forEach(a=>st._nSent.add(a.npcId));
+    send({t:'staff',s:sd,n,q:queue.map(a=>a.mpId||a.npcId).filter(Boolean)}); } }
+  /* host: now and then a group of office workers in suits comes by (they line up with everyone) */
+  if(api.isHost()){ st.suitT=(st.suitT==null?60+Math.random()*120:st.suitT)-dt; if(st.suitT<=0){ st.suitT=240+Math.random()*300; if(queue.length<4&&!agents.some(a=>a.npcId&&!a.dead)) spawnSuits(); } }
   /* the host moves every state machine; on the host, remote players in 'free' glide to where they say they are */
   st.players.forEach((e,id)=>{ const a=e.p; if(id===st.me) return; if(api.isHost()&&hostCtl(a)) a.netTo=null; });
   /* my own: in a host-held state on a non-host screen, no local steps */
@@ -3504,9 +3543,13 @@ const MP=(()=>{
  function freeSeatNear(){ const taken=new Set(); st.players.forEach(e=>{ if(e.p.mpSeat) taken.add(e.p.mpSeat); if(e.p.seat) taken.add(e.p.seat); }); let best=-1, bd=1e9; seats.forEach((se,i)=>{ if(se.who||taken.has(se)||(se.out&&(S.rain||S.season===5))) return; const d=se.p.distanceTo(player.pos); if(d<bd){ bd=d; best=i; } }); return best; }
  /* where I'm headed: a dashed white ring on the ground (pulsing) until I get there; a seat gets the ring plus a few sparkles */
  let DEST=null, _ringTex=null;
- function ringTex(){ if(_ringTex) return _ringTex; const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); g.strokeStyle='#ffffff'; g.lineWidth=9; g.setLineDash([9,7]); g.beginPath(); g.arc(32,32,24,0,Math.PI*2); g.stroke(); _ringTex=new T3.CanvasTexture(c); _ringTex.magFilter=T3.NearestFilter; _ringTex.minFilter=T3.NearestFilter; _ringTex.generateMipmaps=false; return _ringTex; }
- function setDest(x,z,kind){ clearDest(); const m=new T3.Sprite(new T3.SpriteMaterial({map:ringTex(),transparent:true,opacity:0.8,depthWrite:false,depthTest:false})); m.center.set(0.5,0.5); m.position.set(x,0.06,z); m.renderOrder=9; scene.add(m); DEST={m,t:0,kind,x,z}; }   /* a sprite: a flat ring on the ground all but vanishes at this low camera angle */
- function clearDest(){ if(DEST){ scene.remove(DEST.m); DEST.m.material.dispose(); DEST=null; } clearTrail(); clearHL(); }
+ function ringTex(){ if(_ringTex) return _ringTex; const c=document.createElement('canvas'); c.width=c.height=64; _ringTex=new T3.CanvasTexture(c); _ringTex.magFilter=T3.NearestFilter; _ringTex.minFilter=T3.NearestFilter; _ringTex.generateMipmaps=false; ringDraw(0); return _ringTex; }
+ /* a circle with one line across it; the line turns slowly (redrawn, so the ring stays a flat ellipse on the ground) */
+ function ringDraw(a){ const c=_ringTex.image, g=c.getContext('2d'); g.clearRect(0,0,64,64); g.lineCap='round'; const dx=Math.cos(a)*22, dy=Math.sin(a)*22;
+  [['rgba(27,31,36,.5)',10],['#ffffff',5]].forEach(([col,w])=>{ g.strokeStyle=col; g.lineWidth=w; g.beginPath(); g.arc(32,32,24,0,Math.PI*2); g.stroke(); g.beginPath(); g.moveTo(32-dx,32-dy); g.lineTo(32+dx,32+dy); g.stroke(); }); _ringTex.needsUpdate=true; }
+ function setDest(x,z,kind){ clearDest(); const m=new T3.Sprite(new T3.SpriteMaterial({map:ringTex(),transparent:true,opacity:0.8,depthWrite:false,depthTest:false})); m.center.set(0.5,0.5); m.position.set(x,0.06,z); m.renderOrder=9; scene.add(m);
+  const b=new T3.Sprite(new T3.SpriteMaterial({map:scoopTex(),transparent:true,depthWrite:false,depthTest:false})); b.position.set(x,0.3,z); b.scale.set(0.13,0.13,1); b.renderOrder=10; scene.add(b); DEST={m,b,t:0,kind,x,z}; }   /* a sprite: a flat ring on the ground all but vanishes at this low camera angle */
+ function clearDest(){ if(DEST){ scene.remove(DEST.m); DEST.m.material.dispose(); if(DEST.b){ scene.remove(DEST.b); DEST.b.material.dispose(); } DEST=null; } clearTrail(); clearHL(); }
  /* the seat I picked: the chair / stool / bench gets a blinking outline (a slightly larger back-face shell) until I'm sitting on it. Only on my screen. */
  let HL=null; const _hb=new T3.Box3(), _hs=new T3.Vector3(), _hc=new T3.Vector3(), _hw=new T3.Vector3();
  function seatMeshes(se){ const x=se.p.x*TUNE.w, z=se.p.z*TUNE.d, out=[], skip=new Set(agents.map(a=>a.rig.root));
@@ -3529,12 +3572,15 @@ const MP=(()=>{
   const L=[{x:mx,z:mz},...T.pts]; let n=0, off=TRAIL_GAP-(T.t*0.5)%TRAIL_GAP;
   for(let i=0;i<L.length-1;i++){ const a=L[i], b=L[i+1], len=Math.hypot(b.x-a.x,b.z-a.z); let s=off; while(s<len){ let d=T.dots[n]; if(!d){ d=new T3.Sprite(dotMat()); d.center.set(0.5,0); d.scale.set(0.07,0.07,1); d.renderOrder=8; T.g.add(d); T.dots.push(d); } d.visible=true; d.position.set(a.x+(b.x-a.x)*s/len,0.012,a.z+(b.z-a.z)*s/len); n++; s+=TRAIL_GAP; } off=s-len; }
   for(let i=n;i<T.dots.length;i++) T.dots[i].visible=false; }
- function tickDest(dt){ if(HL){ HL.t+=dt; const on=(HL.t%0.6)<0.38; HL.shells.forEach(h=>h.visible=on); } if(TRAIL){ TRAIL.t+=dt; TRAIL.u-=dt; if(TRAIL.u<=0){ TRAIL.u=0.05; drawTrail(); } } if(!DEST) return; DEST.t+=dt; const k=0.5*(1+0.12*Math.sin(DEST.t*5)); DEST.m.scale.set(k,k*0.5,1); DEST.m.material.rotation=DEST.t*0.8; DEST.m.material.opacity=0.6+0.25*Math.sin(DEST.t*5);
-  if(DEST.kind==='seat'){ DEST.sp=(DEST.sp||0)-dt; if(DEST.sp<=0){ DEST.sp=0.45; const sp=new T3.Sprite(new T3.SpriteMaterial({map:fxTex('spark'),transparent:true,depthWrite:false,depthTest:false})); sp.position.set(DEST.x+(Math.random()-0.5)*0.4,0.25+Math.random()*0.3,DEST.z+(Math.random()-0.5)*0.4); sp.scale.setScalar(0.22); sp.renderOrder=9; scene.add(sp); TAPM.push({m:sp,t:0.3,fx:1}); } }
+ function tickDest(dt){ if(HL){ HL.t+=dt; const on=(HL.t%0.6)<0.38; HL.shells.forEach(h=>h.visible=on); } if(TRAIL){ TRAIL.t+=dt; TRAIL.u-=dt; if(TRAIL.u<=0){ TRAIL.u=0.05; drawTrail(); } } if(!DEST) return; DEST.t+=dt; DEST.m.scale.set(0.95,0.48,1); ringDraw(DEST.t*0.9); DEST.m.material.opacity=0.9;   /* the circle turns slowly */
+  { const ph=(DEST.t*2.2)%1, hop=4*ph*(1-ph); DEST.b.position.y=0.26+hop*0.3; const sq=ph<0.08||ph>0.92?1.18:1; DEST.b.scale.set(0.24*sq,0.24/sq,1); }   /* a little scoop hopping up and down on it */
   const me=player, st_=curSt(me); if(DEST.kind==='seat'){ if(st_==='eating'||(DEST.t>1.2&&st_==='free'&&!me.moving&&!me.steps.length&&!me.cur)) clearDest(); }   /* a moment's grace: on a guest's screen the host's 'sitdown' takes a beat to arrive */ else if(!me.moving&&!me.steps.length&&!me.cur&&st_!=='sitdown') clearDest(); }
  /* a tap leaves a faint white B logo on the ground that pops and fades */
  const TAPM=[]; window.__tapm=TAPM; let _tapTex=null;
- function tapMark(x,z){ if(!_tapTex){ const B=['.###.........','#####........','#####........','.###.........','.............','####.######..','####.#######.','####.########','####.########','####....#####','####.########','####.########','####.#######.','.........####','#############','#############','############.','##########...']; const c=document.createElement('canvas'); c.width=B[0].length+2; c.height=B.length+2; const g=c.getContext('2d'); g.fillStyle='#ffffff'; B.forEach((r,y)=>[...r].forEach((ch,xx)=>{ if(ch==='#') g.fillRect(xx+1,y+1,1,1); })); _tapTex=new T3.CanvasTexture(c); _tapTex.magFilter=T3.NearestFilter; _tapTex.minFilter=T3.NearestFilter; _tapTex.generateMipmaps=false; }
+ function scoopTex(){ if(scoopTex.t) return scoopTex.t; const c=document.createElement('canvas'); c.width=c.height=32; const g=c.getContext('2d'); g.fillStyle='#2a4b7e'; g.beginPath(); g.arc(16,16,14,0,Math.PI*2); g.fill(); g.fillStyle='#ffd9e2'; g.beginPath(); g.arc(16,16,11,0,Math.PI*2); g.fill(); g.fillStyle='#ffffff'; g.beginPath(); g.arc(12,12,3.5,0,Math.PI*2); g.fill(); const t=new T3.CanvasTexture(c); t.magFilter=T3.NearestFilter; return scoopTex.t=t; }   /* the little taste scoop */
+ function dotTex(){ if(dotTex.t) return dotTex.t; const c=document.createElement('canvas'); c.width=c.height=32; const g=c.getContext('2d'); g.fillStyle='rgba(27,31,36,.4)'; g.beginPath(); g.arc(16,16,14,0,Math.PI*2); g.fill(); g.fillStyle='#ffffff'; g.beginPath(); g.arc(16,16,11,0,Math.PI*2); g.fill(); g.fillStyle='rgba(255,255,255,.0)'; return dotTex.t=new T3.CanvasTexture(c); }
+ function tapMark(x,z){ const m=new T3.Sprite(new T3.SpriteMaterial({map:dotTex(),transparent:true,opacity:0.9,depthWrite:false,depthTest:false})); m.center.set(0.5,0.5); m.position.set(x,0.04,z); m.userData.b=[0.09,0.09]; m.renderOrder=9; scene.add(m); TAPM.push({m,t:0}); }
+ function tapMarkOld(x,z){ if(!_tapTex){ const B=['.###.........','#####........','#####........','.###.........','.............','####.######..','####.#######.','####.########','####.########','####....#####','####.########','####.########','####.#######.','.........####','#############','#############','############.','##########...']; const c=document.createElement('canvas'); c.width=B[0].length+2; c.height=B.length+2; const g=c.getContext('2d'); g.fillStyle='#ffffff'; B.forEach((r,y)=>[...r].forEach((ch,xx)=>{ if(ch==='#') g.fillRect(xx+1,y+1,1,1); })); _tapTex=new T3.CanvasTexture(c); _tapTex.magFilter=T3.NearestFilter; _tapTex.minFilter=T3.NearestFilter; _tapTex.generateMipmaps=false; }
   /* a sprite standing on the spot (a flat decal would vanish at this low camera angle) */ const m=new T3.Sprite(new T3.SpriteMaterial({map:_tapTex,transparent:true,opacity:0.6,depthWrite:false,depthTest:false})); m.center.set(0.5,0); m.position.set(x,0.02,z); m.userData.b=[0.4,0.55]; m.renderOrder=9; scene.add(m); TAPM.push({m,t:0}); }
  function request(k,d){ if(!player) return; if(api.isHost()) act(player,k,d||{}); else send({t:'req',k,d:d||{}}); bar(); }
  /* a tap on the ground: walk there, or sit on a free seat */
