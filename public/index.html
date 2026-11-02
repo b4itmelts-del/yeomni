@@ -128,6 +128,11 @@ body.mp .tag.me{color:var(--navy);background:var(--yel)}
 #tbar button,.pbtn{white-space:nowrap;font:800 14px/1 var(--px);min-height:46px;padding:0 18px;border-radius:999px;border:4px solid var(--navy);background:var(--crm);color:var(--navy);box-shadow:0 4px 8px rgba(0,0,0,.5);cursor:pointer}
 #tbar button.m{background:var(--acc)}
 #tbar button.e{min-height:38px;padding:0 9px;font-size:18px;border-width:3px}
+#tbar .tnote.stat{font-size:11px;opacity:.92;margin:0 0 2px;letter-spacing:.02em}
+#mpEmo{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(36% + env(safe-area-inset-bottom,0px));z-index:9;display:flex;flex-direction:column-reverse;gap:6px;align-items:center}
+#mpEmo[hidden]{display:none}
+#mpEmo button{font-size:18px;width:46px;height:46px;border-radius:999px;border:3px solid var(--navy);background:var(--crm);box-shadow:0 4px 8px rgba(0,0,0,.5);cursor:pointer;padding:0}
+#mpEmo button.t{width:52px;height:52px;border-width:4px;font-size:20px}
 #tbar .tnote{flex-basis:100%;text-align:center;font:800 12px/1.2 var(--px);color:#fff;text-shadow:0 1px 0 var(--navy),1px 0 0 var(--navy),-1px 0 0 var(--navy),0 -1px 0 var(--navy);margin:-2px 0 2px;white-space:nowrap}
 #fx{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 52%,rgba(255,246,190,.9) 0,rgba(255,216,96,.45) 26%,rgba(255,200,80,0) 62%)}
 #fx.on{animation:fxA 1.3s ease-out}
@@ -1677,12 +1682,14 @@ class Agent{
     // unstick: if the next waypoint is not getting closer for a while, walk through the crowd for a moment
     if(this._tg!==tgt||d<this._bd-0.03){ this._tg=tgt; this._bd=d; this._st=0; } else if((this._st+=dt)>1.2){ this._ghost=1.5; this._st=0; this._bd=d; } } }
   if(this._ghost>0) this._ghost-=dt;
+  /* walking in place: an NPC that has been 'walking' for 3 s without really getting anywhere walks through whatever is blocking it for a few seconds */
+  if(this._pass>0) this._pass-=dt; if(this.moving&&!this.player&&!this.mpId&&this.kind!=='staff'&&!this.netTo){ if(!this._mvP){ this._mvP={x:this.pos.x,z:this.pos.z}; this._mvT=0; } this._mvT+=dt; if(Math.hypot(this.pos.x-this._mvP.x,this.pos.z-this._mvP.z)>0.25){ this._mvP.x=this.pos.x; this._mvP.z=this.pos.z; this._mvT=0; } else if(this._mvT>3){ this._pass=3; this._ghost=3; this._mvT=0; } } else if(this._mvP){ this._mvP=null; }
   this._adt=dt; if(this.kind==='staff') staffRush(this,dt);
   if(this.kind==='staff'){ if(this.fadeOut){ this.alpha=Math.max(0,this.alpha-dt*1.2); if(this.alpha<=0) this.dead=true; } else this.alpha=Math.min(1,this.alpha+dt*1.2); }
   // soft personal space: small radius (bodies may overlap a little), never inside the doorway, never against staff
   if(this.moving&&this.pose.sit<0.3&&this.alpha>0.3&&this.kind!=='staff'&&!(this._ghost>0)&&!nearDoor(this.pos)){ for(const o of agents){ if(o===this||o.pose.sit>0.3||o.alpha<0.3||o.kind==='staff'||nearDoor(o.pos)) continue; const ox=this.pos.x-o.pos.x, oz=this.pos.z-o.pos.z, dd=Math.hypot(ox,oz), R=0.2; if(dd<R&&dd>0.001){ const pu=Math.min((R-dd)*0.25,this.speed*dt*0.2); this.pos.x+=ox/dd*pu; this.pos.z+=oz/dd*pu; } } }
   // solid things outside (the ice-cream statue, the dinosaur pillar, the front bench, garden tables, tree trunks): nobody walks through them
-  if(this.kind!=='staff'&&this.alpha>0.3&&this.pose.sit<0.3&&!this.seat&&!this.mpSeat&&!/sit|eat|stand/.test(this.state)&&!/sit|eat|stand/.test(this.mpSt||'')){ let hit=false; for(const o of obstacles()){ const ox=this.pos.x-o.x, oz=this.pos.z-o.z, dd=Math.hypot(ox,oz); if(dd<o.r){ const k=dd<0.01?1:1/dd, ux=dd<0.01?1:ox*k, uz=dd<0.01?0:oz*k; this.pos.x=o.x+ux*o.r; this.pos.z=o.z+uz*o.r; hit=true; } } if(hit&&this.moving&&(this.player||this.mpId)){ this._obT=(this._obT||0)+dt; if(this._obT>0.7){ this.path.length=0; this.moving=false; this._obT=0; } } else this._obT=0; }
+  if(this.kind!=='staff'&&!(this._pass>0)&&this.alpha>0.3&&this.pose.sit<0.3&&!this.seat&&!this.mpSeat&&!/sit|eat|stand/.test(this.state)&&!/sit|eat|stand/.test(this.mpSt||'')){ let hit=false; for(const o of obstacles()){ const ox=this.pos.x-o.x, oz=this.pos.z-o.z, dd=Math.hypot(ox,oz); if(dd<o.r){ const k=dd<0.01?1:1/dd, ux=dd<0.01?1:ox*k, uz=dd<0.01?0:oz*k; this.pos.x=o.x+ux*o.r; this.pos.z=o.z+uz*o.r; hit=true; } } if(hit&&this.moving&&(this.player||this.mpId)){ this._obT=(this._obT||0)+dt; if(this._obT>0.7){ this.path.length=0; this.moving=false; this._obT=0; } } else this._obT=0; }
   this.face=angLerp(this.face,this.faceT,1-Math.exp(-dt*(this.kind==='staff'?6*(this.tsc||1):14)));
   const k=1-Math.exp(-dt*22), P=this.pose, W=this.want;
   P.lh.lerp(W.lh,k); P.rh.lerp(W.rh,k); P.lean=lerp(P.lean,W.lean,k); P.sit=lerp(P.sit,W.sit,1-Math.exp(-dt*8)); P.crouch=lerp(P.crouch,W.crouch,k); P.nod=lerp(P.nod,W.nod,k);
@@ -2096,7 +2103,7 @@ function scriptTakeOrder(st,g){
  const o=g.order; g.state='ordering';
  st.then(face(0));
  if(g.player||g.mpId){ st.then(act(7,()=>{},{task:'주문 받는 중,,',marks:[{at:0.02,fn:a=>{ say(a,GREET1,7,'st'); if(g.player) narr(GREET1,'staff',1800); }}]}),
-   act(4,()=>{},{marks:[{at:0.02,fn:a=>{ say(a,GREET2,8,'st'); if(g.player){ narr(GREET2,'staff',0); tourChoices(); } else MP.askChoice(g); }}]}),
+   act(4,()=>{},{marks:[{at:0.02,fn:a=>{ say(a,GREET2,8,'st'); o.asked=true; if(g.player){ narr(GREET2,'staff',0); if(S.mp) MP.bar(); else tourChoices(); } else MP.askChoice(g); }}]}),
    wait(()=>{ if(o.chosen||g.dead) return true; if(o._w0==null) o._w0=S.simT; if(S.simT-o._w0>5){ /* no answer in 5 s: a cup it is */ if(g.player&&typeof chooseOrder==='function') chooseOrder('cup'); else Object.assign(o,makeOrder('cup'),{guest:g,chosen:true}); if(g.player||g.mpId) toast('컵으로 골랐어요,,'); return true; } return false; },null,'주문 기다리는 중,,'));
  } else if(Math.random()<0.14&&!g.look.foreign){ const qa=pick(QA); st.then(act(3,()=>{},{task:'질문 받는 중,,',marks:[{at:0.02,fn:()=>say(g,qa[0],5)}]}),act(Math.min(7,3+qa[1].length/14),()=>{},{marks:[{at:0.02,fn:a=>say(a,qa[1],Math.min(14,6+qa[1].length/7),'st')}]})); }
  st.then(act((g.player||g.mpId)?9:2,(p,a)=>{ if(g.dead) return; g.extT=S.simT; g.want.rh.copy(kfV(p,[[0,REST_R],[0.3,[0.1,0.3,0.3]],[0.6,[0.12,0.25,0.3]],[1,REST_R]],_a)); kfV(p,[[0,REST_R],[0.5,[0.12,0.06,0.36]],[0.6,[0.12,0.03,0.36]],[0.7,[0.12,0.06,0.36]],[0.8,[0.12,0.03,0.36]],[1,REST_R]],a.want.rh); a.want.lean=0.1; },
@@ -3415,9 +3422,9 @@ const MP=(()=>{
   if(d.held!==undefined) buildHeld(a,d.held);
   a.netSit=s==='eating'?1:(s==='standup'||s==='free'||s==='sitdown')?0:null;   /* the sit pose comes only once seated; walking up to the chair is a normal walk */
   if(mine){ if(hostCtl(a)){ a.clear(); a.moving=false; a.path=[]; } else { a.netTo=null; if(a._pendWalk){ const t=a._pendWalk; a._pendWalk=null; a.clear(); a.then(walk(t)); } }
-   if(s==='ordering'&&d.choose) narr('주문하시겠어요?\n컵 / 포장을 골라 주세요','staff',0);
+   st.choose=!!(s==='ordering'&&d.choose); if(s==='ordering'&&d.choose) narr('주문하시겠어요?\n컵 / 포장을 골라 주세요','staff',0);
    if(s==='waiting'&&prev==='ordering') narr('네 알겠습니다!','staff');
-   if(s==='free'&&(prev==='pickup'||prev==='atPick')){ itemGet(d.held&&d.held.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); narr('바닥을 눌러 걸어가거나,\n빈 자리를 눌러 앉을 수 있어요'); }
+   if(s==='free'&&(prev==='pickup'||prev==='atPick')){ itemGet(d.held&&d.held.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); S.fp=false; narr('주문 완료! 이제 자유롭게 이동이 가능해요,,\n빈 자리를 누르면 앉을 수 있어요'); }
    if(s==='eating') narr('천천히 드세요,,\n다른 곳을 누르면 일어나요'); bar(); } }
  /* ---- staff puppets on a non-host screen ---- */
  function applyStaff(m){ (m.s||[]).forEach(sd=>{ const s=staff.find(x=>x.role===sd.r); if(!s) return; s.netTo={x:sd.x,z:sd.z,f:sd.f}; s.netPose={lh:sd.lh,rh:sd.rh,ln:sd.ln,cr:sd.cr,nd:sd.nd,st:0}; s.task=sd.task||s.task; s.alpha=1;
@@ -3448,7 +3455,7 @@ const MP=(()=>{
   if(k==='bin'){ if(s!=='free'||!a.held.some(o=>o&&o.userData.cupRef)) return; a.clear(); a.netTo=null; a.mpSt='binning'; a.state='binning'; a.then(...binSteps(),call_(g=>{ g.eatWalk=false; g.mpSt='free'; g.state='free'; })); return; }
   if(k==='walk'){ if(s!=='free') return; /* a non-host's own walking is theirs; the host only moves its own character */ if(a.mpId===st.me){ a.clear(); a.then(walk(v(d.x,d.z))); } return; } }
  const act_=(beats,fn,o)=>Object.assign({k:'act',beats,fn},o||{}), call_=fn=>({k:'call',fn});
- api.afterPickup=a=>{ a.mpSt='free'; a.state='free'; startEatWalk(a); if(a===player){ itemGet(a.order.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); narr('바닥을 눌러 걸어가거나,\n빈 자리를 눌러 앉을 수 있어요'); bar(); } };
+ api.afterPickup=a=>{ a.mpSt='free'; a.state='free'; startEatWalk(a); if(a===player){ itemGet(a.order.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); S.fp=false; narr('주문 완료! 이제 자유롭게 이동이 가능해요,,\n빈 자리를 누르면 앉을 수 있어요'); bar(); } };
  api.askChoice=a=>{ a.mpChoose=true; };
  /* ---- every frame ---- */
  api.tick=dt=>{ for(let i=TAPM.length-1;i>=0;i--){ const q=TAPM[i]; q.t+=dt; const k=q.t/0.9; if(k>=1){ q.m.parent&&q.m.parent.remove(q.m); q.m.material.dispose(); TAPM.splice(i,1); continue; } if(q.fx){ q.m.position.y+=dt*0.5; q.m.material.opacity=1-k; continue; } const sc=k<0.15?0.6+k/0.15*0.5:1.1-0.1*(k-0.15)/0.85; const b=q.m.userData.b; q.m.scale.set(b[0]*sc,b[1]*sc,1); q.m.position.y=0.02+0.08*k; q.m.material.opacity=0.6*(k<0.5?1:1-(k-0.5)/0.5); }
@@ -3456,11 +3463,12 @@ const MP=(()=>{
   /* keep a little room from the other guests: my own character eases away when someone stands too close (everyone sees it, since my position is sent) */
   if(!hostCtl(player)&&player.pose.sit<0.3){ const me=player; let px=0,pz=0; st.players.forEach(e=>{ const o=e.p; if(o===me||o.pose.sit>0.3) return; const dx=me.pos.x-o.pos.x, dz=me.pos.z-o.pos.z, d=Math.hypot(dx,dz), R=0.34; if(d<R){ const k=(R-Math.max(d,0.02))/R; if(d<0.02){ px+=Math.random()-0.5; pz+=Math.random()-0.5; } else { px+=dx/d*k; pz+=dz/d*k; } } });
    if(px||pz){ const l=Math.hypot(px,pz), sp=Math.min(0.6,l*1.2)*dt; const nx=me.pos.x+px/l*sp, nz=me.pos.z+pz/l*sp, tz=v(nx,nz), z0=zoneOf(me.pos), z1=zoneOf(tz); if(z0===z1&&!(z1==='out'&&nz<BZ1+0.12&&(Math.abs(nx)<4.0||nz<-3.4))&&!nearDoor(me.pos)){ me.pos.x=nx; me.pos.z=nz; } } }
+  st._stT=(st._stT||0)+dt; if(st._stT>0.3){ st._stT=0; paintStat(); }
   st._sbT=(st._sbT||0)+dt; if(st._sbT>0.6){ st._sbT=0; const has=player.held.some(o=>o&&o.userData.cupRef)&&freeSeatNear()>=0; if(has!==st._sbHas){ st._sbHas=has; bar(); } }
   const me=player; st.tSend+=dt;
   if(st.tSend>=0.1){ st.tSend=0; if(!api.isHost()||!hostCtl(me)){ if(!hostCtl(me)) send({t:'p',x:+me.pos.x.toFixed(3),z:+me.pos.z.toFixed(3),f:+me.face.toFixed(3)}); }
    if(api.isHost()){ /* players the shop is moving */ const l=[]; st.players.forEach((e,id)=>{ const a=e.p; if(hostCtl(a)) l.push([id,+a.pos.x.toFixed(3),+a.pos.z.toFixed(3),+a.face.toFixed(3)]); }); if(l.length) send({t:'hp',l});
-    /* state changes */ st.players.forEach((e,id)=>{ const a=e.p; const cur=curSt(a); if(!TRANS.has(a.mpSt)) a.mpSt=a.state; const key=cur+'|'+JSON.stringify(heldDesc(a))+'|'+(a.state==='ordering'&&!a.order.chosen?1:0); if(st.lastSt.get(id)!==key){ st.lastSt.set(id,key); const d={held:heldDesc(a)}; if(a.state==='ordering'&&!a.order.chosen) d.choose=1; send({t:'st',id,st:cur,d}); if(id===st.me) bar(); } }); }
+    /* state changes */ st.players.forEach((e,id)=>{ const a=e.p; const cur=curSt(a); if(!TRANS.has(a.mpSt)) a.mpSt=a.state; const key=cur+'|'+JSON.stringify(heldDesc(a))+'|'+(a.state==='ordering'&&!a.order.chosen&&a.order.asked?1:0); if(st.lastSt.get(id)!==key){ st.lastSt.set(id,key); const d={held:heldDesc(a)}; if(a.state==='ordering'&&!a.order.chosen&&a.order.asked) d.choose=1; send({t:'st',id,st:cur,d}); if(id===st.me) bar(); } }); }
    paintCount(); }
   if(api.isHost()){ st.tStaff+=dt; if(st.tStaff>=0.1){ st.tStaff=0; const sd=staff.map(s=>({r:s.role,x:+s.pos.x.toFixed(3),z:+s.pos.z.toFixed(3),f:+s.face.toFixed(3),hy:s.headYaw!=null?+s.headYaw.toFixed(2):null,lh:[...s.want.lh.toArray()].map(v=>+v.toFixed(3)),rh:[...s.want.rh.toArray()].map(v=>+v.toFixed(3)),ln:+s.want.lean.toFixed(3),cr:+s.want.crouch.toFixed(3),nd:+s.want.nod.toFixed(3),task:s.task,bub:s.bub?s.bub.text:'',
      h:[0,1].map(i=>{ const o=s.held[i]; if(!o) return null; const c=o.userData.cupRef; if(c) return {k:'cup',kind:c.order.kind,fl:c.order.fl,taste:c.order.taste,n:c.scoops.length,packed:!!c.packed}; return {k:o.userData.bag?'bag':o.userData.mpk||'box'}; })}));
@@ -3471,16 +3479,24 @@ const MP=(()=>{
   if(!api.isHost()&&hostCtl(me)) { me.steps.length=0; me.cur=null; } };
  /* ---- controls ---- */
  const myState=()=>player?curSt(player):'free';
- function bar(){ if(!st.ready) return; const s=myState(), cup=player&&player.held.some(o=>o&&o.userData.cupRef); const b=[];
+ function bar(){ if(!st.ready) return; const s=myState(), cup=player&&player.held.some(o=>o&&o.userData.cupRef); const b=[[statusText(),null]];
+  if(s==='free'&&cup&&cup.kind!=='pack'){ const fs=freeSeatNear(); if(fs>=0) b.push(['🪑 (자동) 빈자리 앉기',()=>{ const k=freeSeatNear(); if(k>=0){ const se=seats[k]; setDest(se.p.x*TUNE.w,se.p.z*TUNE.d,'seat'); setTrail([...route(player.pos,se.front),se.p]); setHL(se); request('sit',{seat:k}); } },1],['',null]); }   /* the seat button sits on its own row, above the others */
   if(s==='free'&&!cup) b.push(['🍨 주문하러 가기',()=>request('order'),1]);
-  if(s==='ordering'&&player.order&&!player.order.chosen&&(api.isHost()?true:true)) { b.push(['🍨 컵으로',()=>request('choose',{kind:'cup'}),1],['🛍 포장으로',()=>request('choose',{kind:'pack'}),1],['맛은 랜덤으로 선택됩니다,,',null]); }
-  if(s==='free'&&cup&&cup.kind!=='pack'){ const fs=freeSeatNear(); if(fs>=0) b.push(['🪑 (자동) 빈자리 앉기',()=>{ const k=freeSeatNear(); if(k>=0){ const se=seats[k]; setDest(se.p.x*TUNE.w,se.p.z*TUNE.d,'seat'); setTrail([...route(player.pos,se.front),se.p]); setHL(se); request('sit',{seat:k}); } },1]); }
+  if(s==='ordering'&&player.order&&!player.order.chosen&&(api.isHost()?player.order.asked:st.choose)) { b.push(['🍨 컵으로 주세요',()=>request('choose',{kind:'cup'}),1],['🛍 포장해주세요',()=>request('choose',{kind:'pack'}),1],['맛은 랜덤으로 선택됩니다,,',null]); }   /* one set of buttons, shown once the staff has asked */
   if(s==='free'&&cup) b.push(['🗑 컵 버리기',()=>request('bin'),0]);
   if(s==='eating') b.push(['🚶 일어나기',()=>request('stand'),0]);
   b.push([S.fp?'🧍 3인칭':'👁 1인칭',()=>{ S.fp=!S.fp; S.fpYaw=0; S.fpPitch=-0.1; bar(); }]);
-  b.push([st.emo?'✕':'😊',()=>{ st.emo=!st.emo; bar(); }]);
-  if(st.emo){ b.push(['',null]); EMOS.forEach(e=>b.push([e,()=>emote(e),'e'])); }
-  tbarSet(b); }
+  tbarSet(b); const sn=tbarR.querySelector('.tnote'); if(sn) sn.classList.add('stat'); paintEmo(); }
+ /* what am I doing right now: a small line above the buttons */
+ function statusText(){ if(!player) return ''; const s=myState(), h=player.held.find(o=>o&&o.userData.cupRef), pk=h&&h.userData.cupRef.order.kind==='pack';
+  if(s==='queue') return '줄 서는 중,,'; if(s==='atPOS'||s==='ordering') return '메뉴 주문 중,,'; if(s==='waiting') return '메뉴 준비 중,,'; if(s==='ready'||s==='pickup'||s==='atPick') return '아이스크림 받는 중,,';
+  if(s==='sitdown') return '자리로 가는 중,,'; if(s==='eating') return '앉아서 녹기 전에 먹는 중,,'; if(s==='standup') return '일어나는 중,,'; if(s==='binning') return '쓰레기 버리러 가는 중,,';
+  if(h) return pk?'포장 아이스크림 들고 가는 중,,':(player.moving?'걸으면서 녹기 전에 먹는 중,,':'녹기 전에 먹는 중,,'); return player.moving?'걸어가는 중,,':'둘러보는 중,,'; }
+ function paintStat(){ const el=tbarR.querySelector('.tnote.stat'); if(!el) return; const t=statusText(); if(el.textContent!==t) el.textContent=t; }
+ /* emoji: a column on the right edge, a little below the middle, where the thumb rests */
+ const emoBox=document.createElement('div'); emoBox.id='mpEmo'; emoBox.hidden=true; document.body.appendChild(emoBox);
+ function paintEmo(){ emoBox.hidden=!st.ready; emoBox.innerHTML=''; const t=document.createElement('button'); t.type='button'; t.className='t'; t.textContent=st.emo?'✕':'😊'; t.setAttribute('aria-label','이모티콘'); t.onclick=()=>{ st.emo=!st.emo; paintEmo(); }; emoBox.appendChild(t);
+  if(st.emo) EMOS.forEach(e=>{ const b=document.createElement('button'); b.type='button'; b.textContent=e; b.onclick=()=>emote(e); emoBox.appendChild(b); }); }
  /* light chat: a few emoji reactions that pop over your head on everyone's screen */
  const EMOS=['👋','😋','❤️','👍','😂','🙏'];
  let _emT=0; function emote(e){ const now=performance.now(); if(now-_emT<700||!player) return; _emT=now; say(player,e,3,'emo'); send({t:'say',s:e}); }
