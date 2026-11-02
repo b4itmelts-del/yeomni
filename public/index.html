@@ -1442,7 +1442,11 @@ class Rig{
   if(L.tie) box(0.05,0.18,0.02,L.tie,0,0.36,0.118,this.spine);
   /* school uniforms: shirt collar, ribbon bow, V-neck trim on a knit vest, white piping on a blazer, chest badge, varsity jacket bands */
   if(L.collar){ box(0.2,0.045,0.05,'#f4f6f7',0,0.49,0.088,SP); [-1,1].forEach(sd=>{ const c=box(0.07,0.05,0.012,'#f4f6f7',sd*0.04,0.46,0.114,SP); c.rotation.z=sd*0.5; }); }
-  if(L.bow){ [-1,1].forEach(sd=>{ const w=box(0.07,0.05,0.016,L.bow,sd*0.042,0.44,0.124,SP); w.rotation.z=sd*0.28; if(L.bow2) box(0.012,0.05,0.004,L.bow2,sd*0.042,0.44,0.133,SP).rotation.z=sd*0.28; const t=box(0.025,0.06,0.012,L.bow,sd*0.022,0.39,0.122,SP); t.rotation.z=sd*0.35; }); box(0.026,0.03,0.02,L.bow2||dk(L.bow,0.8),0,0.44,0.13,SP); }
+  if(L.bow){ const B=L.bigBow?1.6:1, bw=0.07*B, bh=0.05*B;   /* ribbon bow: two wings, two tails and a knot; striped ribbons get diagonal stripes */
+   [-1,1].forEach(sd=>{ const wx=sd*0.042*B, wy=0.44-0.008*(B-1); const g=new T3.Group(); g.position.set(wx,wy,0.124); g.rotation.z=sd*0.28; SP.add(g); box(bw,bh,0.016,L.bow,0,0,0,g);
+    if(L.bow2){ const n=L.bigBow?3:1; for(let k=0;k<n;k++){ const st=box(0.013*B,bh*0.98,0.004,L.bow2,(k-(n-1)/2)*bw/n*0.95,0,0.01,g); st.rotation.z=0.45; } }
+    const tg=new T3.Group(); tg.position.set(sd*0.022*B,wy-0.05*B,0.122); tg.rotation.z=sd*0.35; SP.add(tg); box(0.025*B,0.06*B,0.012,L.bow,0,0,0,tg); if(L.bow2&&L.bigBow){ const st=box(0.008*B,0.05*B,0.004,L.bow2,0,0,0.008,tg); st.rotation.z=0.3; } });
+   box(0.026*B,0.03*B,0.02,L.bow2&&!L.bigBow?L.bow2:dk(L.bow,0.8),0,0.44-0.008*(B-1),0.132,SP); if(L.bigBow) box(0.008*B,0.032*B,0.004,L.bow2,0,0.44-0.008*(B-1),0.143,SP).rotation.z=0.6; }
   if(L.vtrim){ [-1,1].forEach(sd=>{ const t=box(0.022,0.2,0.006,L.vtrim,sd*0.045,0.4,0.122,SP); t.rotation.z=-sd*0.36; }); }
   if(L.piping){ [-1,1].forEach(sd=>{ box(0.012,0.46,0.006,'#f2f2ee',sd*0.047,0.25,0.121,SP); const l=box(0.012,0.2,0.006,'#f2f2ee',sd*0.075,0.43,0.13,SP); l.rotation.z=sd*0.35; }); }
   if(L.badge) box(0.05,0.055,0.008,L.badge,0.1,0.34,0.13,SP);
@@ -2862,11 +2866,11 @@ const SCHOOLS={
  sogang:{n:'서강대',f:(L,w)=>Object.assign(L,{top:'tee',shirt:'#6b1b28',sleeve:'#f2efe8',varsity:['#6b1b28','#f2efe8'],logo:'SG',logoC:'#f4f2ee',bot:w&&Math.random()<0.3?'skirt':'pants',pants:pick(['#3b4f6e','#2f3d55','#1b1f24']),shoe:pick(['#f4f6f7','#1b1f24'])})},
  design:{n:'디자인고',f:(L,w)=>Object.assign(L,{top:'jacket',jk:'#6e7074',lapel:true,shirt:'#55585d',collar:true,tie:'#7a1f2c',badge:'#3f6a3a',bot:w?'skirt':'pants',pants:w?'#16181d':'#2a2c30',pleats:true,shoe:'#f4f6f7'})},
  seoulg:{n:'서울여고',f:(L,w)=>Object.assign(L,{top:'jacket',jk:'#1c2440',piping:true,shirt:'#8a8d92',collar:true,bow:'#c23a4a',bow2:'#1c2440',badge:'#c9a14a',bot:'skirt',pants:'#1c2440',pleats:true,shoe:'#1b1f24'}),girls:1},
- sungsim:{n:'성심여고',f:(L,w)=>Object.assign(L,{top:'vest',vest:'#6b1f33',shirt:'#f4f6f7',vtrim:'#cbbcb4',bow:'#5b2a5e',bow2:'#d7a83a',bot:'skirt',pants:'#a99a8e',pleats:true,shoe:'#f4f6f7'}),girls:1}};
+ sungsim:{n:'성심여고',f:(L,w)=>Object.assign(L,{top:'vest',vest:'#6b1f33',shirt:'#f4f6f7',vtrim:'#cbbcb4',bow:'#7a1f3a',bow2:'#e8b734',bigBow:true,bot:'skirt',pants:'#a99a8e',pleats:true,shoe:'#f4f6f7'}),girls:1}};
 function studentLook(key){ const S_=SCHOOLS[key], w=S_.girls||Math.random()<0.55, L=lookFor('normal'); Object.assign(L,{hat:null,hatT:0,hood:false,stripe:null,cardi:null,jk:null,vest:null,glasses:Math.random()<0.2,
   hs:w?pick(['long','bob','pony','bangs','long','bun']):pick(['short','side','buzz','spiky','undercut']),hair:pick(['#16110d','#22140c','#2d1d12','#3e2516','#16110d']),school:key});
  S_.f(L,w); L.skirt=L.bot==='skirt'; L.long=L.hs==='long'; return L; }
-function spawnStudents(asGuests){ const keys=Object.keys(SCHOOLS), key=pick(keys), n=Math.random()<0.2?5:2+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, out=[];
+function spawnStudents(asGuests){ const key=pick(['sungsim','sungsim','sungsim','sogang','sogang','sogang','design','seoulg']),   /* 성심여고·서강대 are regulars */ n=Math.random()<0.2?5:2+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, out=[];
  if(asGuests&&!S.mp){ for(let i=0;i<n;i++){ const g=spawnGuest({look:studentLook(key),side,force:true}); if(g){ g.pos.x+=side*i*0.6; g.pos.z+=(i%2)*0.2; out.push(g); } } if(out.length&&typeof groupUp==='function') groupUp(out,n>3?'file':'trio'); return out.length; }
  const z=5.5+Math.random()*1.0, chat=Math.random()<0.45?{x:-1.4+Math.random()*3.4,z:5.35,n,lead:0}:null, plan=chat?'chat':(Math.random()<0.5?'look':'pass');
  for(let i=0;i<n;i++) spawnWalker({look:studentLook(key),side,z:z+(i%2)*0.42,off:Math.floor(i/2)*0.7,speed:1.35,chat,ci:i,plan:i===0||chat?plan:'pass'}); return n; }
@@ -2877,7 +2881,7 @@ function suitLook(i,woman,suit,tie){ const L=lookFor('worker'); Object.assign(L,
 function spawnSuits(){ const n=4+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, suit=pick(['#23272e','#2c3445','#3a3f47','#1d2a3f']), ties=TIES.slice().sort(()=>Math.random()-0.5), W=[];
  for(let i=0;i<n;i++){ const g=spawnGuest({look:suitLook(i,Math.random()<0.45,suit,ties[i%ties.length]),side,force:true,npc:true}); if(g){ g.pos.x+=side*i*0.62; g.pos.z+=(i%2)*0.22; g.speed=1.5; W.push(g); } }
  if(W.length&&typeof groupUp==='function') groupUp(W,'file'); return W.length; }
-function spawnTick(){ if(!shopOpen()) return; if(Math.random()<0.04&&queue.length<3){ spawnSuits(); return; } if(Math.random()<0.08&&queue.length<4){ spawnStudents(true); return; } const code=popCodeGuest(); if(code){ const look=codeLook(code.c); const g=spawnGuest({look}); if(g){ toast(`${look.name} 님이 오셨어요,,`); } return; }
+function spawnTick(){ if(!shopOpen()) return; if(Math.random()<0.04&&queue.length<3){ spawnSuits(); return; } if(Math.random()<0.12&&queue.length<4){ spawnStudents(true); return; } const code=popCodeGuest(); if(code){ const look=codeLook(code.c); const g=spawnGuest({look}); if(g){ toast(`${look.name} 님이 오셨어요,,`); } return; }
  const h=hourOf(simDate()); const r=Math.random();
  if(h>=12&&h<13.5&&r<0.35&&queue.length<4){ const n=3+((Math.random()*2)|0); const side=Math.random()<0.5?-1:1; const W=[]; for(let i=0;i<n;i++){ const g=spawnGuest({kind:'worker',side}); if(g){ g.pos.x+=side*i*0.7; W.push(g); } } groupUp(W,pick(['trio','trio','file'])); return; }
  if(r<0.045&&!car&&mood()==='day'){ carDrop(lookFor(Math.random()<0.11?pick(['grandma','grandpa']):Math.random()<0.1?'preg':'normal')); return; }   // guests arriving by car: as often as elderly guests
@@ -2900,7 +2904,7 @@ function tick(dt){
  updShopPhase();
  if(shopOpen()&&!S.mp){ spawnT-=dt; if(spawnT<=0){ spawnTick(); spawnT=(22+Math.random()*26)/rateNow(); } }
  walkT-=dt; if(walkT<=0){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=S.mp?(md==='night'?30:14)+Math.random()*16:(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;   /* 같이 보기: passers-by now and then (each screen has its own), they never come in */
-  if(n<(S.mp?6:10)&&md!=='night'&&Math.random()<0.22){ spawnStudents(false); } else if(n<(S.mp?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
+  if(n<(S.mp?6:10)&&md!=='night'&&Math.random()<0.3){ spawnStudents(false); } else if(n<(S.mp?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
  if(S.visitNo>=lastVisit+10){ lastVisit=S.visitNo; cleanDue=true; }
  agents.slice().forEach(a=>{ const think=!S.mp||MP.isHost(); if(a.kind==='guest'){ if(think) guestBrain(a,dt); } else if(a.kind==='walker') walkerBrain(a,dt); else if(!a.leaving&&(think||!a.netPose)) staffBrain(a); a.update(dt); if(a.dead){ if(a.kind==='staff'){ const i=staff.indexOf(a); if(i>=0) staff.splice(i,1); } if(a===player) tourEnd(); a.remove(); } });
  const h=hourOf(simDate()); let tmp=(h>11&&h<17?1.15:0.95)*(S.rain?0.8:1); if(S.season===3) tmp*=1.9; if(S.season===5) tmp*=0.45; if(S.season===4) tmp*=0.8;
