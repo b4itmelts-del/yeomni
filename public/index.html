@@ -1513,6 +1513,7 @@ class Rig{
    };
   const PR=window.PROP||PROP_DEF; const HV=window.HEADV||HEAD_DEF, HSY=HV.sy; const HR=0.115*PR.hk, HY=0.045+HR*HSY, N=this.neck, H=L.hair, hs0=(L.hs==='bald'?'short':L.hs)||(L.long?'long':'short'), hs=hs0==='long'?pick(['longA','longB','longC']):hs0, SK=L.skin;
   this.head=sph(HR,SK,0,HY,0,N,{sc:[1,HSY,0.96]});
+  if(BLOCKY) box(HR*2,HR*HSY*1.02,HR*2*0.96,SK,0,HY-HR*HSY*0.49,0,N);   /* square lower half of the face: no chamfer under the eyes (it shaded like a beard); the top keeps its bevel under the hair */
   sph(0.03,SK,HR*0.98,HY-0.01,0,N,{ws:6,hs:5,sc:[0.5,1,1]}); sph(0.03,SK,-HR*0.98,HY-0.01,0,N,{ws:6,hs:5,sc:[0.5,1,1]});   // ears
   const ht=L.hatT||(L.hat?1:0), hood=!!L.hood&&!ht;
   // hair: a cap of a slightly bigger sphere; the style decides how far down it reaches and what hangs off the back
