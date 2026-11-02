@@ -1402,7 +1402,9 @@ const _capM=new Map();
 function capMat(m,st){ if(!m||!(m.isMeshLambertMaterial||m.isMeshPhongMaterial||m.isMeshStandardMaterial)) return m; const ck=st?'s':'n'; let mm=_capM.get(m); if(!mm){ mm={}; _capM.set(m,mm); } let c=mm[ck]; if(c) return c;
  c=m.clone(); const ob=m.onBeforeCompile; c.onBeforeCompile=(sh,r)=>{ if(ob) ob.call(c,sh,r); sh.fragmentShader=sh.fragmentShader.replace('#include <dithering_fragment>','gl_FragColor.rgb=min(gl_FragColor.rgb,diffuseColor.rgb*'+(st?'1.08+0.02':'1.4+0.06')+');\n#include <dithering_fragment>'); };
  c.customProgramCacheKey=()=>'cap'+ck+'|'+(ob?ob.toString():''); mm[ck]=c; const self={}; self[ck]=c; _capM.set(c,self); return c; }
-function capRig(r,st){ r.root.traverse(o=>{ if(o.isMesh&&!o.userData.cup&&!o.userData.cupRef){ if(Array.isArray(o.material)) o.material=o.material.map(x=>capMat(x,st)); else o.material=capMat(o.material,st); } }); return r; }
+function squareCyl(g){ g=g.clone(); const P=g.attributes.position; for(let i=0;i<P.count;i++){ const x=P.getX(i), z=P.getZ(i), l=Math.hypot(x,z), m=Math.max(Math.abs(x),Math.abs(z)); if(m>1e-6){ const k=l/m; P.setX(i,x*k); P.setZ(i,z*k); } } P.needsUpdate=true; g.computeVertexNormals(); return g; }
+function capRig(r,st){ if(BLOCKY) r.root.traverse(o=>{ if(o.isMesh&&o.geometry&&!o.userData.cup&&!o.userData.cupRef){ const t=o.geometry.type; if(t==='CylinderGeometry'||t==='CylinderBufferGeometry') o.geometry=squareCyl(o.geometry); else if(t==='SphereGeometry'||t==='SphereBufferGeometry'){ const pr=o.geometry.parameters; o.geometry=cubify(o.geometry,pr.radius); } } });   /* 사각사각: brims, crowns, shoulder caps become square */
+ r.root.traverse(o=>{ if(o.isMesh&&!o.userData.cup&&!o.userData.cupRef){ if(Array.isArray(o.material)) o.material=o.material.map(x=>capMat(x,st)); else o.material=capMat(o.material,st); } }); return r; }
 /* the shop's pixel logo (same bitmap as the menu icon) in cream, stitched on the front of the staff caps */
 let _capLogo=null;
 function capLogoMat(){ if(_capLogo) return _capLogo; const B=['.###.........','#####........','#####........','.###.........','.............','####.######..','####.#######.','####.########','####.########','####....#####','####.########','####.########','####.#######.','.........####','#############','#############','############.','##########...'], h=B.length, w=B[0].length, c=document.createElement('canvas'); c.width=w+2; c.height=h+2; const g=c.getContext('2d');
@@ -1509,11 +1511,11 @@ class Rig{
    // slab caps: add the clipped ring explicitly so the hull closes flat at the cut
    if(yT<0.999) Q.push(...[[-k,yT,-k],[k,yT,-k],[k,yT,k],[-k,yT,k],[-1,yT,0],[1,yT,0],[0,yT,-1],[0,yT,1]].map(p=>new T3.Vector3(p[0],p[1],open&&p[2]>0.2?0.2:p[2])));
    if(yB>-0.999) Q.push(...[[-k,yB,-k],[k,yB,-k],[k,yB,k],[-k,yB,k],[-1,yB,0],[1,yB,0],[0,yB,-1],[0,yB,1]].map(p=>new T3.Vector3(p[0],p[1],open&&p[2]>0.2?0.2:p[2])));
-   const g=hull3(Q); g.scale(r,r,r); return g; };  const sph=(r,c,x,y,z,p,o)=>{ o=o||{}; const useOct=HS==='oct'&&!o.round; let g=useOct?octGeo(r,o):new T3.SphereGeometry(r,o.ws||12,o.hs||9,o.p0||0,o.pl||Math.PI*2,o.t0||0,o.tl||Math.PI); if(BLOCKY) g=cubify(g,r); const m=new T3.Mesh(g,mat(c,o.ds?{side:T3.DoubleSide}:undefined)); m.position.set(x,y,z); if(o.sc) m.scale.set(...o.sc); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
+   const g=hull3(Q); g.scale(r,r,r); return g; };  const sph=(r,c,x,y,z,p,o)=>{ o=o||{}; const useOct=HS==='oct'&&!o.round; let g=BLOCKY?cubify(new T3.SphereGeometry(r,24,16,o.p0||0,o.pl||Math.PI*2,o.t0||0,o.tl||Math.PI),r):useOct?octGeo(r,o):new T3.SphereGeometry(r,o.ws||12,o.hs||9,o.p0||0,o.pl||Math.PI*2,o.t0||0,o.tl||Math.PI);   /* 사각사각: hair, hats, ears are clean square shells */ const m=new T3.Mesh(g,mat(c,o.ds?{side:T3.DoubleSide}:undefined)); m.position.set(x,y,z); if(o.sc) m.scale.set(...o.sc); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
    };
   const PR=window.PROP||PROP_DEF; const HV=window.HEADV||HEAD_DEF, HSY=HV.sy; const HR=0.115*PR.hk, HY=0.045+HR*HSY, N=this.neck, H=L.hair, hs0=(L.hs==='bald'?'short':L.hs)||(L.long?'long':'short'), hs=hs0==='long'?pick(['longA','longB','longC']):hs0, SK=L.skin;
   this.head=sph(HR,SK,0,HY,0,N,{sc:[1,HSY,0.96]});
-  if(BLOCKY) box(HR*2,HR*HSY*1.02,HR*2*0.96,SK,0,HY-HR*HSY*0.49,0,N);   /* square lower half of the face: no chamfer under the eyes (it shaded like a beard); the top keeps its bevel under the hair */
+  if(BLOCKY){ this.head.geometry.dispose(); this.head.geometry=new T3.BoxGeometry(HR*2,HR*2,HR*2); this.head.receiveShadow=false; }   /* a plain cube face; hair and hat never throw shadow on it */
   sph(0.03,SK,HR*0.98,HY-0.01,0,N,{ws:6,hs:5,sc:[0.5,1,1]}); sph(0.03,SK,-HR*0.98,HY-0.01,0,N,{ws:6,hs:5,sc:[0.5,1,1]});   // ears
   const ht=L.hatT||(L.hat?1:0), hood=!!L.hood&&!ht;
   // hair: a cap of a slightly bigger sphere; the style decides how far down it reaches and what hangs off the back
