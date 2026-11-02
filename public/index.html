@@ -1801,7 +1801,7 @@ seats.forEach(s=>{ s.who=null; const d=v(Math.sin(s.f),Math.cos(s.f));
 /* the garden furniture: pale wood, boxy, sitting on the lawn (shop units; the group lives in worldG so it scales with the diorama) */
 (function lawnFurniture(){ const G=new T3.Group(); G.name='lawnSeats'; worldG.add(G); const W='#e6cfa6', Wd='#cfb084', Y0=FY;
  const bx=(w,h,d,c,x,y,z,ry)=>{ const m=new T3.Mesh(new T3.BoxGeometry(w,h,d),mat(c)); m.position.set(x,Y0+y,z); if(ry) m.rotation.y=ry; m.castShadow=true; m.receiveShadow=true; G.add(m); return m; };
- const cy=(rt,rb,h,c,x,y,z)=>{ const m=new T3.Mesh(new T3.CylinderGeometry(rt,rb,h,40),mat(c)); m.position.set(x,Y0+y,z); m.castShadow=true; m.receiveShadow=true; G.add(m); return m; };
+ const cy=(rt,rb,h,c,x,y,z)=>{ const m=new T3.Mesh(new T3.CylinderGeometry(rt,rb,h,40),mat(c)); m.position.set(x,Y0+y,z); m.scale.z=TUNE.w/TUNE.d;   /* worldG stretches z more than x: undo it so the table is a true circle */ m.castShadow=true; m.receiveShadow=true; G.add(m); return m; };
  LAWN_SETS.forEach(T=>{ /* round table: a smooth round top with a thin rim underneath, a round pedestal and a round foot */
   cy(0.42,0.42,0.05,W,T.x,0.72,T.z); cy(0.38,0.38,0.03,Wd,T.x,0.68,T.z);
   cy(0.05,0.06,0.66,Wd,T.x,0.35,T.z); cy(0.2,0.26,0.04,Wd,T.x,0.02,T.z);
@@ -2247,7 +2247,7 @@ function spawnCar(opt){ opt=opt||{}; const kind=opt.kind||pick(['sedan','sedan',
  c.g.position.set(c.x*TUNE.w,0,CAR_Z*TUNE.d); PXL.headFor(c); return c; }
 function carDrop(look){ if(car) return false; spawnCar({kind:pick(['sedan','hatch','suv','van','taxi']),drop:true,look}); return true; }
 function updCar(dt){
- carT-=dt; if(carT<=0){ carT=5+Math.random()*12; if(cars.length<3&&!cars.some(c=>c.x>6.0)) spawnCar(); }
+ carT-=dt; if(carT<=0){ carT=S.mp?12+Math.random()*20:5+Math.random()*12; if(cars.length<3&&!cars.some(c=>c.x>6.0)) spawnCar(); }
  for(let i=cars.length-1;i>=0;i--){ const c=cars[i]; c.t+=dt; let v=c.v;
   // keep a gap to the car in front, and wait for anyone standing in the middle of the road
   for(const o of cars){ if(o!==c&&o.x<c.x&&c.x-o.x<(c.len+o.len)/2+1.0) v=Math.min(v,Math.max(0,(c.x-o.x-(c.len+o.len)/2-0.4)*2)); }
@@ -2266,10 +2266,11 @@ function laneZ(){ return cars.some(c=>Math.abs(c.x)<7)?5.12+Math.random()*0.3:5.
 function spawnWalker(opt){ opt=opt||{}; const look=opt.look||lookFor(opt.kind||(Math.random()<0.083?pick(['grandma','grandpa']):pick(['normal','normal','normal','worker','kid','foreign']))); const w=new Agent('walker',look);
  const side=opt.side||(Math.random()<0.5?-1:1), z=opt.z!=null?opt.z:laneZ(); w.place(v(side*(6.1+(opt.off||0)),z),side>0?-Math.PI/2:Math.PI/2);
  w.speed=look.cane?0.55:(look.kind==='grandpa'||look.kind==='grandma')?0.85:look.kid?1.6:1.25+Math.random()*0.5; if(opt.speed) w.speed=opt.speed;
- w.side=side; w.laneZ=z; w.plan=opt.plan||pick(WALK_PLANS); if(look.kid&&Math.random()<0.4) w.plan='measure'; w.alpha=0; w.stage=0; return w; }
+ w.side=side; w.laneZ=z; w.plan=opt.plan||pick(WALK_PLANS); if(S.mp&&w.plan==='enter') w.plan='look'; w.chat=opt.chat||null; w.ci=opt.ci||0; if(look.kid&&!opt.plan&&Math.random()<0.4) w.plan='measure'; w.alpha=0; w.stage=0; return w; }
 function spawnCrowd(){ const n=3+((Math.random()*3)|0), side=Math.random()<0.5?-1:1, z=cars.some(c=>Math.abs(c.x)<7)?5.2:5.6+Math.random()*1.4, sp=1.3+Math.random()*0.3;
- const enterAll=shopOpen()&&Math.random()<0.4&&queue.length<6;
- for(let i=0;i<n;i++) spawnWalker({side,z:z+(i%2)*0.45,off:Math.floor(i/2)*0.75,speed:sp,plan:enterAll?'enter':(i===0&&Math.random()<0.5?'look':'pass')}); }
+ const enterAll=!S.mp&&shopOpen()&&Math.random()<0.4&&queue.length<6;
+ /* sometimes the group stops in front of the shop and chats a while, then walks on */ const chat=!enterAll&&Math.random()<(S.mp?0.6:0.3)?{x:-1.4+Math.random()*3.4,z:5.35,n,lead:(Math.random()*n)|0}:null;
+ for(let i=0;i<n;i++) spawnWalker({side,z:z+(i%2)*0.45,off:Math.floor(i/2)*0.75,speed:sp,chat,ci:i,plan:chat?'chat':enterAll?'enter':(i===0&&Math.random()<0.5?'look':'pass')}); }
 function measureSteps(a){ return [walk(DINO_AT,0,'키 재보는 중,,'),face(0),
   act(3,(p,ag)=>{ kfV(p,[[0,REST_R],[0.25,[0.07,0.8,-0.03]],[0.75,[0.07,0.82,-0.05]],[1,REST_R]],ag.want.rh); ag.want.lh.fromArray(REST_L); ag.want.nod=kfN(p,[[0,0],[0.3,-0.12],[0.7,-0.12],[1,0]]); ag.want.lean=-0.03; },
    {task:'키 재보는 중,,',marks:[{at:0.55,fn:ag=>say(ag,ag.look.kid?pick(['공룡만큼 컸다,,','나 이만큼!']):pick(['어디 보자,,','이만큼이네,,','공룡보다 작네,,']),3)}]}),
@@ -2284,9 +2285,13 @@ function walkerBrain(w,dt){
  if(w.stage===0){ w.stage=1;
   if(w.plan==='look'){ const x=-1.8+Math.random()*4.2; w.then(walk(v(x,Math.min(w.laneZ,5.25)),null,'구경하는 중,,'),face(Math.PI),act(2+Math.random()*2,(p,a)=>{ a.want.nod=0.04*Math.sin(p*6); a.want.lean=-0.02; },{task:'가게 구경 중,,',marks:[{at:0.3,fn:a=>{ if(Math.random()<0.4) say(a,pick(['여기 젤라또 집이네,,','두 가지 맛이래,,','다음에 와봐야지,,','줄 서 있네,,']),3); }}]}));
    if(Math.random()<0.35) w.plan2='enter'; return; }
+  if(w.plan==='chat'&&w.chat){ const C=w.chat, an=(w.ci/C.n)*Math.PI*2+0.4, r=0.32+0.04*C.n, at=v(C.x+Math.cos(an)*r*1.3,C.z+Math.sin(an)*r*0.7), fc=Math.atan2(C.x-at.x,C.z-at.z), T=5+C.n*1.4;
+   const LINES=[['여기 아이스크림 집 생겼네,,','다음에 먹으러 오자,,','두 가지 맛이래,,','오늘 너무 덥다,,','저기 공룡 봐,,','줄 서 있네,,'],['그래서 어떻게 됐어?','아 진짜?','ㅋㅋㅋ','맞아 맞아,,','배고프다,,','어디 가지?']];
+   w.then(walk(at,null,'이야기하러 가는 중,,'),face(fc),act(T,(p,a)=>{ a.want.nod=0.05*Math.sin(p*T*2.2+w.ci); a.want.lean=0.02*Math.sin(p*T*0.9+w.ci); },{task:'이야기하는 중,,',marks:[0.15,0.42,0.7].map((t,k)=>({at:t+0.04*w.ci,fn:a=>{ if((k+w.ci)%Math.max(2,C.n-1)===0||w.ci===C.lead&&k===0) say(a,pick(LINES[(k+w.ci)%2]),2.6); }}))}));
+   return; }
   if(w.plan==='measure'&&!agents.some(o=>o!==w&&o.pos.distanceTo(DINO_AT)<0.45)){ w.then(...measureSteps(w)); return; }
   if(w.plan==='enter'){ w.then(walk(v(w.pos.x*0.4+(w.side>0?1.2:-0.4),Math.min(w.laneZ,5.3)),null,'가게로 가는 중,,')); w.plan2='enter'; return; } }
- if(w.stage===1){ w.stage=2; if(w.plan2==='enter'&&walkerToGuest(w)) return; w.then(walk(v(end,w.laneZ>5.6?laneZ():w.laneZ),null,'지나가는 중,,')); return; }
+ if(w.stage===1){ w.stage=2; if(w.plan2==='enter'&&!S.mp&&walkerToGuest(w)) return; w.then(walk(v(end,w.laneZ>5.6?laneZ():w.laneZ),null,'지나가는 중,,')); return; }
  if(w.stage===2&&!out) w.then(walk(v(end,w.pos.z),null,'지나가는 중,,')); }
 /* ================= guest codes (손님 만들기 연동) ================= */
 const GKEY='nokgi-tycoon-guests-v1';
@@ -2858,8 +2863,8 @@ function tick(dt){
  S.simT+=dt; if(S.live&&S.speed===1) S.simMs=Date.now(); else S.simMs+=dt*1000;
  updShopPhase();
  if(shopOpen()&&!S.mp){ spawnT-=dt; if(spawnT<=0){ spawnTick(); spawnT=(22+Math.random()*26)/rateNow(); } }
- walkT-=dt; if(walkT<=0&&!S.mp){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;
-  if(n<10){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
+ walkT-=dt; if(walkT<=0){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=S.mp?(md==='night'?30:14)+Math.random()*16:(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;   /* 같이 보기: passers-by now and then (each screen has its own), they never come in */
+  if(n<(S.mp?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
  if(S.visitNo>=lastVisit+10){ lastVisit=S.visitNo; cleanDue=true; }
  agents.slice().forEach(a=>{ const think=!S.mp||MP.isHost(); if(a.kind==='guest'){ if(think) guestBrain(a,dt); } else if(a.kind==='walker') walkerBrain(a,dt); else if(!a.leaving&&(think||!a.netPose)) staffBrain(a); a.update(dt); if(a.dead){ if(a.kind==='staff'){ const i=staff.indexOf(a); if(i>=0) staff.splice(i,1); } if(a===player) tourEnd(); a.remove(); } });
  const h=hourOf(simDate()); let tmp=(h>11&&h<17?1.15:0.95)*(S.rain?0.8:1); if(S.season===3) tmp*=1.9; if(S.season===5) tmp*=0.45; if(S.season===4) tmp*=0.8;
@@ -3469,7 +3474,7 @@ const MP=(()=>{
  function bar(){ if(!st.ready) return; const s=myState(), cup=player&&player.held.some(o=>o&&o.userData.cupRef); const b=[];
   if(s==='free'&&!cup) b.push(['🍨 주문하러 가기',()=>request('order'),1]);
   if(s==='ordering'&&player.order&&!player.order.chosen&&(api.isHost()?true:true)) { b.push(['🍨 컵으로',()=>request('choose',{kind:'cup'}),1],['🛍 포장으로',()=>request('choose',{kind:'pack'}),1],['맛은 랜덤으로 선택됩니다,,',null]); }
-  if(s==='free'&&cup&&cup.kind!=='pack'){ const fs=freeSeatNear(); if(fs>=0) b.push(['🪑 (자동) 빈자리 앉기',()=>{ const k=freeSeatNear(); if(k>=0){ const se=seats[k]; setDest(se.p.x*TUNE.w,se.p.z*TUNE.d,'seat'); setTrail([...route(player.pos,se.front),se.p]); request('sit',{seat:k}); } },1]); }
+  if(s==='free'&&cup&&cup.kind!=='pack'){ const fs=freeSeatNear(); if(fs>=0) b.push(['🪑 (자동) 빈자리 앉기',()=>{ const k=freeSeatNear(); if(k>=0){ const se=seats[k]; setDest(se.p.x*TUNE.w,se.p.z*TUNE.d,'seat'); setTrail([...route(player.pos,se.front),se.p]); setHL(se); request('sit',{seat:k}); } },1]); }
   if(s==='free'&&cup) b.push(['🗑 컵 버리기',()=>request('bin'),0]);
   if(s==='eating') b.push(['🚶 일어나기',()=>request('stand'),0]);
   b.push([S.fp?'🧍 3인칭':'👁 1인칭',()=>{ S.fp=!S.fp; S.fpYaw=0; S.fpPitch=-0.1; bar(); }]);
@@ -3485,7 +3490,19 @@ const MP=(()=>{
  let DEST=null, _ringTex=null;
  function ringTex(){ if(_ringTex) return _ringTex; const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); g.strokeStyle='#ffffff'; g.lineWidth=9; g.setLineDash([9,7]); g.beginPath(); g.arc(32,32,24,0,Math.PI*2); g.stroke(); _ringTex=new T3.CanvasTexture(c); _ringTex.magFilter=T3.NearestFilter; _ringTex.minFilter=T3.NearestFilter; _ringTex.generateMipmaps=false; return _ringTex; }
  function setDest(x,z,kind){ clearDest(); const m=new T3.Sprite(new T3.SpriteMaterial({map:ringTex(),transparent:true,opacity:0.8,depthWrite:false,depthTest:false})); m.center.set(0.5,0.5); m.position.set(x,0.06,z); m.renderOrder=9; scene.add(m); DEST={m,t:0,kind,x,z}; }   /* a sprite: a flat ring on the ground all but vanishes at this low camera angle */
- function clearDest(){ if(DEST){ scene.remove(DEST.m); DEST.m.material.dispose(); DEST=null; } clearTrail(); }
+ function clearDest(){ if(DEST){ scene.remove(DEST.m); DEST.m.material.dispose(); DEST=null; } clearTrail(); clearHL(); }
+ /* the seat I picked: the chair / stool / bench gets a blinking outline (a slightly larger back-face shell) until I'm sitting on it. Only on my screen. */
+ let HL=null; const _hb=new T3.Box3(), _hs=new T3.Vector3(), _hc=new T3.Vector3(), _hw=new T3.Vector3();
+ function seatMeshes(se){ const x=se.p.x*TUNE.w, z=se.p.z*TUNE.d, out=[], skip=new Set(agents.map(a=>a.rig.root));
+  (function walkTree(o){ if(skip.has(o)||!o.visible) return; if(o.isMesh&&!o.isInstancedMesh&&o.geometry&&!o.userData.hl){ _hb.setFromObject(o); _hb.getSize(_hs); _hb.getCenter(_hc);
+    const near=Math.hypot(_hc.x-x,_hc.z-z)<0.24, over=x>_hb.min.x-0.02&&x<_hb.max.x+0.02&&z>_hb.min.z-0.02&&z<_hb.max.z+0.02;
+    if((near||over)&&_hb.max.y<1.3&&_hb.max.y>0.08&&_hs.x<3.2&&_hs.z<3.2&&!(_hs.x>1.2&&_hs.z>1.2)) out.push(o); }
+   o.children.forEach(walkTree); })(scene); return out; }
+ function setHL(se){ clearHL(); const mt=new T3.MeshBasicMaterial({color:'#fff2a6',side:T3.BackSide,transparent:true,opacity:0.9,depthWrite:false}); const shells=[];
+  seatMeshes(se).forEach(o=>{ const g=o.geometry; if(!g.boundingBox) g.computeBoundingBox(); const bb=g.boundingBox, c=bb.getCenter(new T3.Vector3()), sz=bb.getSize(new T3.Vector3()); o.getWorldScale(_hw);
+   const e=0.045, f=k=>sz[k]>1e-4?(sz[k]+2*e/Math.abs(_hw[k]||1))/sz[k]:1; const h=new T3.Mesh(g,mt); h.userData.hl=1; h.position.copy(c).multiply(new T3.Vector3(1-f('x'),1-f('y'),1-f('z'))); h.scale.set(f('x'),f('y'),f('z')); h.renderOrder=7; o.add(h); shells.push(h); });
+  HL={mt,shells,t:0}; }
+ function clearHL(){ if(HL){ HL.shells.forEach(h=>h.parent&&h.parent.remove(h)); HL.mt.dispose(); HL=null; } }
  /* my way there: a dotted line along the floor that creeps toward the goal and shortens as I walk (only drawn on my own screen, never sent) */
  let TRAIL=null, _dotMat=null; const TRAIL_GAP=0.22;
  function dotMat(){ if(_dotMat) return _dotMat; const c=document.createElement('canvas'); c.width=c.height=16; const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.beginPath(); g.arc(8,8,6,0,Math.PI*2); g.fill(); const t=new T3.CanvasTexture(c); _dotMat=new T3.SpriteMaterial({map:t,transparent:true,opacity:0.85,depthWrite:false}); return _dotMat; }
@@ -3496,7 +3513,7 @@ const MP=(()=>{
   const L=[{x:mx,z:mz},...T.pts]; let n=0, off=TRAIL_GAP-(T.t*0.5)%TRAIL_GAP;
   for(let i=0;i<L.length-1;i++){ const a=L[i], b=L[i+1], len=Math.hypot(b.x-a.x,b.z-a.z); let s=off; while(s<len){ let d=T.dots[n]; if(!d){ d=new T3.Sprite(dotMat()); d.center.set(0.5,0); d.scale.set(0.07,0.07,1); d.renderOrder=8; T.g.add(d); T.dots.push(d); } d.visible=true; d.position.set(a.x+(b.x-a.x)*s/len,0.012,a.z+(b.z-a.z)*s/len); n++; s+=TRAIL_GAP; } off=s-len; }
   for(let i=n;i<T.dots.length;i++) T.dots[i].visible=false; }
- function tickDest(dt){ if(TRAIL){ TRAIL.t+=dt; TRAIL.u-=dt; if(TRAIL.u<=0){ TRAIL.u=0.05; drawTrail(); } } if(!DEST) return; DEST.t+=dt; const k=0.5*(1+0.12*Math.sin(DEST.t*5)); DEST.m.scale.set(k,k*0.5,1); DEST.m.material.rotation=DEST.t*0.8; DEST.m.material.opacity=0.6+0.25*Math.sin(DEST.t*5);
+ function tickDest(dt){ if(HL){ HL.t+=dt; const on=(HL.t%0.6)<0.38; HL.shells.forEach(h=>h.visible=on); } if(TRAIL){ TRAIL.t+=dt; TRAIL.u-=dt; if(TRAIL.u<=0){ TRAIL.u=0.05; drawTrail(); } } if(!DEST) return; DEST.t+=dt; const k=0.5*(1+0.12*Math.sin(DEST.t*5)); DEST.m.scale.set(k,k*0.5,1); DEST.m.material.rotation=DEST.t*0.8; DEST.m.material.opacity=0.6+0.25*Math.sin(DEST.t*5);
   if(DEST.kind==='seat'){ DEST.sp=(DEST.sp||0)-dt; if(DEST.sp<=0){ DEST.sp=0.45; const sp=new T3.Sprite(new T3.SpriteMaterial({map:fxTex('spark'),transparent:true,depthWrite:false,depthTest:false})); sp.position.set(DEST.x+(Math.random()-0.5)*0.4,0.25+Math.random()*0.3,DEST.z+(Math.random()-0.5)*0.4); sp.scale.setScalar(0.22); sp.renderOrder=9; scene.add(sp); TAPM.push({m:sp,t:0.3,fx:1}); } }
   const me=player, st_=curSt(me); if(DEST.kind==='seat'){ if(st_==='eating'||(DEST.t>1.2&&st_==='free'&&!me.moving&&!me.steps.length&&!me.cur)) clearDest(); }   /* a moment's grace: on a guest's screen the host's 'sitdown' takes a beat to arrive */ else if(!me.moving&&!me.steps.length&&!me.cur&&st_!=='sitdown') clearDest(); }
  /* a tap leaves a faint white B logo on the ground that pops and fades */
@@ -3513,7 +3530,7 @@ const MP=(()=>{
   const onFloor=ray.ray.intersectPlane(_plane,_gp); const P=window.PLINTH;
   if(best==null){ if(!onFloor) return false; if(P&&(_gp.x<P.x0||_gp.x>P.x1||_gp.z<P.z0||_gp.z>P.z1)) return false; const t0=v(_gp.x/TUNE.w,_gp.z/TUNE.d); bd=0.5; seats.forEach((se,i)=>{ const d=se.p.distanceTo(t0); if(d<bd){ bd=d; best=i; } }); }
   if(best!=null){ const se=seats[best]; if(se.who&&se.who!==player){ toast('누가 앉아 있어요,,'); return true; } if(se.out&&(S.rain||S.season===5)){ toast('오늘은 밖에 못 앉아요,,'); return true; } if(s==='eating'){ return true; } if(s!=='free'){ toast('지금은 못 움직여요,,'); return true; }
-   const sx=se.p.x*TUNE.w, sz=se.p.z*TUNE.d; tapMark(sx,sz); setDest(sx,sz,'seat'); setTrail([...route(player.pos,se.front),se.p]); request('sit',{seat:best}); return true; }
+   const sx=se.p.x*TUNE.w, sz=se.p.z*TUNE.d; tapMark(sx,sz); setDest(sx,sz,'seat'); setTrail([...route(player.pos,se.front),se.p]); setHL(se); request('sit',{seat:best}); return true; }
   if(!onFloor) return false; if(P&&(_gp.x<P.x0||_gp.x>P.x1||_gp.z<P.z0||_gp.z>P.z1)) return false;
   const x=_gp.x/TUNE.w, z=_gp.z/TUNE.d, tgt=v(x,z);
   if(s==='eating'){ tapMark(_gp.x,_gp.z); setDest(_gp.x,_gp.z,'walk'); setTrail(route(player.pos,tgt)); if(!api.isHost()) player._pendWalk=tgt; request('stand',{then:'walk',x,z}); return true; }
@@ -3526,7 +3543,7 @@ const MP=(()=>{
   return true; };
  const cnt=document.createElement('div'); cnt.id='mpCount'; document.body.appendChild(cnt);
  function paintCount(){ cnt.textContent=st.ready?`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`:''; }
- api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
+ api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
 function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); return; }   /* capped at 60 fps: on 120 Hz screens every other refresh is skipped (cooler, less battery, same look) */
  let dt=Math.max(0,Math.min(0.1,(now-last)/1000)); last=now; acc+=dt*S.speed; let n=0;
  while(acc>=FIX && n<16){ tick(FIX); acc-=FIX; n++; } if(n>=16) acc=0;
