@@ -1387,7 +1387,9 @@ function solveIK(upper,fore,S0,T,la,lb,pole){
 // body proportions: 5-head figure (head 1.45×, body 0.92×, shoulders 0.9×, sloped shoulders) — chosen from the proportion tests
 const HEAD_DEF={sy:1.13,cfTop:0.56};
 const EYE_DEF={k:1.25,ky:0.75,sep:1.15,hiOn:1,hik:1.4,blush:1,th:2.2,brow:1};   // wide eyes, big highlight, blush, thick arcs; brows only when zoomed in   // head 13% taller, crown chamfered deeper
-const PROP_DEF={hk:1.3,bk:0.92,tw:0.9,sl:1,head:'oct'};   // head: chamfered box, one rule with the boxy body
+const PROP_DEF={hk:1.3,bk:0.92,tw:0.9,sl:1,head:'oct'};
+/* test: ?blocky=1 — squarer, shorter people (big cube head, short boxy body) */
+const BLOCKY=/[?&]blocky=1/.test(location.search); if(BLOCKY) Object.assign(PROP_DEF,{hk:1.62,bk:0.66,tw:1.04,sl:0,head:'oct'});   // head: chamfered box, one rule with the boxy body
 // tiny 3D convex hull (brute force over triangles; fine for a few dozen points) → non-indexed BufferGeometry with flat normals
 function hull3(P){ const n=P.length, tris=[], v=new T3.Vector3(), nrm=new T3.Vector3(), e1=new T3.Vector3(), e2=new T3.Vector3(); const EPS=1e-6;
  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) for(let k=j+1;k<n;k++){ e1.subVectors(P[j],P[i]); e2.subVectors(P[k],P[i]); nrm.crossVectors(e1,e2); if(nrm.lengthSq()<1e-12) continue; nrm.normalize();
@@ -1407,6 +1409,8 @@ function capLogoMat(){ if(_capLogo) return _capLogo; const B=['.###.........','#
  B.forEach((row,y)=>[...row].forEach((ch,x)=>{ if(ch==='#'){ g.fillStyle='#f3ead6'; g.fillRect(x+1,y+1,1,1); } }));
  const t=new T3.CanvasTexture(c); t.magFilter=T3.NearestFilter; t.minFilter=T3.NearestFilter; t.generateMipmaps=false;
  _capLogo=new T3.MeshLambertMaterial({map:t,transparent:false,alphaTest:0.5,side:T3.DoubleSide}); return _capLogo; }
+/* push every vertex out to the surface of a cube (keeps partial shells like hair caps partial) */
+function cubify(g,r){ g=g.index?g.toNonIndexed():g.clone(); const P=g.attributes.position; for(let i=0;i<P.count;i++){ const x=P.getX(i),y=P.getY(i),z=P.getZ(i), m=Math.max(Math.abs(x),Math.abs(y),Math.abs(z))||1, k=r/m; P.setXYZ(i,x*k,y*k,z*k); } P.needsUpdate=true; g.computeVertexNormals(); return g; }
 class Rig{
  constructor(L){
   const box=(w,h,d,c,x,y,z,p)=>{ const m=new T3.Mesh(new T3.BoxGeometry(w,h,d),mat(c)); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; p.add(m); return m; };
@@ -1473,7 +1477,7 @@ class Rig{
    // slab caps: add the clipped ring explicitly so the hull closes flat at the cut
    if(yT<0.999) Q.push(...[[-k,yT,-k],[k,yT,-k],[k,yT,k],[-k,yT,k],[-1,yT,0],[1,yT,0],[0,yT,-1],[0,yT,1]].map(p=>new T3.Vector3(p[0],p[1],open&&p[2]>0.2?0.2:p[2])));
    if(yB>-0.999) Q.push(...[[-k,yB,-k],[k,yB,-k],[k,yB,k],[-k,yB,k],[-1,yB,0],[1,yB,0],[0,yB,-1],[0,yB,1]].map(p=>new T3.Vector3(p[0],p[1],open&&p[2]>0.2?0.2:p[2])));
-   const g=hull3(Q); g.scale(r,r,r); return g; };  const sph=(r,c,x,y,z,p,o)=>{ o=o||{}; const useOct=HS==='oct'&&!o.round; const g=useOct?octGeo(r,o):new T3.SphereGeometry(r,o.ws||12,o.hs||9,o.p0||0,o.pl||Math.PI*2,o.t0||0,o.tl||Math.PI); const m=new T3.Mesh(g,mat(c,o.ds?{side:T3.DoubleSide}:undefined)); m.position.set(x,y,z); if(o.sc) m.scale.set(...o.sc); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
+   const g=hull3(Q); g.scale(r,r,r); return g; };  const sph=(r,c,x,y,z,p,o)=>{ o=o||{}; const useOct=HS==='oct'&&!o.round; let g=useOct?octGeo(r,o):new T3.SphereGeometry(r,o.ws||12,o.hs||9,o.p0||0,o.pl||Math.PI*2,o.t0||0,o.tl||Math.PI); if(BLOCKY) g=cubify(g,r); const m=new T3.Mesh(g,mat(c,o.ds?{side:T3.DoubleSide}:undefined)); m.position.set(x,y,z); if(o.sc) m.scale.set(...o.sc); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
    };
   const PR=window.PROP||PROP_DEF; const HV=window.HEADV||HEAD_DEF, HSY=HV.sy; const HR=0.115*PR.hk, HY=0.045+HR*HSY, N=this.neck, H=L.hair, hs0=L.hs||(L.long?'long':'short'), hs=hs0==='long'?pick(['longA','longB','longC']):hs0, SK=L.skin;
   this.head=sph(HR,SK,0,HY,0,N,{sc:[1,HSY,0.96]});
