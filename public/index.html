@@ -3443,7 +3443,7 @@ const MP=(()=>{
    a.mpSeat=seat; return; }
   if(k==='stand'){ if(s!=='eating'&&s!=='sitdown') return; a.clear(); a.mpSt='standup'; a.state='standup'; const seat=a.seat||a.mpSeat; if(a.spoon){ a.spoon.parent&&a.spoon.parent.remove(a.spoon); a.spoon=null; }
    a.then(act_(1.2,(p,g)=>{ if(seat) g.pos.lerpVectors(seat.p,seat.front,kfN(p,[[0,0],[0.12,0],[0.75,1],[1,1]])); g.want.sit=1-kfN(p,[[0,0],[0.1,0.02],[0.8,1],[1,1]]); g.want.lean=kfN(p,[[0,0.05],[0.3,0.36],[1,0]]); g.want.nod=0; },{task:'일어나는 중,,'}),
-    call_(g=>{ g.want.sit=0; if(seat&&seat.who===g) seat.who=null; g.seat=null; g.mpSeat=null; g.mpSt='free'; g.state='free'; if(g.held.some(o=>o&&o.userData.cupRef)) startEatWalk(g); if(d&&d.then==='walk'&&d.x!=null&&g.mpId===st.me) g.then(walk(v(d.x,d.z))); }));
+    call_(g=>{ g.want.sit=0; if(seat&&seat.who===g) seat.who=null; g.seat=null; g.mpSeat=null; g.mpSt='free'; g.state='free'; if(g.held.some(o=>o&&o.userData.cupRef)) startEatWalk(g); if(d&&d.then==='walk'&&d.x!=null&&g.mpId===st.me) g.then(walk(v(d.x,d.z))); if(d&&d.then==='sit') act(g,'sit',{seat:d.seat}); }));
    return; }
   if(k==='bin'){ if(s!=='free'||!a.held.some(o=>o&&o.userData.cupRef)) return; a.clear(); a.netTo=null; a.mpSt='binning'; a.state='binning'; a.then(...binSteps(),call_(g=>{ g.eatWalk=false; g.mpSt='free'; g.state='free'; })); return; }
   if(k==='walk'){ if(s!=='free') return; /* a non-host's own walking is theirs; the host only moves its own character */ if(a.mpId===st.me){ a.clear(); a.then(walk(v(d.x,d.z))); } return; } }
@@ -3529,8 +3529,9 @@ const MP=(()=>{
   let best=null, bd=0.3; seats.forEach((se,i)=>{ _sp.set(se.p.x*TUNE.w,0.42,se.p.z*TUNE.d); const d=ray.ray.distanceToPoint(_sp); if(d<bd){ bd=d; best=i; } });
   const onFloor=ray.ray.intersectPlane(_plane,_gp); const P=window.PLINTH;
   if(best==null){ if(!onFloor) return false; if(P&&(_gp.x<P.x0||_gp.x>P.x1||_gp.z<P.z0||_gp.z>P.z1)) return false; const t0=v(_gp.x/TUNE.w,_gp.z/TUNE.d); bd=0.5; seats.forEach((se,i)=>{ const d=se.p.distanceTo(t0); if(d<bd){ bd=d; best=i; } }); }
-  if(best!=null){ const se=seats[best]; if(se.who&&se.who!==player){ toast('누가 앉아 있어요,,'); return true; } if(se.out&&(S.rain||S.season===5)){ toast('오늘은 밖에 못 앉아요,,'); return true; } if(s==='eating'){ return true; } if(s!=='free'){ toast('지금은 못 움직여요,,'); return true; }
-   const sx=se.p.x*TUNE.w, sz=se.p.z*TUNE.d; tapMark(sx,sz); setDest(sx,sz,'seat'); setTrail([...route(player.pos,se.front),se.p]); setHL(se); request('sit',{seat:best}); return true; }
+  if(best!=null){ const se=seats[best]; if(se.who&&se.who!==player){ toast('누가 앉아 있어요,,'); return true; } if(se.out&&(S.rain||S.season===5)){ toast('오늘은 밖에 못 앉아요,,'); return true; } const mySeat=player.seat||player.mpSeat; if(s==='eating'&&mySeat===se) return true; if(s!=='free'&&s!=='eating'){ toast('지금은 못 움직여요,,'); return true; }
+   const sx=se.p.x*TUNE.w, sz=se.p.z*TUNE.d; tapMark(sx,sz); setDest(sx,sz,'seat'); setTrail([...route(player.pos,se.front),se.p]); setHL(se);
+   if(s==='eating') request('stand',{then:'sit',seat:best}); else request('sit',{seat:best}); return true; }   /* already sitting somewhere else: get up and go straight to the new seat */
   if(!onFloor) return false; if(P&&(_gp.x<P.x0||_gp.x>P.x1||_gp.z<P.z0||_gp.z>P.z1)) return false;
   const x=_gp.x/TUNE.w, z=_gp.z/TUNE.d, tgt=v(x,z);
   if(s==='eating'){ tapMark(_gp.x,_gp.z); setDest(_gp.x,_gp.z,'walk'); setTrail(route(player.pos,tgt)); if(!api.isHost()) player._pendWalk=tgt; request('stand',{then:'walk',x,z}); return true; }
