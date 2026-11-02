@@ -119,6 +119,8 @@ body.menu #hi{opacity:0!important}
 #shell.on{opacity:.85}
 #shell.hid{opacity:0;pointer-events:none}
 #shell:active{transform:scale(.92)}
+#pxB{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:calc(108px + env(safe-area-inset-top,0px));z-index:9;font:800 11px/1 var(--px);color:var(--navy);background:var(--crm);border:3px solid var(--navy);padding:8px 10px;box-shadow:3px 3px 0 var(--navy);cursor:pointer}
+#pxB[aria-pressed="true"]{background:var(--acc)}
 #mpCount{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:calc(66px + env(safe-area-inset-top,0px));z-index:9;font:800 11px/1 var(--px);color:var(--navy);background:var(--crm);border:3px solid var(--navy);padding:8px 10px;box-shadow:3px 3px 0 var(--navy)}
 #mpCount:empty{display:none}
 body.mp .tag.me{color:var(--navy);background:var(--yel)}
@@ -3609,7 +3611,11 @@ const MP=(()=>{
   tapMark(_gp.x,_gp.z); setDest(_gp.x,_gp.z,'walk'); setTrail(route(player.pos,tgt)); S.panX=0; S.panZ=0; if(api.isHost()) act(player,'walk',{x,z}); else { player.clear(); player.then(walk(tgt)); }
   return true; };
  const cnt=document.createElement('div'); cnt.id='mpCount'; document.body.appendChild(cnt);
- function paintCount(){ cnt.textContent=st.ready?`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`:''; }
+ /* settings: turn the pixel effect off (sharp, full-resolution picture) or back on; remembered on this device */
+ const pxB=document.createElement('button'); pxB.type='button'; pxB.id='pxB'; pxB.hidden=true; document.body.appendChild(pxB);
+ const paintPxB=()=>{ const off=PX_OFF(); pxB.textContent=off?'⚙ 픽셀 켜기':'⚙ 픽셀 해제'; pxB.setAttribute('aria-pressed',off?'true':'false'); };
+ pxB.onclick=()=>{ pxLv=PX_OFF()?0:3; lsSet('yeomni-pxoff',PX_OFF()?1:0); paintPx(); paintPxB(); toast(PX_OFF()?'픽셀 해제,, 선명한 화면이에요':'픽셀 다시 켰어요,,'); };
+ function paintCount(){ if(pxB.hidden&&st.ready){ pxB.hidden=false; if(+lsGet('yeomni-pxoff',0)===1){ pxLv=3; paintPx(); } paintPxB(); } cnt.textContent=st.ready?`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`:''; }
  api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
 function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); return; }   /* capped at 60 fps: on 120 Hz screens every other refresh is skipped (cooler, less battery, same look) */
  let dt=Math.max(0,Math.min(0.1,(now-last)/1000)); last=now; acc+=dt*S.speed; let n=0;
