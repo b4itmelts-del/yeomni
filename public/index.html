@@ -113,7 +113,7 @@ body.menu #hi{opacity:0!important}
 #shell:active{transform:scale(.92)}
 #mpCount{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:calc(66px + env(safe-area-inset-top,0px));z-index:9;font:800 11px/1 var(--px);color:var(--navy);background:var(--crm);border:3px solid var(--navy);padding:8px 10px;box-shadow:3px 3px 0 var(--navy)}
 #mpCount:empty{display:none}
-body.mp .tag.me{color:#fff;background:var(--navy)}
+body.mp .tag.me{color:var(--navy);background:var(--yel)}
 #tbar{position:fixed;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:9;display:flex;flex-direction:column;gap:8px;align-items:center}
 #tbar[hidden]{display:none}
 #tbar .r{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
@@ -1494,7 +1494,7 @@ class Rig{
    cap(HR+0.004,Math.PI*0.4,H,0,0.012);
   }
   if(L.cap&&!ht){ cap(HR+0.016,Math.PI*0.42,L.cap,0.004); cap(HR+0.006,Math.PI*0.5,L.cap,0.0); { const rim=new T3.Mesh(new T3.CylinderGeometry(HR+0.018,HR+0.018,0.035,14,1,true),mat(L.cap,{side:T3.DoubleSide})); rim.position.set(0,HY+HR*0.3+0.01,0); N.add(rim); } const br=new T3.Mesh(new T3.CylinderGeometry(0.135,0.135,0.016,12,1,false,-Math.PI*0.5,Math.PI),mat(L.cap)); br.position.set(0,HY+HR*0.3,HR*0.32); br.rotation.x=0.12; br.scale.set(HR/0.115,HR/0.115,HR/0.115*1.4); br.castShadow=true; N.add(br);
-   { const R=HR+0.016, dy=HR*0.3+0.045, ph=Math.asin(Math.min(0.95,dy/(R*HSY))), lg=new T3.Mesh(new T3.PlaneGeometry(0.036,0.05),capLogoMat()); lg.position.set(0,HY+dy+0.004,R*0.96*Math.cos(ph)+0.016); lg.rotation.x=-0.72; N.add(lg); } }
+   { const R=HR+0.016, dy=HR*0.3+0.045, ph=Math.asin(Math.min(0.95,dy/(R*HSY))), lg=new T3.Mesh(new T3.PlaneGeometry(0.062,0.086),capLogoMat()); lg.position.set(0,HY+dy+0.018,R*0.96*Math.cos(ph)+0.01); lg.rotation.x=-0.72; N.add(lg); } }
   if(ht===1&&L.hat){ cap(HR+0.018,Math.PI*0.42,L.hat,0.004); sph(0.012,dk(L.hat,0.8),0,HY+HR*HSY+0.022,0,N,{ws:6,hs:4});
    const br=new T3.Mesh(new T3.CylinderGeometry(0.14,0.14,0.016,12,1,false,-Math.PI*0.5,Math.PI),mat(L.hat)); br.position.set(0,HY+HR*0.3,HR*0.32); br.rotation.x=0.12; br.scale.set(HR/0.115,HR/0.115,HR/0.115*1.4); br.castShadow=true; N.add(br); }   // ball cap: dome + longer peak
   if(ht===2){ cap(HR+0.024,Math.PI*0.5,L.hat,0.02,0,[1,1.12,0.98]); const band=new T3.Mesh(new T3.CylinderGeometry(HR+0.03,HR+0.03,0.045,12,1,true),mat(dk(L.hat,0.8),{side:T3.DoubleSide})); band.position.set(0,HY+HR*0.35,0); N.add(band); sph(0.035,'#f4f6f7',0,HY+HR*HSY+0.07,0,N,{ws:7,hs:5}); }   // beanie
@@ -1559,7 +1559,7 @@ class Cup{
  pack(){ this.packed=true; const l=new T3.Mesh(new T3.BoxGeometry(0.125*K,0.015*K,0.125*K),mat('#f4f6f7')); l.position.y=0.075*K; this.g.add(l);
   const bag=new T3.Group(); this.g.add(bag); const bm=new T3.Mesh(new T3.BoxGeometry(0.2*K,0.2*K,0.12*K),mat('#f3efe6')); bm.position.y=0.1*K; bm.castShadow=true; bm.userData.cup=this; bag.add(bm);
   [-1,1].forEach(s=>{ const sd=new T3.Mesh(new T3.BoxGeometry(0.02*K,0.2*K,0.125*K),mat('#1b4fb3')); sd.position.set(s*0.1*K,0.1*K,0); bag.add(sd); });
-  const lg=new T3.Mesh(new T3.PlaneGeometry(0.09*K,0.09*K),new T3.MeshBasicMaterial({map:bagLogoTex(),transparent:true,alphaTest:0.5})); lg.position.set(0,0.1*K,0.0605*K); bag.add(lg);
+  const lg=new T3.Mesh(new T3.PlaneGeometry(0.09*K,0.09*K),new T3.MeshBasicMaterial({map:bagLogoTex(),transparent:true,alphaTest:0.5})); lg.position.set(0,0.1*K,0.0605*K); bag.add(lg); const lg2=lg.clone(); lg2.position.z=-0.0605*K; lg2.rotation.y=Math.PI; bag.add(lg2);   /* the logo on both faces */
   [-1,1].forEach(s=>{ const hd=new T3.Mesh(new T3.BoxGeometry(0.012*K,0.07*K,0.012*K),mat('#1b4fb3')); hd.position.set(s*0.04*K,0.235*K,0); bag.add(hd); }); const tp=new T3.Mesh(new T3.BoxGeometry(0.092*K,0.012*K,0.012*K),mat('#1b4fb3')); tp.position.set(0,0.27*K,0); bag.add(tp);
   this.scoops.forEach(s=>s.m.visible=false); this.boxM.visible=false; l.visible=false;
   // carried by the handles: hangs below the hand
@@ -1598,9 +1598,10 @@ const PATH_J=v(-7.2,4.3);
    K_S in the gap at the curtain's right end, K_K a step into the kitchen clear of the sink */
 const K_S=v(1.7/0.75,-2.4/1.18), K_K=v(1.35/0.75,-2.85/1.18), K_O=v(1.75/0.75,-1.4/1.18), FRDG=v(-0.4/0.75,-1.45/1.18);   /* both on the clear lane behind the showcase (between its back at z −0.91 and the stools at −1.69) */   /* K_O: in front of the gap on the shop side (so nobody cuts across the curtain); FRDG: in front of the big glass-door fridge on the left */   // through the open end of the curtain, clear of the rack; then a step inward, clear of the sink and the ice-cream machine
 function zoneOf(p){ if(p.x>BX0+0.05&&p.x<BX1-0.05&&p.z>ZF(KZ0)-0.6&&p.z<ZF(-3.1)) return 'kitchen'; const inside=p.x>BX0+0.05&&p.x<BX1-0.05&&p.z>ZF(BZ0)+0.05&&p.z<BZ1-0.05; if(!inside) return 'out'; return p.z<ZF(-0.62-2*TILE2)?'staff':'floor'; }
-function outZone(p){ return (p.x<-6.6&&p.z<3.4)?'path':(p.x>4.0&&p.z<3.6)?'side':'ter'; }
+function outZone(p){ return (p.x<-6.6&&p.z<3.4)?'path':(p.x<-4.0&&p.z<3.4)?'lside':(p.x>4.0&&p.z<3.6)?'side':'ter'; }
+const LSIDE_J=v(-4.6,3.9);   // left corner of the lot: the way onto the left lawn
 const SIDE_J=v(4.45,3.85);   // corner of the building on the right: the way into the side alley where the line wraps round
-function outRoute(a,b){ const za=outZone(a), zb=outZone(b); return za===zb?[]:(za==='side'||zb==='side')?[SIDE_J]:[PATH_J]; }
+function outRoute(a,b){ const za=outZone(a), zb=outZone(b); if(za===zb) return []; if(za==='side'||zb==='side') return [SIDE_J]; if((za==='lside'&&zb==='path')||(za==='path'&&zb==='lside')) return []; if(za==='lside'||zb==='lside') return [LSIDE_J]; return [PATH_J]; }
 function route(a,b){ const ord={out:0,floor:1,staff:2,kitchen:3}; const pts=[]; let cur=a; let guard=0;
  const sA=seats.find(s=>s.a&&(s.p.distanceTo(a)<0.15||s.front.distanceTo(a)<0.12)), sB=seats.find(s=>s.a&&(s.p.distanceTo(b)<0.15||s.front.distanceTo(b)<0.12));
  if(sA){ const back=sA.a.slice().reverse(); pts.push(...back); cur=back[back.length-1]; }
@@ -1776,9 +1777,21 @@ const seats=[
  {p:v(1.62,1.29),f:Math.PI/2,h:0.6,hop:1,a:[v(1.05,1.29)],tbl:v(2.45,1.29),th:1.16},
  {p:v(1.62,2.34),f:Math.PI/2,h:0.6,hop:1,a:[v(1.05,2.34)],tbl:v(2.45,2.34),th:1.16},
  {p:v(1.86,3.6),f:0,h:0.67,a:[v(1.86,4.2)],out:true},{p:v(2.62,3.6),f:0,h:0.67,a:[v(2.62,4.2)],out:true}];
+/* garden seats on the lawn: pale wooden chairs in pairs at little round tables (two tables on the right lawn, one on the left) */
+const LAWN_SETS=[{x:5.7,z:3.95},{x:7.9,z:3.95},{x:-5.7,z:3.95}];   /* on the open lawn in front of the trees, by the pavement */
+LAWN_SETS.forEach(T=>{ [-1,1].forEach(sd=>{ const cx=T.x+sd*0.78; seats.push({p:v(cx,T.z),f:sd<0?Math.PI/2:-Math.PI/2,h:0.45,a:[v(cx,T.z+0.75)],out:true,lawn:true,tbl:v(T.x,T.z),th:0.72}); }); });
 seats.forEach(s=>{ s.who=null; const d=v(Math.sin(s.f),Math.cos(s.f));
  // where you stand before sitting: in front of a bench (then lower back onto it), behind a high stool (then hop forward onto it)
  s.front=(s.hop||s.h>=0.85)?s.p.clone().addScaledVector(d,-0.36):s.p.clone().addScaledVector(d,0.4); });
+/* the garden furniture: pale wood, boxy, sitting on the lawn (shop units; the group lives in worldG so it scales with the diorama) */
+(function lawnFurniture(){ const G=new T3.Group(); G.name='lawnSeats'; worldG.add(G); const W='#e6cfa6', Wd='#cfb084', Y0=FY;
+ const bx=(w,h,d,c,x,y,z,ry)=>{ const m=new T3.Mesh(new T3.BoxGeometry(w,h,d),mat(c)); m.position.set(x,Y0+y,z); if(ry) m.rotation.y=ry; m.castShadow=true; m.receiveShadow=true; G.add(m); return m; };
+ LAWN_SETS.forEach(T=>{ /* round table: 12-sided top on a pedestal with a flat foot */
+  const top=new T3.Mesh(new T3.CylinderGeometry(0.42,0.42,0.05,12),mat(W)); top.position.set(T.x,Y0+0.72,T.z); top.castShadow=true; G.add(top);
+  bx(0.09,0.68,0.09,Wd,T.x,0.35,T.z); bx(0.5,0.04,0.5,Wd,T.x,0.02,T.z,Math.PI/4);
+  [-1,1].forEach(sd=>{ const cx=T.x+sd*0.78, cz=T.z, f=sd<0?Math.PI/2:-Math.PI/2;   /* chair: seat, four legs, a backrest on the side away from the table */
+   bx(0.42,0.05,0.42,W,cx,0.45,cz); [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>bx(0.05,0.43,0.05,Wd,cx+a*0.17,0.215,cz+b*0.17));
+   const bxp=cx-sd*0.19; bx(0.05,0.42,0.42,W,bxp,0.69,cz); bx(0.04,0.06,0.36,Wd,bxp,0.56,cz); }); }); })();
 const dirty=[];
 function flavorIdx(){ return 1+((Math.random()*(FLAVORS.length-1))|0); }
 function makeOrder(kind){ if(kind==='pack'){ const n=pick([3,4,6]); const pool=FLAVORS.map((f,i)=>i); const fl=[]; while(fl.length<n) fl.push(pool.splice((Math.random()*pool.length)|0,1)[0]); fl.sort((a,b)=>(a===0?-1:b===0?1:0));
@@ -1954,7 +1967,9 @@ const _bp1=new V3(), _bp2=new V3();
 function headPx(a){ const c=activeCam(); a.rig.head.getWorldPosition(_bp1); _bp2.copy(_bp1); _bp2.y+=0.3; _bp1.project(c); _bp2.project(c); return Math.abs(_bp2.y-_bp1.y)*0.5*pipe.h; }
 function updHeadFX(dt){ agents.forEach(a=>{ if(a.rig.eyes&&a.rig.eyes.brow&&a.rig.eyes.brow.length){ a._bwT=(a._bwT||0)-dt; if(a._bwT<=0){ a._bwT=0.3; const want=a.alpha>0.3&&headPx(a)>=9; if(a.rig._bw!==want){ a.rig._bw=want; a.rig.eyes.brow.forEach(b=>b.visible=want); } } } if(a.exprT!=null) return; a._bl=(a._bl==null?2+Math.random()*4:a._bl)-dt; if(a._bl<=0){ a.rig.setFace('closed'); a._blT=0.12; a._bl=2.5+Math.random()*4.5; } if(a._blT!=null){ a._blT-=dt; if(a._blT<=0){ a._blT=null; a.rig.setFace('normal'); } } }); for(let i=HEADFX.length-1;i>=0;i--){ const m=HEADFX[i], u=m.userData; u.t+=dt; if(u.t>1.4||u.a.dead){ scene.remove(m); HEADFX.splice(i,1); continue; } if(u.t<0){ m.visible=false; continue; }
  m.visible=u.a!==_fpHidden; u.a.headPos(_hf); if(u.k==='sweat'){ const k=Math.min(1,u.t/1.1); m.position.set(_hf.x+u.dx,_hf.y-0.26-k*k*0.2,_hf.z); { const c=activeCam(); _bp1.subVectors(c.position,m.position).normalize(); if(c.isOrthographicCamera) c.getWorldDirection(_bp1).negate(); m.position.addScaledVector(_bp1,0.14); }   /* a nudge toward the viewer so the head itself never hides the drop */ m.material.opacity=k<0.12?k/0.12:1-Math.max(0,(k-0.65)/0.35); m.material.rotation=0; if(u.t>1.1) u.t=1.41; continue; } const k=u.t/1.4; m.position.set(_hf.x+u.dx+Math.sin(u.t*5)*0.02,_hf.y+0.05+k*0.3,_hf.z); m.material.opacity=k<0.15?k/0.15:1-Math.max(0,(k-0.6)/0.4); m.scale.setScalar(0.39*(u.s||1)*(1+0.25*Math.sin(k*Math.PI))); m.material.rotation=Math.sin(u.t*3)*0.2; }
- agents.forEach(a=>{ if(a.exprT!=null&&S.simT-a.exprT>2.2&&a.state!=='eating'){ a.rig.setFace('normal'); a.exprT=null; } if(a.exprT!=null&&a.state==='eating'&&S.simT-a.exprT>1.6) a.rig.setFace('happy'); }); }   /* exprT = expression timer (faceT is the body yaw target!) */
+ agents.forEach(a=>{ if(a.kind!=='staff'&&a.alpha>0.5&&a.held.some(o=>o&&o.userData.bag)){ a._pk=(a._pk==null?0.8:a._pk)-dt; if(a._pk<=0){ a._pk=2.4+Math.random()*1.8; const k=pick(['heart','note','spark']); if(Math.random()<0.35){ headFX(a,k,{s:0.6,dx:-0.08}); headFX(a,k,{s:0.6,d:0.15,dx:0.08}); } else headFX(a,k,{s:0.9}); } }   /* carrying a bag home: looking forward to it */
+  if(a.kind==='staff'&&/주문 받|질문 받|주문 받을/.test(a.task||'')){ if(a._sm!==1){ a._sm=1; a.rig.setFace('happy'); } a.exprT=S.simT; } else a._sm=0;   /* smiling while taking an order */
+  if(a.exprT!=null&&S.simT-a.exprT>2.2&&a.state!=='eating'){ a.rig.setFace('normal'); a.exprT=null; } if(a.exprT!=null&&a.state==='eating'&&S.simT-a.exprT>1.6) a.rig.setFace('happy'); }); }   /* exprT = expression timer (faceT is the body yaw target!) */
 function guestRelease(a,leaveCup){ const seat=a.seat; if(a.spoon){ a.spoon.parent&&a.spoon.parent.remove(a.spoon); a.spoon=null; } if(leaveCup&&Math.random()<0.5) igBump(1); const c=dropItem(a,0)||dropItem(a,1);
  if(c){ const cp=c.userData.cupRef; if(seat&&seat.tbl&&leaveCup){ itemToScene(c); c.position.set(seat.tbl.x*TUNE.w,FY+(seat.th||0.74)*TUNE.h,seat.tbl.z*TUNE.d); c.quaternion.identity(); cp.dirty=true; dirty.push(cp); } else { holdItem(a,0,c); } } }
 function riseAct(){ return act(1.2,(p,a)=>{ const st=a.seat; if(st) a.pos.lerpVectors(st.p,st.front,kfN(p,[[0,0],[0.12,0],[0.75,1],[1,1]])); a.want.sit=1-kfN(p,[[0,0],[0.1,0.02],[0.8,1],[1,1]]); a.want.lean=kfN(p,[[0,0.05],[0.3,0.36],[1,0]]); a.want.nod=0;
@@ -1996,12 +2011,12 @@ function scoopSteps(st,o,cup,fi,grams,taste){ const t=tubs[fi]; const sp0=reachS
   act(taste?1.5:2.5,(p,a)=>{ a.want.lh.fromArray(CARRY_L); const dx=clamp((t.x-sp0.x)*TUNE.w/TUNE.p,-0.42,0.42);
     kfV(p,[[0,[0.16,0.3,0.26]],[0.15,[0.06+dx,0.12,fwd]],[0.25,[0.14+dx,0.03,fwd]],[0.4,[-0.04+dx,0.02,fwd+0.03]],[0.55,[0.14+dx,0.02,fwd-0.02]],[0.7,[0.0+dx,0.03,fwd]],[0.85,[0.1,0.26,0.32]],[1,[0.08,0.26,0.3]]],a.want.rh);
     a.want.lean=kfN(p,[[0,0.02],[0.2,ln],[0.7,ln*0.9],[1,0.04]]); if(a.lump){ const g=clamp((p-0.25)/0.5,0,1); a.lump.scale.setScalar(0.3+0.7*g); } },
-   {marks:[{at:0.05,fn:a=>{ if(!a.pad){ a.pad=mkPaddle(); const hd=a.rig.arms[1].hand; hd.add(a.pad); hd.updateWorldMatrix(true,false); t.pad.updateWorldMatrix(true,false); const hs=hd.getWorldScale(new T3.Vector3()).x, ps=t.pad.getWorldScale(new T3.Vector3()).x, k=ps/hs; a.pad.scale.setScalar(k); a.pad.position.set(0,-0.012*k,0.075*k); a.pad.rotation.x=0.95;   /* grip the brown handle; the grey bowl points down and out, into the tub */ } t.pad.visible=false; }},
-     {at:0.25,fn:a=>{ if(!a.pad) return; a.lump=new T3.Mesh(gelGeo(0.034*K*Math.cbrt(grams/100),1.2,0.6,1.0,(Math.random()*1e5)|0),mat(t.f.c)); a.lump.castShadow=true; a.pad.add(a.lump); a.lump.position.set(0,0.02,0.08); a.lump.scale.setScalar(0.3); }},
+   {marks:[{at:0.05,fn:a=>{ if(taste){ /* the taste goes on with the little wooden tasting spoon, not the big spade */ dropPaddle(a); const hand=a.rig.arms[1].hand, sp=mkTasteSpoon(); hand.add(sp); hand.updateWorldMatrix(true,false); hand.getWorldScale(_hws); a.rig.root.getWorldScale(_rws); const k=_rws.x*ITEM_K/_hws.x*1.25; sp.scale.setScalar(k); sp.rotation.set(-0.5,0,0); sp.position.set(0,-0.03+Math.sin(0.5)*0.055*k,0.02+Math.cos(0.5)*0.055*k); a.pad=sp; a.padTaste=true; return; } if(!a.pad){ a.pad=mkPaddle(); const hd=a.rig.arms[1].hand; hd.add(a.pad); hd.updateWorldMatrix(true,false); t.pad.updateWorldMatrix(true,false); const hs=hd.getWorldScale(new T3.Vector3()).x, ps=t.pad.getWorldScale(new T3.Vector3()).x, k=ps/hs; a.pad.scale.setScalar(k); a.pad.position.set(0,-0.012*k,0.075*k); a.pad.rotation.x=0.95;   /* grip the brown handle; the grey bowl points down and out, into the tub */ } t.pad.visible=false; }},
+     {at:0.25,fn:a=>{ if(!a.pad) return; if(a.padTaste){ a.lump=new T3.Mesh(gelGeo(0.022*KC,1,0.9,1,(Math.random()*1e5)|0),mat(t.f.c)); a.pad.add(a.lump); a.lump.position.set(0,0.012*KC,0); a.lump.scale.setScalar(0.3); return; } a.lump=new T3.Mesh(gelGeo(0.034*K*Math.cbrt(grams/100),1.2,0.6,1.0,(Math.random()*1e5)|0),mat(t.f.c)); a.lump.castShadow=true; a.pad.add(a.lump); a.lump.position.set(0,0.02,0.08); a.lump.scale.setScalar(0.3); }},
      {at:0.5,fn:()=>{ t.level=Math.max(0.62,t.level-grams/4000); t.mesh.scale.y=0.75; }},
-     {at:0.95,fn:()=>{ t.pad.visible=true; }}]}),
+     {at:0.95,fn:()=>{ if(!taste) t.pad.visible=true; }}]}),
   act(taste?1:1.5,(p,a)=>{ kfV(p,[[0,[0.08,0.26,0.3]],[0.25,[-0.02,0.25,0.31]],[0.45,[-0.13,0.22,0.3]],[0.6,[0.0,0.21,0.31]],[0.78,[-0.1,0.22,0.3]],[1,[0.1,0.22,0.26]]],a.want.rh); a.want.lh.fromArray(CARRY_L); },
-   {marks:[{at:0.5,fn:a=>{ if(a.lump){ a.lump.parent.remove(a.lump); a.lump=null; } const g=Math.round(grams); cup.addScoop(t.f,g,taste); cup.scoops[cup.scoops.length-1].sq=1;
+   {marks:[{at:0.5,fn:a=>{ if(a.lump){ a.lump.parent.remove(a.lump); a.lump=null; } if(a.padTaste){ dropPaddle(a); a.padTaste=false; }   /* the spoon (with the taste on it) is set into the cup */ const g=Math.round(grams); cup.addScoop(t.f,g,taste); cup.scoops[cup.scoops.length-1].sq=1;
      if(taste){ say(a,'맛보기 올려드려요,,',2,'st'); return; }
      const target=o.kind==='pack'?120:90; const err=Math.abs(g-target)/target; const perfect=err<=0.05; S.streak=perfect?S.streak+1:0; autoSel(cup);   /* (no '○○ 담았어요' line) */ }}]})); }
 function scriptMake(st,o){
@@ -2393,7 +2408,7 @@ function updCamera(dt){
  let cx=S.panX, cy=2.0*TUNE.h, cz=1.4*TUNE.d+S.panZ, zoom=S.zoom;
  if(viewMode==='in'){ cy=S._cyOvr!=null?S._cyOvr:0.9*TUNE.h; cz=-0.5*TUNE.d+S.panZ; if(S.forceIn) zoom=Math.max(zoom,INZ); }
  else { cy=3.7*TUNE.h+(S.cyOut||0); cz=-0.7+S.panZ; }
- if(S.mode==='tour'&&player&&!S.fp){ cx=player.pos.x*TUNE.w; cz=player.pos.z*TUNE.d; cy=0.9; zoom=Math.max(1.35,S.zoom); }
+ if(S.mode==='tour'&&player&&!S.fp){ cx=player.pos.x*TUNE.w+clamp(S.panX,-7,7); cz=player.pos.z*TUNE.d+clamp(S.panZ,-7,7); cy=0.9; zoom=Math.max(1.35,S.zoom); }   /* two-finger drag looks around; a tap to walk brings the view back to me */
  // (zoom is no longer snapped: pixel size itself is rounded to whole device pixels below)
  const k=1-Math.exp(-dt*9), kp=gest?1-Math.exp(-dt*40):k; S._cx=lerp(S._cx==null?cx:S._cx,cx,kp); S._cy=lerp(S._cy==null?cy:S._cy,cy,k); S._cz=lerp(S._cz==null?cz:S._cz,cz,kp); S._zm=lerp(S._zm==null?zoom:S._zm,zoom,k);
  const el=S.elev, dist=44;
@@ -2419,16 +2434,16 @@ function updCamera(dt){
  // walls between the camera and the room dissolve (pixel screen-door) instead of popping; side walls go too when we look along them
  /* only the two walls that face the camera most go (front + the near side); the far side wall always stays so floor, back and that side read as a room. A wall already open gets a small bonus (hysteresis) */
  const _rk=walls.map((w,i)=>({i,d:w.n[0]*dx+w.n[1]*dz+(w.f>0.5?0.12:0)})).sort((a,b)=>b.d-a.d), _open=new Set([_rk[0].i,_rk[1].i]);
- walls.forEach((w,i)=>{ const tgtF=(viewMode==='in'||(S.shellOff&&!fp))&&_open.has(i)?1:0; w.f=lerp(w.f||0,tgtF,1-Math.exp(-dt*14));   /* hysteresis: a wall near the threshold doesn't flip back and forth while the camera turns */ if(Math.abs(w.f-tgtF)<0.01) w.f=tgtF;
+ walls.forEach((w,i)=>{ const tgtF=!fp&&(viewMode==='in'||S.shellOff)&&_open.has(i)?1:0;   /* first person: the whole building always stands */ w.f=lerp(w.f||0,tgtF,1-Math.exp(-dt*14));   /* hysteresis: a wall near the threshold doesn't flip back and forth while the camera turns */ if(Math.abs(w.f-tgtF)<0.01) w.f=tgtF;
   WFADE.value.setComponent(i,w.f); w.full.visible=w.f<0.995; w.stub.visible=w.f>0.6; });
  // far out: the ground (lawn, road, pavers, trees) dissolves and only the building is left
  { const gt=clamp((0.34-S._zm)/0.12,0,1); GFADE.value=lerp(GFADE.value,gt,1-Math.exp(-dt*6)); if(Math.abs(GFADE.value-gt)<0.005) GFADE.value=gt; const gv=GFADE.value<0.995;
   GROUND.forEach(m=>m.visible=gv); PAVE_GRD.forEach(m=>m.visible=gv); if(window.TREES) TREES.g.visible=gv; }
  if(!FX.init) fxInit();
- const ft=viewMode==='in'||fp||S.shellOff?1:S.noIn?0:clamp((S.zoom-FZ0)/(INZ-FZ0),0,1); S._f=lerp(S._f==null?ft:S._f,ft,1-Math.exp(-dt*8)); const f=S._f, fe=f*f*(3-2*f);
+ const ft=fp?0:viewMode==='in'||S.shellOff?1:S.noIn?0:clamp((S.zoom-FZ0)/(INZ-FZ0),0,1); S._f=lerp(S._f==null?ft:S._f,ft,1-Math.exp(-dt*8)); const f=S._f, fe=f*f*(3-2*f);
  FADE.u.value=fe; upper.visible=fe<0.985; DIO_FADEX.forEach(m=>m.visible=fe<0.985);
  /* things outside the building (trees, signs by the road) only step aside when the view is really inside, not for the '외관 지우기' cutaway seen from outside */
- const fo=(viewMode==='in'||fp)?fe:0; FX.items.forEach(it=>{ it.o.visible=fo<0.985; it.ms.forEach(m=>m.material.opacity=1-fo); }); if(window.TREES&&TREES.fade) TREES.fade(dt,fo>0.3,S._cx||0,S._cz||0);
+ const fo=(viewMode==='in'&&!fp)?fe:0; FX.items.forEach(it=>{ it.o.visible=fo<0.985; it.ms.forEach(m=>m.material.opacity=1-fo); }); if(window.TREES&&TREES.fade) TREES.fade(dt,fo>0.3,S._cx||0,S._cz||0);
  const fpMe=fp?(S.mode==='work'?staff.find(s=>s.role==='scoop'):player):null;   /* first person: the viewer's whole head (face, eyes, hair, cap, brows) is hidden */
  agents.forEach(a=>{ fpBody(a,a===fpMe); }); _fpHidden=fpMe;
  /* kitchen curtain: drawn aside while someone from the staff walks through the gap at its right end, falls back after */
@@ -2733,7 +2748,7 @@ function itemGet(msg){ fxEl.classList.remove('on'); void fxEl.offsetWidth; fxEl.
 function tourBase(){ return [[S.fp?'🧍 3인칭':'👁 1인칭',()=>{ S.fp=!S.fp; S.fpYaw=0; S.fpPitch=-0.1; tourBar(); }],['나가기',()=>tourQuit()]]; }
 let tourExtra=[];
 function tourBar(){ tbarSet(tourExtra.concat(tourBase())); }
-function tourStart(){ if(!shopOpen()){ toast('지금은 문 닫았어요,,'); return; } if(S.mode!=='iso') return;
+function tourStart(){ if(!shopOpen()){ toast('지금은 문 닫았어요,,'); return; } if(S.mode!=='iso') return; S.panX=0; S.panZ=0;
  const gx=GUESTS[0]; const look=gx?codeLook(gx.c):lookFor('normal'); look.name='나';
  const g=spawnGuest({look,player:true,force:true,side:-1}); if(!g) return; player=g; g.order.kind='cup';
  S.mode='tour'; S.fp=false; document.body.classList.add('tour'); tourExtra=[]; tourBar(); narr('염리점에 도착했읍니다,,'); cupCard.hidden=true; }
@@ -2741,7 +2756,7 @@ function tourChoices(){ tourExtra=[['🍨 컵으로 주세요',()=>{ chooseOrder
 function chooseOrder(k){ if(!player) return; const o=player.order; const nu=makeOrder(k); Object.assign(o,nu,{guest:player,chosen:true}); tourExtra=[]; tourBar(); }
 function tourAfterPickup(g){ const o=g.order; itemGet(o.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); if(o.cup) openCup(o.cup,true);
  if(o.kind==='pack'){ tourExtra=[['🚶 포장해서 가기',()=>{ tourExtra=[]; tourBar(); narr('포장해서 가겠읍니다,,'); guestLeave(g,'포장해서 가요,,'); },1]]; tourBar(); return; }
- tourExtra=[['🪑 자리에 앉기',()=>{ const free=seats.filter(s=>!s.who&&(!s.out||(!S.rain&&S.season!==5))); if(!free.length){ narr('자리가 없네요,,\n걸으면서 먹겠읍니다,,'); tourWalkOut(); return; } const seat=free.sort((a,b)=>a.out-b.out)[0]; guestSit(g,seat,null); tourExtra=[['🚪 매장에서 나가기',()=>tourLeaveSeat(),1]]; tourBar(); narr('자리에 앉았읍니다,,\n천천히 드세요,,'); },1],['🚶 가면서 먹기',()=>tourWalkOut(),0]]; tourBar(); }
+ const _fr=seats.some(s=>!s.who&&(!s.out||(!S.rain&&S.season!==5))); tourExtra=[..._fr?[['🪑 빈자리 앉기',()=>{ const free=seats.filter(s=>!s.who&&(!s.out||(!S.rain&&S.season!==5))); if(!free.length){ narr('자리가 없네요,,\n걸으면서 먹겠읍니다,,'); tourWalkOut(); return; } const seat=free.sort((a,b)=>a.out-b.out)[0]; guestSit(g,seat,null); tourExtra=[['🚪 매장에서 나가기',()=>tourLeaveSeat(),1]]; tourBar(); narr('자리에 앉았읍니다,,\n천천히 드세요,,'); },1]]:[],['🚶 가면서 먹기',()=>tourWalkOut(),0]]; tourBar(); }
 function tourWalkOut(){ if(!player) return; tourExtra=[]; tourBar(); narr('걸으면서 먹겠읍니다,,'); player.clear(); guestLeave(player,'걸으면서 먹어요,,'); }
 function tourLeaveSeat(){ const g=player; if(!g) return; tourExtra=[]; tourBar(); g.state='leaving'; g.clear(); guestRelease(g,false);
  g.then(riseAct(),call(freeSeat),...binSteps(),
@@ -2797,7 +2812,7 @@ function updBubbles(){ const c=activeCam(); const tiny=c===cam&&S._zm<0.5;
   const hidden=c===fpCam&&a===_fpHidden;
   const full=c===fpCam;
   if(a.bub){ const want=(full||a.bub.el.classList.contains('emo'))?a.bub.text:'...'; setBubText(a.bub.el,want); a.headPos(_wp); const ok=place(a.bub.el,_wp,c); a.bub.el.style.opacity=(ok&&a.alpha>0.5&&!hidden&&!tiny)?'1':'0'; }
-  if(a.tagEl){ a.headPos(_wp); _wp.y+=a.bub?0.42:0.05; const ok=place(a.tagEl,_wp,c); a.tagEl.style.opacity=(full&&ok&&a.alpha>0.5&&!hidden)?'1':'0'; } });
+  if(a.tagEl){ a.headPos(_wp); _wp.y+=a.bub?0.42:0.05; const ok=place(a.tagEl,_wp,c); a.tagEl.style.opacity=((full||a.mpId)&&ok&&a.alpha>0.5&&!hidden)?'1':'0'; } });
  noteEls.forEach((n,i)=>{ n.ph+=0.004; _wp.set(n.x,9.2+Math.sin(n.ph)*0.25+(i%2)*0.5,-0.6+(i%3)*0.5); const ok=place(n.el,_wp,c); n.el.style.opacity=ok&&c===cam?'0.92':'0'; }); }
 
 /* ================= world tick ================= */
@@ -3343,7 +3358,7 @@ const MP=(()=>{
  const send=m=>{ if(st.ws&&st.ws.readyState===1) st.ws.send(JSON.stringify(m)); };
  const heldDesc=a=>{ const h=a.held.find(o=>o&&o.userData.cupRef); if(!h) return null; const c=h.userData.cupRef, o=c.order; return {kind:o.kind,fl:o.fl.slice(0,o.kind==='pack'?o.n:2),taste:o.taste,packed:!!c.packed,eat:a.eatWalk?1:0,n:c.scoops.length}; };
  const mkAgent=(info)=>{ const look=Object.assign({},info.look||lookFor('normal')); look.name=info.name; const a=new Agent('guest',look); a.mpId=info.id; a.mpSt='free'; a.state='free'; a.alpha=1;
-  a.order=Object.assign(makeOrder('cup'),{guest:a}); a.speed=1.55; a.place(v(info.x,info.z),info.f||0); setTag(a,info.id===st.me?'나':info.name,info.id===st.me?'me':''); a.netTo={x:info.x,z:info.z,f:info.f||0}; return a; };
+  a.order=Object.assign(makeOrder('cup'),{guest:a}); a.speed=1.55; a.place(v(info.x,info.z),info.f||0); setTag(a,info.id===st.me?'나 · '+info.name:info.name,info.id===st.me?'me':''); a.netTo={x:info.x,z:info.z,f:info.f||0}; return a; };
  /* a cup built from a description (for a player the host is serving, seen from a non-host screen) */
  const buildHeld=(a,d)=>{ const cur=heldDesc(a); if(!d){ if(cur){ const h=a.held.find(o=>o&&o.userData.cupRef); if(h){ cups.delete(h.userData.cupRef); dropItem(a,a.held.indexOf(h)); } a.eatWalk=false; if(a.spoon){ a.spoon.parent&&a.spoon.parent.remove(a.spoon); a.spoon=null; } } return; }
   if(cur&&cur.kind===d.kind&&cur.n===d.n&&cur.packed===d.packed){ if(d.eat&&!a.eatWalk) startEatWalk(a); return; }
@@ -3360,7 +3375,7 @@ const MP=(()=>{
  function onMsg(m){
   if(m.t==='welcome'){ st.me=m.id; st.host=m.host; st.name=m.name;
    m.players.forEach(pl=>{ const a=mkAgent(pl); st.players.set(pl.id,{p:a,st:pl.st||'free'}); if(pl.id===st.me){ player=a; a.player=true; a.netTo=null; a.place(v(-0.8+Math.random()*1.6,5.2+Math.random()*0.3),Math.PI); } });
-   S.mode='tour'; S.fp=false; document.body.classList.add('tour'); st.ready=true; bar(); narr(`${st.name}(으)로 들어왔어요,,\n바닥을 톡 누르면 걸어가요`); paintCount();
+   S.mode='tour'; S.fp=false; S.panX=0; S.panZ=0; document.body.classList.add('tour'); st.ready=true; bar(); narr(`${st.name}(으)로 들어왔어요,,\n바닥을 톡 누르면 걸어가요`); paintCount();
    if(api.isHost()) hostInit(); else if(m.snap) onMsg(m.snap); return; }
   if(m.t==='join'){ if(!st.players.has(m.p.id)){ st.players.set(m.p.id,{p:mkAgent(m.p),st:'free'}); toast(`${m.p.name} 님이 들어왔어요,,`); paintCount(); } return; }
   if(m.t==='leave'){ const e=st.players.get(m.id); if(e){ if(api.isHost()) hostDrop(e.p); e.p.dead=true; e.p.remove(); st.players.delete(m.id); toast(`${e.p.look.name} 님이 나갔어요,,`); paintCount(); } return; }
@@ -3412,7 +3427,12 @@ const MP=(()=>{
  api.afterPickup=a=>{ a.mpSt='free'; a.state='free'; startEatWalk(a); if(a===player){ itemGet(a.order.kind==='pack'?'포장 아이스크림을 받았다!':'아이스크림을 받았다!'); narr('바닥을 눌러 걸어가거나,\n빈 자리를 눌러 앉을 수 있어요'); bar(); } };
  api.askChoice=a=>{ a.mpChoose=true; };
  /* ---- every frame ---- */
- api.tick=dt=>{ if(!st.ready||!player) return;
+ api.tick=dt=>{ for(let i=TAPM.length-1;i>=0;i--){ const q=TAPM[i]; q.t+=dt; const k=q.t/0.9; if(k>=1){ q.m.parent&&q.m.parent.remove(q.m); q.m.material.dispose(); TAPM.splice(i,1); continue; } const sc=k<0.15?0.6+k/0.15*0.5:1.1-0.1*(k-0.15)/0.85; const b=q.m.userData.b; q.m.scale.set(b[0]*sc,b[1]*sc,1); q.m.position.y=0.02+0.08*k; q.m.material.opacity=0.6*(k<0.5?1:1-(k-0.5)/0.5); }
+  if(!st.ready||!player) return;
+  /* keep a little room from the other guests: my own character eases away when someone stands too close (everyone sees it, since my position is sent) */
+  if(!hostCtl(player)&&player.pose.sit<0.3){ const me=player; let px=0,pz=0; st.players.forEach(e=>{ const o=e.p; if(o===me||o.pose.sit>0.3) return; const dx=me.pos.x-o.pos.x, dz=me.pos.z-o.pos.z, d=Math.hypot(dx,dz), R=0.34; if(d<R){ const k=(R-Math.max(d,0.02))/R; if(d<0.02){ px+=Math.random()-0.5; pz+=Math.random()-0.5; } else { px+=dx/d*k; pz+=dz/d*k; } } });
+   if(px||pz){ const l=Math.hypot(px,pz), sp=Math.min(0.6,l*1.2)*dt; const nx=me.pos.x+px/l*sp, nz=me.pos.z+pz/l*sp, tz=v(nx,nz), z0=zoneOf(me.pos), z1=zoneOf(tz); if(z0===z1&&!(z1==='out'&&nz<BZ1+0.12&&(Math.abs(nx)<4.0||nz<-3.4))&&!nearDoor(me.pos)){ me.pos.x=nx; me.pos.z=nz; } } }
+  st._sbT=(st._sbT||0)+dt; if(st._sbT>0.6){ st._sbT=0; const has=player.held.some(o=>o&&o.userData.cupRef)&&freeSeatNear()>=0; if(has!==st._sbHas){ st._sbHas=has; bar(); } }
   const me=player; st.tSend+=dt;
   if(st.tSend>=0.1){ st.tSend=0; if(!api.isHost()||!hostCtl(me)){ if(!hostCtl(me)) send({t:'p',x:+me.pos.x.toFixed(3),z:+me.pos.z.toFixed(3),f:+me.face.toFixed(3)}); }
    if(api.isHost()){ /* players the shop is moving */ const l=[]; st.players.forEach((e,id)=>{ const a=e.p; if(hostCtl(a)) l.push([id,+a.pos.x.toFixed(3),+a.pos.z.toFixed(3),+a.face.toFixed(3)]); }); if(l.length) send({t:'hp',l});
@@ -3428,8 +3448,9 @@ const MP=(()=>{
  /* ---- controls ---- */
  const myState=()=>player?curSt(player):'free';
  function bar(){ if(!st.ready) return; const s=myState(), cup=player&&player.held.some(o=>o&&o.userData.cupRef); const b=[];
-  if(s==='free'&&!cup) b.push(['🍨 주문하기',()=>request('order'),1]);
+  if(s==='free'&&!cup) b.push(['🍨 주문하러 가기',()=>request('order'),1]);
   if(s==='ordering'&&player.order&&!player.order.chosen&&(api.isHost()?true:true)) { b.push(['🍨 컵으로',()=>request('choose',{kind:'cup'}),1],['🛍 포장으로',()=>request('choose',{kind:'pack'}),1],['맛은 랜덤으로 선택됩니다,,',null]); }
+  if(s==='free'&&cup&&cup.kind!=='pack'){ const fs=freeSeatNear(); if(fs>=0) b.push(['🪑 빈자리 앉기',()=>{ const k=freeSeatNear(); if(k>=0) request('sit',{seat:k}); },1]); }
   if(s==='free'&&cup) b.push(['🗑 컵 버리기',()=>request('bin'),0]);
   if(s==='eating') b.push(['🚶 일어나기',()=>request('stand'),0]);
   b.push([S.fp?'🧍 3인칭':'👁 1인칭',()=>{ S.fp=!S.fp; S.fpYaw=0; S.fpPitch=-0.1; bar(); }]);
@@ -3439,18 +3460,25 @@ const MP=(()=>{
  /* light chat: a few emoji reactions that pop over your head on everyone's screen */
  const EMOS=['👋','😋','❤️','👍','😂','🙏'];
  let _emT=0; function emote(e){ const now=performance.now(); if(now-_emT<700||!player) return; _emT=now; say(player,e,3,'emo'); send({t:'say',s:e}); }
+ /* nearest seat nobody is on (outdoor seats only in dry weather) */
+ function freeSeatNear(){ const taken=new Set(); st.players.forEach(e=>{ if(e.p.mpSeat) taken.add(e.p.mpSeat); if(e.p.seat) taken.add(e.p.seat); }); let best=-1, bd=1e9; seats.forEach((se,i)=>{ if(se.who||taken.has(se)||(se.out&&(S.rain||S.season===5))) return; const d=se.p.distanceTo(player.pos); if(d<bd){ bd=d; best=i; } }); return best; }
+ /* a tap leaves a faint white B logo on the ground that pops and fades */
+ const TAPM=[]; window.__tapm=TAPM; let _tapTex=null;
+ function tapMark(x,z){ if(!_tapTex){ const B=['.###.........','#####........','#####........','.###.........','.............','####.######..','####.#######.','####.########','####.########','####....#####','####.########','####.########','####.#######.','.........####','#############','#############','############.','##########...']; const c=document.createElement('canvas'); c.width=B[0].length+2; c.height=B.length+2; const g=c.getContext('2d'); g.fillStyle='#ffffff'; B.forEach((r,y)=>[...r].forEach((ch,xx)=>{ if(ch==='#') g.fillRect(xx+1,y+1,1,1); })); _tapTex=new T3.CanvasTexture(c); _tapTex.magFilter=T3.NearestFilter; _tapTex.minFilter=T3.NearestFilter; _tapTex.generateMipmaps=false; }
+  /* a sprite standing on the spot (a flat decal would vanish at this low camera angle) */ const m=new T3.Sprite(new T3.SpriteMaterial({map:_tapTex,transparent:true,opacity:0.6,depthWrite:false,depthTest:false})); m.center.set(0.5,0); m.position.set(x,0.02,z); m.userData.b=[0.4,0.55]; m.renderOrder=9; scene.add(m); TAPM.push({m,t:0}); }
  function request(k,d){ if(!player) return; if(api.isHost()) act(player,k,d||{}); else send({t:'req',k,d:d||{}}); bar(); }
  /* a tap on the ground: walk there, or sit on a free seat */
  const _gp=new T3.Vector3(), _plane=new T3.Plane(new T3.Vector3(0,1,0),0);
  api.tap=(ray)=>{ if(!st.ready||!player) return false; if(!ray.ray.intersectPlane(_plane,_gp)) return false; const P=window.PLINTH; if(P&&(_gp.x<P.x0||_gp.x>P.x1||_gp.z<P.z0||_gp.z>P.z1)) return false;
   const x=_gp.x/TUNE.w, z=_gp.z/TUNE.d, tgt=v(x,z); const s=myState();
   /* a seat? */ let best=null, bd=0.5; seats.forEach((se,i)=>{ const d=se.p.distanceTo(tgt); if(d<bd){ bd=d; best=i; } });
-  if(best!=null){ const se=seats[best]; if(se.who&&se.who!==player){ toast('누가 앉아 있어요,,'); return true; } if(s==='eating'){ return true; } if(s!=='free'){ toast('지금은 못 움직여요,,'); return true; } request('sit',{seat:best}); return true; }
-  if(s==='eating'){ if(!api.isHost()) player._pendWalk=tgt; request('stand',{then:'walk',x,z}); return true; }
+  if(best!=null){ const se=seats[best]; if(se.who&&se.who!==player){ toast('누가 앉아 있어요,,'); return true; } if(s==='eating'){ return true; } if(s!=='free'){ toast('지금은 못 움직여요,,'); return true; } tapMark(_gp.x,_gp.z); request('sit',{seat:best}); return true; }
+  if(s==='eating'){ tapMark(_gp.x,_gp.z); if(!api.isHost()) player._pendWalk=tgt; request('stand',{then:'walk',x,z}); return true; }
   if(s==='standup'){ if(!api.isHost()) player._pendWalk=tgt; return true; }
   if(s!=='free'){ toast('지금은 못 움직여요,,'); return true; }
   const zn=zoneOf(tgt); if(zn==='staff'||zn==='kitchen'){ toast('직원 공간이에요,,'); return true; }
-  if(api.isHost()) act(player,'walk',{x,z}); else { player.clear(); player.then(walk(tgt)); }
+  if(zn==='out'&&tgt.z<BZ1+0.12&&(Math.abs(tgt.x)<4.0||tgt.z<-3.4)){ toast('거기는 못 가요,,'); return true; }   /* outside: the street side and the two lawns, never through the walls or round the back */   /* outside: only the street side in front of the shop (no walking through walls) */
+  tapMark(_gp.x,_gp.z); S.panX=0; S.panZ=0; if(api.isHost()) act(player,'walk',{x,z}); else { player.clear(); player.then(walk(tgt)); }
   return true; };
  const cnt=document.createElement('div'); cnt.id='mpCount'; document.body.appendChild(cnt);
  function paintCount(){ cnt.textContent=st.ready?`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`:''; }
