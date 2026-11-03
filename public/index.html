@@ -1416,7 +1416,7 @@ function cubify(g,r){ g=g.index?g.toNonIndexed():g.clone(); const P=g.attributes
 /* ---- pixel eyes drawn on the face (no pixel filter needed to read them): ?eyes=mid / ?eyes=low ---- */
 const HV=+((location.search.match(/[?&]hv=(\d)/)||[])[1]||4);   /* 4 (the default): round head, square hair, the same body */
    /* head look test: 0 all square · 1 bevelled head, square hair · 2 all square + bright face · 3 bevelled head + soft hair + bright face */
-const EYES_MODE=(location.search.match(/[?&]eyes=(mid|low|old)/)||[])[1]||'low';   /* new pixel eyes, low on the face (the default) */
+const EYES_MODE=(location.search.match(/[?&]eyes=(mid|low|old)/)||[])[1]||'mid';   /* new pixel eyes, low on the face (the default) */
 /* cute pixel eyes on a 32x32 face. expr: normal happy content wink closed sparkle surprised love teary yum sleepy. low: eyes sit lower on the face */
 function drawFaceTex(g,expr,low,skin,full){
  const INK='#1b1f24', W='#ffffff', BL='#f2a0a8', P=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w||1,h||1); };
