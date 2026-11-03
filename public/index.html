@@ -121,6 +121,8 @@ body.menu #hi{opacity:0!important}
 #shell:active{transform:scale(.92)}
 #pxB{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:calc(108px + env(safe-area-inset-top,0px));z-index:9;font:800 11px/1 var(--px);color:var(--navy);background:var(--crm);border:3px solid var(--navy);padding:8px 10px;box-shadow:3px 3px 0 var(--navy);cursor:pointer}
 #pxB[aria-pressed="true"]{background:var(--acc)}
+#lookB{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:calc(150px + env(safe-area-inset-top,0px));z-index:9;font:800 11px/1 var(--px);color:var(--navy);background:var(--crm);border:3px solid var(--navy);padding:8px 10px;box-shadow:3px 3px 0 var(--navy);cursor:pointer}
+body:not(.mp) #pxB{display:block}
 #mpCount{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:calc(66px + env(safe-area-inset-top,0px));z-index:9;font:800 11px/1 var(--px);color:var(--navy);background:var(--crm);border:3px solid var(--navy);padding:8px 10px;box-shadow:3px 3px 0 var(--navy)}
 #mpCount:empty{display:none}
 body.mp .tag.me{color:var(--navy);background:var(--yel)}
@@ -290,7 +292,7 @@ function blendPalette(wd,wg,wn){ if(Math.abs(wd-palW[0])+Math.abs(wg-palW[1])+Ma
 const FRAG = `
 precision highp float;
 uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float outline; uniform float dither; uniform float quant; uniform float pxMode; uniform float pxMix; uniform float pxSat; uniform float pxLev; uniform float pxEdge; uniform float pxVig; uniform vec3 pxTint; uniform float pxRamp; uniform float pxGlow;
-uniform float gTime; uniform float gGrain;
+uniform float gTime; uniform float gGrain; uniform float gLook;
 float hash21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
 uniform float gNight; uniform float gGold; uniform vec2 gSun; uniform float gSunOn; uniform float gRays; uniform float gBloom; uniform float gGrade;
 uniform vec3 palLab[64]; uniform vec3 palRGB[64];
@@ -314,37 +316,59 @@ void main(){
  }
  if(quant < 0.5){
   if(gGrade < 0.5){ gl_FragColor = vec4(c,1.0); return; }
-  /* ===== the 'vivid' look: deep colour, bold primaries, sunbeams and glow ===== */
-  vec2 px = 1.0/res;
-  /* --- bloom: bright things glow softly (sky, lamps, the shop front at night) --- */
-  vec3 bl = vec3(0.0); float bw = 0.0;
-  for(int i=-2;i<=2;i++) for(int j=-2;j<=2;j++){ vec2 o = vec2(float(i),float(j))*px*3.5; vec3 sc = texture2D(tColor, vUv+o).rgb; float l = dot(sc, vec3(0.299,0.587,0.114)); float w = smoothstep(0.58, 0.95, l); bl += sc*w; bw += 1.0; }
-  bl /= bw; c += bl * gBloom * (0.5 + 0.7*gNight);
-  /* --- god rays: light streams from the sun (or the shop window at night) past the silhouettes --- */
-  if(gSunOn > 0.0 && gRays > 0.0){
+  vec2 px = 1.0/res; float lum0 = dot(c, vec3(0.299,0.587,0.114));
+  int LOOK = int(gLook + 0.5);   /* 1 매트·원색 · 2 비비드 · 3 필름 · 4 종이 */
+  /* --- bloom (vivid, film) --- */
+  if(LOOK == 2 || LOOK == 3){ vec3 bl = vec3(0.0); float bw = 0.0;
+   for(int i=-2;i<=2;i++) for(int j=-2;j<=2;j++){ vec2 o = vec2(float(i),float(j))*px*3.5; vec3 sc = texture2D(tColor, vUv+o).rgb; float l = dot(sc, vec3(0.299,0.587,0.114)); float w = smoothstep(0.58, 0.95, l); bl += sc*w; bw += 1.0; }
+   bl /= bw; c += bl * gBloom * (LOOK==3 ? 0.35 : 0.5 + 0.7*gNight); }
+  /* --- god rays (vivid strong, film gentle) --- */
+  if((LOOK == 2 || LOOK == 3) && gSunOn > 0.0 && gRays > 0.0){
    vec2 dir = (gSun - vUv); float dist = length(dir); dir /= max(dist, 1e-4);
    float ray = 0.0; float stp = min(dist, 1.1) / 28.0; float decay = 1.0;
    for(int k=1;k<=28;k++){ vec2 sp = vUv + dir*stp*float(k); float dd = texture2D(tDepth, sp).r; float sky = smoothstep(0.95, 0.999, dd); ray += sky * decay; decay *= 0.96; }
    ray /= 28.0;
-   float ang = atan(dir.y, dir.x); float streak = 0.66 + 0.34*pow(0.5+0.5*sin(ang*22.0 + gTime*0.35), 2.0);   /* slow-drifting soft spokes */
+   float ang = atan(dir.y, dir.x); float streak = 0.66 + 0.34*pow(0.5+0.5*sin(ang*22.0 + gTime*0.35), 2.0);
    float near = smoothstep(1.7, 0.0, dist);
    vec3 rayC = mix(vec3(1.0,0.95,0.82), vec3(1.0,0.80,0.50), gGold); rayC = mix(rayC, vec3(1.0,0.88,0.62), gNight*0.6);
-   c += rayC * ray * streak * near * gRays * gSunOn * 2.2;
-  }
-  /* --- grade: rich saturation, a firm S curve, warm highs / cool-but-coloured shadows --- */
+   c += rayC * ray * streak * near * gRays * gSunOn * (LOOK==3 ? 1.1 : 2.2); }
   float lum = dot(c, vec3(0.299,0.587,0.114));
-  c = mix(vec3(lum), c, 1.3);                                                    /* saturation up */
-  vec3 shadowTint = mix(vec3(0.90,0.94,1.06), vec3(0.78,0.84,1.10), gNight);   /* shadows stay blue-ish, never muddy */
-  vec3 hiTint = mix(vec3(1.04,1.0,0.94), vec3(1.10,0.98,0.84), gGold);
-  c *= mix(shadowTint, hiTint, smoothstep(0.2, 0.85, lum));
-  c = mix(c, c*c*(3.0-2.0*c), 0.55);                                              /* S curve: deeper darks, brighter brights */
-  c = c*1.04 - 0.01;
-  c = mix(c, c*vec3(1.06,0.98,0.88), gGold*0.6);                                  /* amber hour */
-  c = mix(c, c*vec3(0.84,0.9,1.12), gNight*0.5);                                  /* blue night */
-  /* --- vignette: pulls the eye to the shop --- */
-  vec2 vq = vUv - 0.5; c *= 1.0 - dot(vq,vq)*0.45;
-  /* --- a whisper of live grain --- */
-  c += (hash21(gl_FragCoord.xy*0.5 + floor(gTime*18.0)) - 0.5) * 0.014;
+  if(LOOK == 1){ /* 매트·원색: flat, saturated, crisp. No glow, pure flat planes */
+   c = mix(vec3(lum), c, 1.35);
+   c = mix(c, c*c*(3.0-2.0*c), 0.35); c = c*1.02;
+   c = mix(c, c*vec3(1.05,0.98,0.9), gGold*0.5); c = mix(c, c*vec3(0.86,0.9,1.1), gNight*0.5);
+   c = floor(c*18.0+0.5)/18.0;                                                 /* gentle posterize: paint-flat planes */
+  } else if(LOOK == 2){ /* 비비드 */
+   c = mix(vec3(lum), c, 1.3);
+   vec3 shadowTint = mix(vec3(0.90,0.94,1.06), vec3(0.78,0.84,1.10), gNight); vec3 hiTint = mix(vec3(1.04,1.0,0.94), vec3(1.10,0.98,0.84), gGold);
+   c *= mix(shadowTint, hiTint, smoothstep(0.2, 0.85, lum));
+   c = mix(c, c*c*(3.0-2.0*c), 0.55); c = c*1.04 - 0.01;
+   c = mix(c, c*vec3(1.06,0.98,0.88), gGold*0.6); c = mix(c, c*vec3(0.84,0.9,1.12), gNight*0.5);
+   vec2 vq = vUv - 0.5; c *= 1.0 - dot(vq,vq)*0.45;
+  } else if(LOOK == 3){ /* 필름: warm, soft, lifted blacks, a little halation */
+   c = mix(vec3(lum), c, 1.08);
+   vec3 shadowTint = mix(vec3(0.92,0.9,1.0), vec3(0.8,0.82,1.04), gNight); vec3 hiTint = vec3(1.06,1.0,0.9);
+   c *= mix(shadowTint, hiTint, smoothstep(0.15, 0.85, lum));
+   c = c*0.9 + 0.05; c = mix(c, c*c*(3.0-2.0*c), 0.3);
+   c = mix(c, c*vec3(1.08,0.99,0.88), gGold*0.6); c = mix(c, c*vec3(0.86,0.9,1.08), gNight*0.5);
+   vec2 vq = vUv - 0.5; c *= 1.0 - dot(vq,vq)*0.6;
+   c += (hash21(gl_FragCoord.xy*0.5 + floor(gTime*18.0)) - 0.5) * 0.03;
+  } else { /* 종이: the dusty print */
+   float sat = length(c - vec3(lum));
+   vec3 cream = vec3(0.96,0.93,0.86), sage = vec3(0.62,0.72,0.66), dusk = vec3(0.56,0.60,0.74), blush = vec3(0.93,0.78,0.78);
+   vec3 shadowC = mix(sage, dusk, gNight); vec3 lightC = mix(cream, blush, 0.35*gGold + 0.15);
+   vec3 tint = mix(shadowC, lightC, smoothstep(0.18, 0.82, lum)); float keep = smoothstep(0.08, 0.45, sat);
+   c = mix(mix(vec3(lum)*tint/max(dot(tint,vec3(0.299,0.587,0.114)),1e-3), c, 0.55), c, keep*0.6);
+   c = mix(vec3(dot(c,vec3(0.299,0.587,0.114))), c, 0.9 + 0.25*keep);
+   c = c*0.86 + 0.07; c = mix(c, c*c*(3.0-2.0*c), 0.25); c = min(c, vec3(0.965));
+   c = mix(c, c*vec3(1.05,0.98,0.90), gGold*0.5); c = mix(c, mix(c, vec3(0.36,0.42,0.60), 0.28)*vec3(0.88,0.93,1.10), gNight*0.7);
+   vec2 cell = floor(gl_FragCoord.xy / 2.0); float seed = floor(gTime*18.0);
+   float n1 = hash21(cell + seed), n2 = hash21(cell*1.7 + seed + 11.0), n3 = hash21(cell*0.9 + seed + 23.0);
+   float mid = 1.0 - abs(lum-0.5)*1.3; float gs = gGrain * (0.045 + 0.03*gNight);
+   c += vec3(n1-0.5, n2-0.5, n3-0.5) * vec3(1.0, 0.85, 0.9) * gs * mid;
+   c += (hash21(gl_FragCoord.xy*0.5 + seed*3.0) - 0.5) * 0.012;
+   vec2 vq = vUv - 0.5; c *= 1.0 - dot(vq,vq)*0.22;
+  }
   gl_FragColor = vec4(clamp(c,0.0,1.0),1.0); return; }
 
 
@@ -381,7 +405,7 @@ class PixelPipe{
   this.r.setPixelRatio(1); this.r.shadowMap.enabled = true; this.r.shadowMap.type = T3.PCFSoftShadowMap;   /* soft-edged shadows for the matte print look (the pixel pass snaps them anyway) */
   this.qs = new T3.Scene(); this.qc = new T3.OrthographicCamera(-1,1,1,-1,0,1);
   this.mat = new T3.ShaderMaterial({
-   uniforms:{tColor:{value:null},tDepth:{value:null},res:{value:new T3.Vector2(1,1)},outline:{value:0},dither:{value:0.0},quant:{value:1},pxMode:{value:2},pxMix:{value:0.55},pxSat:{value:1.2},pxLev:{value:7},pxEdge:{value:0.6},pxVig:{value:0.12},pxTint:{value:new T3.Vector3(1.02,1.0,0.97)},gTime:{value:0},gGrain:{value:1},gNight:{value:0},gGold:{value:0},gSun:{value:new T3.Vector2(0.5,0.9)},gSunOn:{value:0},gRays:{value:0.5},gBloom:{value:0.5},gGrade:{value:1},pxRamp:{value:0.35},pxGlow:{value:0},palLab:{value:palLab},palRGB:{value:palRGB}},
+   uniforms:{tColor:{value:null},tDepth:{value:null},res:{value:new T3.Vector2(1,1)},outline:{value:0},dither:{value:0.0},quant:{value:1},pxMode:{value:2},pxMix:{value:0.55},pxSat:{value:1.2},pxLev:{value:7},pxEdge:{value:0.6},pxVig:{value:0.12},pxTint:{value:new T3.Vector3(1.02,1.0,0.97)},gTime:{value:0},gGrain:{value:1},gLook:{value:2},gNight:{value:0},gGold:{value:0},gSun:{value:new T3.Vector2(0.5,0.9)},gSunOn:{value:0},gRays:{value:0.5},gBloom:{value:0.5},gGrade:{value:1},pxRamp:{value:0.35},pxGlow:{value:0},palLab:{value:palLab},palRGB:{value:palRGB}},
    vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.0,1.0); }',
    fragmentShader:FRAG, depthTest:false, depthWrite:false});
   this.qs.add(new T3.Mesh(new T3.PlaneGeometry(2,2), this.mat)); this.rt=null; this.w=8; this.h=8;
@@ -1515,6 +1539,7 @@ class Rig{
   if(top==='vest'){ [-1,1].forEach(s=>box(0.15,0.38,0.012,L.vest,s*0.095,0.2,0.112,SP)); box(0.36,0.38,0.012,L.vest,0,0.2,-0.112,SP); }
   if(top==='cardigan'){ [-1,1].forEach(s=>box(0.13,0.48,0.014,L.cardi,s*0.118,0.24,0.112,SP)); box(0.37,0.48,0.012,L.cardi,0,0.24,-0.112,SP); [0.14,0.26,0.38].forEach(y=>box(0.02,0.02,0.01,'#f4f0e6',0.06,y,0.12,SP)); }
   if(top==='stripe') [0.08,0.18,0.28,0.38].forEach(y=>box(0.366,0.035,0.216,L.stripe,0,y,0,SP));
+  if(L.backLogo){ const bp=new T3.Mesh(new T3.PlaneGeometry(0.2,0.2*18/13),capLogoMat()); bp.position.set(0,0.3,-0.114); bp.rotation.y=Math.PI; SP.add(bp); }   /* the 녹기전에 B on the back */
   if(L.logo){ const lt=canvasTex(32,16,(g,w,h)=>{ g.clearRect(0,0,w,h); g.fillStyle=L.logoC||'#1b1f24'; g.font='900 13px Galmuri,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L.logo,w/2,h/2+1); }); lt.magFilter=T3.NearestFilter; const lp=new T3.Mesh(new T3.PlaneGeometry(0.2,0.1),new T3.MeshBasicMaterial({map:lt,transparent:true})); lp.position.set(0,0.32,0.108); SP.add(lp); }
   if(top==='overalls'){ box(0.21,0.2,0.012,L.pants,0,0.11,0.111,SP); [-1,1].forEach(s=>{ box(0.04,0.3,0.012,L.pants,s*0.09,0.33,0.111,SP); box(0.04,0.3,0.012,L.pants,s*0.09,0.33,-0.111,SP); box(0.025,0.025,0.01,'#e3cf9e',s*0.09,0.2,0.118,SP); }); }
   if(top==='jacket'){ [-1,1].forEach(s=>{ box(0.14,0.5,0.014,L.jk,s*0.115,0.25,0.112,SP); box(0.06,0.12,0.014,dk(L.jk,0.8),s*0.06,0.44,0.12,SP); }); box(0.37,0.5,0.012,L.jk,0,0.25,-0.112,SP); }
@@ -1609,6 +1634,8 @@ class Rig{
   if(ht===6){ cap(HR+0.018,Math.PI*0.42,L.hat,0.004); const br=new T3.Mesh(new T3.CylinderGeometry(0.14,0.14,0.016,12,1,false,-Math.PI*0.5,Math.PI),mat(L.hat)); br.position.set(0,HY+HR*0.3,-HR*0.32); br.rotation.set(-0.12,Math.PI,0); br.scale.set(HR/0.115,HR/0.115,HR/0.115*1.4); br.castShadow=true; N.add(br); }   // ball cap worn backwards
   if(ht===4){ const b=sph(HR*1.3,L.hat,0.025,HY+HR*0.85,-0.01,N,{sc:[1,0.3,1]}); b.rotation.z=-0.18; sph(0.012,L.hat,0.03,HY+HR*1.3,-0.01,N,{ws:5,hs:4}); }   // beret
   if(L.accT===1) sph(0.035,L.acc,0.095,0.27,0.05,N,{ws:6,hs:5,sc:[1,0.7,1]});                                                       // hair bow
+  if(L.beard){ const bc=L.beard===true?dk(H,0.9):L.beard, FZ=HR*1.0+0.012;   /* beard, sitting proud of the face so it reads at a distance: mustache bar, chin block, jaw sides */
+   box(HR*0.8,0.03,0.03,bc,0,HY-HR*0.52,FZ,N); box(HR*1.3,0.08,0.035,bc,0,HY-HR*0.8,FZ-0.01,N); [-1,1].forEach(sd=>{ const j=box(0.045,HR*0.9,0.05,bc,sd*HR*0.92,HY-HR*0.45,HR*0.55,N); }); box(HR*1.9,0.07,HR*0.9,bc,0,HY-HR*0.92,HR*0.35,N); }
   if(L.accT===3){ box(0.2,0.07,0.2,L.acc,0,0.0,0,N); box(0.06,0.16,0.03,L.acc,0.05,-0.1,0.11,N); }                                // scarf
   if(L.accT===2&&!L.tie) box(0.05,0.18,0.02,L.acc,0,-0.16,0.118,N);                                                               // tie
   // eyes carry all the expression (no mouth/nose): big, centred on the flat face. States: normal / happy / wink / closed / sparkle
@@ -2110,6 +2137,7 @@ const STAFF_LOOKS={3:{shirt:'#f4f6f7',sleeve:'#f4f6f7',apron:'#2a4b7e',pants:'#1
  4:{shirt:'#1b1f24',sleeve:'#1b1f24',apron:'#0b0d10',pants:'#1b1f24',skin:'#f2c9a4',hair:'#2d1d12',shoe:'#0b0d10',cap:'#0b0d10'}};
 let staffSel=lsGet('yeomni3-staff',4); if(OKS.indexOf(staffSel)<0) staffSel=4;
 const POS_SPOT=v(SCX-(SH_L/2-0.55)/TUNE.w,STF_Z), CAB_HOME=SPOTS[0].s, CUPS=v(2.42,-1.72-2*TILE2), PACKS=v(2.42,-1.12-2*TILE2), FRZ=v(1.05,-1.85), SINK=v(2.0,-1.85);
+const HERO_LOOK=()=>({shirt:'#8c9096',sleeve:'#8c9096',pants:'#1b1f24',skin:'#f2c9a4',hair:'#2d1d12',shoe:'#1b1f24',hs:'short',top:'hoodie',bot:'pants',hat:'#2a4b7e',hatT:1,beard:'#4a2f1c',backLogo:true,name:'나',kind:'hero',umb:'#2a4b7e',acc:'#f4f6f7'});   /* 주인공: blue cap, grey hoodie with the B on the back, black pants, mustache + beard */
 const SCOOP_LOOK=()=>Object.assign({},STAFF_LOOKS[staffSel],{hair:'#121212',cap:'#8e949b',hs:'short',long:false});   /* 녹건: grey cap, black hair */
 function spawnStaff(walkIn){
  const a=new Agent('staff',SCOOP_LOOK()); a.role='scoop';
@@ -2423,7 +2451,14 @@ function popCodeGuest(){ const now=simDate(), k=now.getHours()*60+now.getMinutes
 const _c1=new T3.Color(),_c2=new T3.Color();
 function mixHex(a,b,t){ return _c1.set(a).clone().lerp(_c2.set(b),t); }
 // [hour, skyTop, skyBottom, sunColour, sunI, ambColour, ambI] — kept light and airy
-function skyKeys(r,s){ const N=['#1b2a5c','#3b5296','#8fa6de',0.28,'#5a6fb0',0.7], DAWN=['#8fc0f0','#ffd3a4','#ffd6a0',0.58,'#a0a8c8',0.52], DAY=['#58a8ec','#d6e9f7','#fff2cf',1.2,'#b8cde6',0.62], GOLD=['#7fa9e4','#ffcf9a','#ffa552',1.05,'#caa08c',0.46], DUSK=['#6f87d8','#ffb89a','#ee7f6c',0.44,'#8886b8',0.6];
+const LOOKS=[null,
+ {n:'매트 · 원색',N:['#1f2f66','#3e56a0','#8aa6e8',0.3,'#5a6fb0',0.7],DAWN:['#88c2f4','#ffd0a0','#ffd49a',0.58,'#a0a8c8',0.52],DAY:['#4ea4f2','#cfe6fa','#fff1c8',1.22,'#b8cde6',0.62],GOLD:['#7aa6e6','#ffc994','#ffa048',1.05,'#caa08c',0.46],DUSK:['#6a84dc','#ffb394','#f07a66',0.44,'#8886b8',0.6],hemi:['#9fc4ea','#5a5f6a']},
+ {n:'비비드',N:['#1b2a5c','#3b5296','#8fa6de',0.28,'#5a6fb0',0.7],DAWN:['#8fc0f0','#ffd3a4','#ffd6a0',0.58,'#a0a8c8',0.52],DAY:['#58a8ec','#d6e9f7','#fff2cf',1.2,'#b8cde6',0.62],GOLD:['#7fa9e4','#ffcf9a','#ffa552',1.05,'#caa08c',0.46],DUSK:['#6f87d8','#ffb89a','#ee7f6c',0.44,'#8886b8',0.6],hemi:['#9fc4ea','#5a5f6a']},
+ {n:'필름',N:['#23305a','#45578e','#9aa8d0',0.3,'#66729a',0.72],DAWN:['#a2c2e4','#f9d9bc','#f8d4a6',0.56,'#a8b0c2',0.55],DAY:['#7db4e6','#e2ecf3','#fff0d4',1.1,'#c2cfdc',0.66],GOLD:['#9bb3da','#f8ccaa','#f7ad78',0.98,'#cdb0a0',0.5],DUSK:['#8192c8','#f3c0aa','#e08a7a',0.42,'#9494b2',0.62],hemi:['#bcd0e4','#6a6e74']},
+ {n:'종이',N:['#2e3a58','#4d5a80','#9aa8cc',0.3,'#66729a',0.72],DAWN:['#aac6dc','#f4dcc4','#f6d8b0',0.55,'#a8b0c2',0.55],DAY:['#8fbfe0','#e6eef0','#fff1d8',1.05,'#c6d2d8',0.68],GOLD:['#a9bfd6','#f3d6b8','#f4b784',0.92,'#cdb4a4',0.52],DUSK:['#8a9ac4','#ecc6b2','#d99487',0.42,'#9494b2',0.62],hemi:['#c9d6cf','#6a6e74']}];
+let LOOK=+lsGet('yeomni-look',2); if(!(LOOK>=1&&LOOK<=4)) LOOK=2;
+function setLook_(k){ LOOK=k; lsSet('yeomni-look',k); pipe.mat.uniforms.gLook.value=k; const L=LOOKS[k]; hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); if(window.paintLookB) paintLookB(); }
+function skyKeys(r,s){ const L=LOOKS[LOOK], N=L.N, DAWN=L.DAWN, DAY=L.DAY, GOLD=L.GOLD, DUSK=L.DUSK;
  return [[0,...N],[r-0.6,...N],[r+0.2,...DAWN],[r+1.2,...DAY],[s-1.0,...DAY],[s-0.1,...GOLD],[s+0.6,...DUSK],[s+1.3,...N],[24,...N]]; }
 let shopLight=1;
 const TREE_COL={0:['#5f7436','#93a85a'],1:['#f29db0','#93a85a'],2:['#2e8a63','#5f7436'],3:['#5f7436','#93a85a'],4:['#e0843c','#f5e08a'],5:['#f4f6f7','#d2d8dd']};
@@ -2616,6 +2651,7 @@ function toggleInside(){ S.forceIn=!S.forceIn; if(!S.forceIn&&S.zoom>=INZ) S.zoo
 let PXB=1, cssPx=0, mainRect={left:0,top:0,w:0,h:0};
 let CSS0_OVR=0; const DPR=()=>window.devicePixelRatio||1, CSS0=()=>CSS0_OVR||Math.max(2,Math.round((window.innerWidth<560?2.6:3.1)*DPR()))/DPR();   // pixel size at zoom 1 (unchanged default look)
 const PX_BEAT=0.085, PX_STEPS=[1,1.4,1.9,2.5];
+setTimeout(()=>setLook_(LOOK),0);
 const PX_LV=['약','중','강','끄기'], PX_EXP=[0.13,0.29,0.5,0]; let pxLv=3;   /* default: the pixel effect is off (the graded full-res look); 픽셀 켜기 turns it on */   // 끄기: full resolution, real colours (for tuning the scene itself)
 const PX_OFF=()=>pxLv===3;
 const LG_DEF={auto:1,az:55,el:35,sun:1,sky:1,room:1,jar:1,pend:1,ray:1,spill:1};
@@ -2978,7 +3014,7 @@ function suitLook(i,woman,suit,tie){ const L=lookFor('worker'); Object.assign(L,
 function spawnSuits(){ const n=4+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, suit=pick(['#23272e','#2c3445','#3a3f47','#1d2a3f']), ties=TIES.slice().sort(()=>Math.random()-0.5), W=[];
  for(let i=0;i<n;i++){ const g=spawnGuest({look:suitLook(i,Math.random()<0.45,suit,ties[i%ties.length]),side,force:true,npc:true}); if(g){ g.pos.x+=side*i*0.62; g.pos.z+=(i%2)*0.22; g.speed=1.5; W.push(g); } }
  if(W.length&&typeof groupUp==='function') groupUp(W,'file'); return W.length; }
-function spawnTick(){ if(!shopOpen()) return; if(Math.random()<0.04&&queue.length<3){ spawnSuits(); return; } if(Math.random()<0.12&&queue.length<4){ spawnStudents(true); return; } const code=popCodeGuest(); if(code){ const look=codeLook(code.c); const g=spawnGuest({look}); if(g){ toast(`${look.name} 님이 오셨어요,,`); } return; }
+function spawnTick(){ if(!shopOpen()) return; if(!S.mp&&Math.random()<0.12&&!agents.some(a=>a.look&&a.look.kind==='hero')){ const g=spawnGuest({look:HERO_LOOK(),side:Math.random()<0.5?-1:1}); if(g){ setTag(g,'나','me'); } return; }   /* the 주인공 drops by for a cup */ if(Math.random()<0.04&&queue.length<3){ spawnSuits(); return; } if(Math.random()<0.12&&queue.length<4){ spawnStudents(true); return; } const code=popCodeGuest(); if(code){ const look=codeLook(code.c); const g=spawnGuest({look}); if(g){ toast(`${look.name} 님이 오셨어요,,`); } return; }
  const h=hourOf(simDate()); const r=Math.random();
  if(h>=12&&h<13.5&&r<0.35&&queue.length<4){ const n=3+((Math.random()*2)|0); const side=Math.random()<0.5?-1:1; const W=[]; for(let i=0;i<n;i++){ const g=spawnGuest({kind:'worker',side}); if(g){ g.pos.x+=side*i*0.7; W.push(g); } } groupUp(W,pick(['trio','trio','file'])); return; }
  if(r<0.045&&!car&&mood()==='day'){ carDrop(lookFor(Math.random()<0.11?pick(['grandma','grandpa']):Math.random()<0.1?'preg':'normal')); return; }   // guests arriving by car: as often as elderly guests
@@ -3001,7 +3037,7 @@ function tick(dt){
  updShopPhase();
  if(shopOpen()&&(!S.mp||S.solo)){ spawnT-=dt; if(spawnT<=0){ spawnTick(); spawnT=(22+Math.random()*26)/rateNow(); } }
  walkT-=dt; if(walkT<=0){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=S.mp&&!S.solo?(md==='night'?30:14)+Math.random()*16:(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;   /* 같이 보기: passers-by now and then (each screen has its own), they never come in */
-  if(n<(S.mp&&!S.solo?6:10)&&md!=='night'&&Math.random()<0.3){ spawnStudents(false); } else if(n<(S.mp&&!S.solo?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
+  if(!S.mp&&Math.random()<0.08&&!agents.some(a=>a.look&&a.look.kind==='hero')){ const w=spawnWalker({look:HERO_LOOK(),plan:Math.random()<0.6?'look':'pass'}); setTag(w,'나','me'); } else if(n<(S.mp&&!S.solo?6:10)&&md!=='night'&&Math.random()<0.3){ spawnStudents(false); } else if(n<(S.mp&&!S.solo?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
  if(S.visitNo>=lastVisit+10){ lastVisit=S.visitNo; cleanDue=true; }
  agents.slice().forEach(a=>{ const think=!S.mp||MP.isHost(); if(a.kind==='guest'){ if(think) guestBrain(a,dt); } else if(a.kind==='walker') walkerBrain(a,dt); else if(!a.leaving&&(think||!a.netPose)) staffBrain(a); a.update(dt); if(a.dead){ if(a.kind==='staff'){ const i=staff.indexOf(a); if(i>=0) staff.splice(i,1); } if(a===player) tourEnd(); a.remove(); } });
  const h=hourOf(simDate()); let tmp=(h>11&&h<17?1.15:0.95)*(S.rain?0.8:1); if(S.season===3) tmp*=1.9; if(S.season===5) tmp*=0.45; if(S.season===4) tmp*=0.8;
@@ -3528,7 +3564,7 @@ const MP=(()=>{
  /* ---- joining ---- */
  function start(){ if(!api.on) return; if(st.ready) return; S.mp=true; S.solo=url==='local'; document.body.classList.add('mp');
   /* 같이 보기 has no NPC guests: whoever is already in the shop (the two opening-time guests, passers-by) leaves right away, the line and seats are cleared */
-  if(!S.solo){ agents.slice().forEach(a=>{ if(a.kind==='guest'||a.kind==='walker'){ if(a.seat){ a.seat.who=null; a.seat=null; } a.remove(); } }); queue.length=0; orders.length=0; seats.forEach(se=>{ se.who=null; }); SPOTS.forEach(sp=>{ sp.who=null; }); staff.forEach(st_=>{ st_.clear(); st_.order=null; st_.helping=false; dropItem(st_,0); dropItem(st_,1); if(st_.pad) dropPaddle(st_); }); } const gx=S.solo&&GUESTS[0]; const look=gx?codeLook(gx.c):lookFor('normal'); delete look.name;
+  if(!S.solo){ agents.slice().forEach(a=>{ if(a.kind==='guest'||a.kind==='walker'){ if(a.seat){ a.seat.who=null; a.seat=null; } a.remove(); } }); queue.length=0; orders.length=0; seats.forEach(se=>{ se.who=null; }); SPOTS.forEach(sp=>{ sp.who=null; }); staff.forEach(st_=>{ st_.clear(); st_.order=null; st_.helping=false; dropItem(st_,0); dropItem(st_,1); if(st_.pad) dropPaddle(st_); }); } const gx=S.solo&&GUESTS[0]; const look=gx?codeLook(gx.c):HERO_LOOK(); delete look.name;
   if(url==='local'){ /* 혼자 보기: no server, I am the only player and the host */ const ws={readyState:1,send(){},close(){}}; st.ws=ws; const me='me'; setTimeout(()=>onMsg({t:'welcome',id:me,host:me,name:'나',players:[{id:me,name:'나',x:-0.3,z:5.3,look:Object.assign({},look)}]}),30); return; }
   const u=new URL(url,location.href); u.searchParams.set('look',JSON.stringify(look)); st.ws=new WebSocket(u.toString().replace(/^http/,'ws'));
   st.ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(x){ return; } onMsg(m); };
@@ -3708,11 +3744,14 @@ const MP=(()=>{
   return true; };
  const cnt=document.createElement('div'); cnt.id='mpCount'; document.body.appendChild(cnt);
  /* settings: turn the pixel effect off (sharp, full-resolution picture) or back on; remembered on this device */
- const pxB=document.createElement('button'); pxB.type='button'; pxB.id='pxB'; pxB.hidden=true; document.body.appendChild(pxB);
- const paintPxB=()=>{ const off=PX_OFF(); pxB.textContent=off?'⚙ 픽셀 켜기':'⚙ 픽셀 해제'; pxB.setAttribute('aria-pressed',off?'true':'false'); };
+ const pxB=document.createElement('button'); pxB.type='button'; pxB.id='pxB'; pxB.hidden=false; document.body.appendChild(pxB);
+ const lookB=document.createElement('button'); lookB.type='button'; lookB.id='lookB'; document.body.appendChild(lookB);
+ window.paintLookB=()=>{ lookB.textContent='🎨 '+LOOKS[LOOK].n; lookB.hidden=PX_OFF()?false:true; };
+ lookB.onclick=()=>{ setLook_(LOOK%4+1); toast('룩: '+LOOKS[LOOK].n); };
+ const paintPxB=()=>{ const off=PX_OFF(); pxB.textContent=off?'⚙ 픽셀 켜기':'⚙ 픽셀 해제'; pxB.setAttribute('aria-pressed',off?'true':'false'); if(window.paintLookB) paintLookB(); };
  pxB.onclick=()=>{ pxLv=PX_OFF()?0:3; lsSet('yeomni-pxoff',PX_OFF()?1:0); paintPx(); paintPxB(); toast(PX_OFF()?'픽셀 해제,, 선명한 화면이에요':'픽셀 다시 켰어요,,'); };
- function paintCount(){ if(pxB.hidden&&st.ready){ pxB.hidden=false; const v=lsGet('yeomni-pxoff',null); if(v!=null){ pxLv=+v===1?3:0; paintPx(); } paintPxB(); } cnt.textContent=!st.ready?'':S.solo?'혼자 보기':`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`; }
- api.leave=()=>{ if(!S.solo) return; const me=player; if(me){ hostDrop(me); me.dead=true; me.remove(); } st.players.clear(); st.ready=false; st.me=st.host=null; st.ws=null; url='local'; S.mp=false; S.solo=false; S.mode='iso'; S.fp=false; document.body.classList.remove('mp','tour'); player=null; clearDest(); tbarSet([]); narr(''); paintCount(); emoBox.hidden=true; pxB.hidden=true; }; api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
+ function paintCount(){ if(!pxB._init){ pxB._init=1; const v=lsGet('yeomni-pxoff',null); if(v!=null){ pxLv=+v===1?3:0; paintPx(); } paintPxB(); } cnt.textContent=!st.ready?'':S.solo?'혼자 보기':`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`; }
+ api._paintBtns=()=>paintCount(); api.leave=()=>{ if(!S.solo) return; const me=player; if(me){ hostDrop(me); me.dead=true; me.remove(); } st.players.clear(); st.ready=false; st.me=st.host=null; st.ws=null; url='local'; S.mp=false; S.solo=false; S.mode='iso'; S.fp=false; document.body.classList.remove('mp','tour'); player=null; clearDest(); tbarSet([]); narr(''); paintCount(); emoBox.hidden=true; }; api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
 function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); return; }   /* capped at 60 fps: on 120 Hz screens every other refresh is skipped (cooler, less battery, same look) */
  let dt=Math.max(0,Math.min(0.1,(now-last)/1000)); last=now; acc+=dt*S.speed; let n=0;
  while(acc>=FIX && n<16){ tick(FIX); acc-=FIX; n++; } if(n>=16) acc=0;
@@ -3723,7 +3762,7 @@ function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); ret
  uiT-=dt; if(uiT<=0){ uiT=0.25; syncBig(); updCupCard(); }
  requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
-setTimeout(endSplash,2600); if(MP.on) setTimeout(()=>MP.start(),600); setTimeout(()=>toast('확대하면 가게 안이 보여요,,'),3400);
+setTimeout(endSplash,2600); setTimeout(()=>{ try{ MP._paintBtns(); }catch(e){} },50); if(MP.on) setTimeout(()=>MP.start(),600); setTimeout(()=>toast('확대하면 가게 안이 보여요,,'),3400);
 })();
 </script>
 
