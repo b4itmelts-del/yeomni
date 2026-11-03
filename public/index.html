@@ -479,7 +479,7 @@ const hourOf=d=>d.getHours()+d.getMinutes()/60+d.getSeconds()/3600;
 function mood(){ const d=simDate(), h=hourOf(d), st=sunTimes(d), c=closeH(d);
  if(h<st.rise) return 'night'; if(h<OPEN_H) return 'pre'; if(h<Math.min(st.set,c)) return 'day'; if(h<c) return 'dusk'; return 'night'; }
 const MOODN={pre:'준비',day:'낮',dusk:'밤',night:'마감'};
-function shopPhaseCalc(){ if(S.mp) return 'open';   /* 같이 보기: the shop is open whenever people are in */ const d=simDate(), h=hourOf(d), c=closeH(d);
+function shopPhaseCalc(){ if(S.mp&&!S.solo) return 'open';   /* 같이 보기: the shop is open whenever people are in */ const d=simDate(), h=hourOf(d), c=closeH(d);
  if(h>=OPEN_H && h<c-4/60) return 'open'; if(h>=c-4/60 && h<c+0.25) return 'closing'; return 'closed'; }
 let phaseCache='open'; const shopOpen=()=>phaseCache==='open'; const shopPhase=()=>phaseCache;
 const SEAS=[{k:'평상시'},{k:'봄',p:'sp'},{k:'비 오는 여름',rain:1},{k:'불볕 여름',heat:1},{k:'가을',p:'au'},{k:'겨울',p:'sn',snow:1}];
@@ -1522,7 +1522,7 @@ class Rig{
   const ht=L.hatT||(L.hat?1:0), hood=!!L.hood&&!ht;
   // hair: a cap of a slightly bigger sphere; the style decides how far down it reaches and what hangs off the back
   const cap=(r,tl,c,dy,dz,sc)=>sph(r,c,0,HY+(dy||0),dz||0,N,{tl,sc:sc||[1,HSY,0.96]});
-  const back=(r,c,t0,tl,sc)=>sph(r,c,0,HY,-0.005,N,{p0:Math.PI*0.8,pl:Math.PI*1.4,t0,tl,sc:sc||[1,HSY,0.96]});   // back/side wedge (open at the face)
+  const back=(r,c,t0,tl,sc)=>sph(r,c,0,HY,-0.005,N,{p0:Math.PI*0.78,pl:Math.PI*1.44,t0:0,tl:t0+tl,sc:sc||[1,HSY,0.96]});   // back/side wedge (open at the face); it always starts at the crown so there is no seam between it and the cap
   if(!hood){
    if(hs==='buzz'){ cap(HR+0.006,Math.PI*0.4,H); back(HR+0.006,H,Math.PI*0.4,Math.PI*0.3); }
    else if(hs==='spacebuns'){ cap(HR+0.012,Math.PI*0.42,H); back(HR+0.014,H,Math.PI*0.42,Math.PI*0.32); [-1,1].forEach(sd=>sph(0.05,H,sd*0.085,0.27,-0.02,N,{ws:7,hs:5})); }   // two buns on top
@@ -1927,7 +1927,7 @@ function codeLook(c){ const hs=['short','bob','long','pony','curly','bun'][c.hs]
   hat:c.hat?MP_PAL[c.hatc]:null,hatT:c.hat||0,accT:c.acc||0,acc:MP_PAL[c.accc],glasses:!!c.gl,belly:!!c.preg,umb:'#2a4b7e',kind:'code',name:c.name||'손님'}; }
 
 /* ---- guests ---- */
-function spawnGuest(opt){ opt=opt||{}; if(S.mp&&!opt.player&&!opt.npc) return null;   /* 같이 보기: only real people */ if(!opt.force&&(!shopOpen()||queue.length>=QSLOT.length-1)) return null;
+function spawnGuest(opt){ opt=opt||{}; if(S.mp&&!S.solo&&!opt.player&&!opt.npc) return null;   /* 같이 보기: only real people */ if(!opt.force&&(!shopOpen()||queue.length>=QSLOT.length-1)) return null;
  const look=opt.look||lookFor(opt.kind||'normal'); const g=new Agent('guest',look);
  const side=opt.side||(Math.random()<0.5?-1:1); g.place(opt.at||v(side*6.0,5.15+Math.random()*0.3),side>0?-Math.PI/2:Math.PI/2);
  g.speed=look.cane?0.55:(look.kind==='grandpa'||look.kind==='grandma'||look.belly)?0.85:look.kid?1.75:1.45+Math.random()*0.45;
@@ -2324,7 +2324,7 @@ function updCar(dt){
   for(const o of cars){ if(o!==c&&o.x<c.x&&c.x-o.x<(c.len+o.len)/2+1.0) v=Math.min(v,Math.max(0,(c.x-o.x-(c.len+o.len)/2-0.4)*2)); }
   for(const a of agents){ if(a.alpha>0.3&&Math.abs(a.pos.z-CAR_Z)<0.95&&a.pos.x<c.x-c.len/2+0.2&&a.pos.x>c.x-c.len/2-2.4) v=Math.min(v,Math.max(0,(c.x-c.len/2-a.pos.x-0.6)*1.5)); }
   if(c.st==='in'){ const d=c.x-0.8; v=Math.min(v,Math.max(0.15,d*1.6)); if(d<0.03){ c.st='stop'; c.t=0; } }
-  else if(c.st==='stop'){ v=0; if(c.t>0.8&&!c.dropped){ c.dropped=true; if(!S.mp){ const g=spawnGuest({look:c.look,at:v3(0.8,5.75),force:true}); if(g) g.alpha=0.3; } } if(c.t>2.4){ c.st='drive'; c.v=2.2; } }
+  else if(c.st==='stop'){ v=0; if(c.t>0.8&&!c.dropped){ c.dropped=true; if(!S.mp||S.solo){ const g=spawnGuest({look:c.look,at:v3(0.8,5.75),force:true}); if(g) g.alpha=0.3; } } if(c.t>2.4){ c.st='drive'; c.v=2.2; } }
   else if(c===car&&c.v<5) c.v+=dt*2;
   c.x-=v*dt; c.g.position.x=c.x*TUNE.w; c.g.visible=Math.abs(c.x)<6.3&&GFADE.value<0.5; const hon=(S.night||0)>0.35; c.g.userData.hl.forEach(m=>m.visible=hon);
   if(c.x<-9.5){ scene.remove(c.g); PXL.dropCar(c); cars.splice(i,1); if(car===c) car=null; } } }
@@ -2337,10 +2337,10 @@ function laneZ(){ return cars.some(c=>Math.abs(c.x)<7)?5.12+Math.random()*0.3:5.
 function spawnWalker(opt){ opt=opt||{}; const look=opt.look||lookFor(opt.kind||(Math.random()<0.083?pick(['grandma','grandpa']):pick(['normal','normal','normal','worker','kid','foreign']))); const w=new Agent('walker',look);
  const side=opt.side||(Math.random()<0.5?-1:1), z=opt.z!=null?opt.z:laneZ(); w.place(v(side*(6.1+(opt.off||0)),z),side>0?-Math.PI/2:Math.PI/2);
  w.speed=look.cane?0.55:(look.kind==='grandpa'||look.kind==='grandma')?0.85:look.kid?1.6:1.25+Math.random()*0.5; if(opt.speed) w.speed=opt.speed;
- w.side=side; w.laneZ=z; w.plan=opt.plan||pick(WALK_PLANS); if(S.mp&&w.plan==='enter') w.plan='look'; w.chat=opt.chat||null; w.ci=opt.ci||0; if(look.kid&&!opt.plan&&Math.random()<0.4) w.plan='measure'; w.alpha=0; w.stage=0; return w; }
+ w.side=side; w.laneZ=z; w.plan=opt.plan||pick(WALK_PLANS); if(S.mp&&!S.solo&&w.plan==='enter') w.plan='look'; w.chat=opt.chat||null; w.ci=opt.ci||0; if(look.kid&&!opt.plan&&Math.random()<0.4) w.plan='measure'; w.alpha=0; w.stage=0; return w; }
 function spawnCrowd(){ const n=3+((Math.random()*3)|0), side=Math.random()<0.5?-1:1, z=cars.some(c=>Math.abs(c.x)<7)?5.2:5.6+Math.random()*1.4, sp=1.3+Math.random()*0.3;
- const enterAll=!S.mp&&shopOpen()&&Math.random()<0.4&&queue.length<6;
- /* sometimes the group stops in front of the shop and chats a while, then walks on */ const chat=!enterAll&&Math.random()<(S.mp?0.6:0.3)?{x:-1.4+Math.random()*3.4,z:5.35,n,lead:(Math.random()*n)|0}:null;
+ const enterAll=(!S.mp||S.solo)&&shopOpen()&&Math.random()<0.4&&queue.length<6;
+ /* sometimes the group stops in front of the shop and chats a while, then walks on */ const chat=!enterAll&&Math.random()<(S.mp&&!S.solo?0.6:0.3)?{x:-1.4+Math.random()*3.4,z:5.35,n,lead:(Math.random()*n)|0}:null;
  for(let i=0;i<n;i++) spawnWalker({side,z:z+(i%2)*0.45,off:Math.floor(i/2)*0.75,speed:sp,chat,ci:i,plan:chat?'chat':enterAll?'enter':(i===0&&Math.random()<0.5?'look':'pass')}); }
 function measureSteps(a){ return [walk(DINO_AT,0,'키 재보는 중,,'),face(0),
   act(3,(p,ag)=>{ kfV(p,[[0,REST_R],[0.25,[0.07,0.8,-0.03]],[0.75,[0.07,0.82,-0.05]],[1,REST_R]],ag.want.rh); ag.want.lh.fromArray(REST_L); ag.want.nod=kfN(p,[[0,0],[0.3,-0.12],[0.7,-0.12],[1,0]]); ag.want.lean=-0.03; },
@@ -2362,7 +2362,7 @@ function walkerBrain(w,dt){
    return; }
   if(w.plan==='measure'&&!agents.some(o=>o!==w&&o.pos.distanceTo(DINO_AT)<0.45)){ w.then(...measureSteps(w)); return; }
   if(w.plan==='enter'){ w.then(walk(v(w.pos.x*0.4+(w.side>0?1.2:-0.4),Math.min(w.laneZ,5.3)),null,'가게로 가는 중,,')); w.plan2='enter'; return; } }
- if(w.stage===1){ w.stage=2; if(w.plan2==='enter'&&!S.mp&&walkerToGuest(w)) return; w.then(walk(v(end,w.laneZ>5.6?laneZ():w.laneZ),null,'지나가는 중,,')); return; }
+ if(w.stage===1){ w.stage=2; if(w.plan2==='enter'&&(!S.mp||S.solo)&&walkerToGuest(w)) return; w.then(walk(v(end,w.laneZ>5.6?laneZ():w.laneZ),null,'지나가는 중,,')); return; }
  if(w.stage===2&&!out) w.then(walk(v(end,w.pos.z),null,'지나가는 중,,')); }
 /* ================= guest codes (손님 만들기 연동) ================= */
 const GKEY='nokgi-tycoon-guests-v1';
@@ -2804,7 +2804,7 @@ requestAnimationFrame(leafFrame);
 const sheet=$('#sheet');
 function openSheet(){ gRender(); const closed=['pre','night'].includes(mood()); $('#mTour').disabled=closed; $('#mWork').disabled=closed; $('#gmsg').textContent=closed?'지금은 영업 시간이 아니에요,, 12시부터 열어요':''; sheet.hidden=false; }
 $('#sheetX').onclick=()=>sheet.hidden=true;
-$('#mTour').onclick=()=>{ sheet.hidden=true; tourStart(); };
+$('#mTour').onclick=()=>{ sheet.hidden=true; if(!shopOpen()){ toast('지금은 문 닫았어요,,'); return; } MP.solo(); };
 $('#mWork').onclick=()=>{ sheet.hidden=true; workStart(); };
 $('#gadd').onclick=()=>{ const inp=$('#gin'); const x=gAdd(inp.value,''); if(!x){ $('#gmsg').textContent='코드를 다시 확인해 주세요,,'; return; } gSave(); inp.value=''; $('#gmsg').textContent=`${x.c.name||'손님'} 님이 ${gFmt(x.c.time)} 이후에 찾아와요,,`; gRender(); };
 function gRender(){ const ul=$('#glist'); ul.textContent=''; if(!GUESTS.length){ const li=document.createElement('li'); li.textContent='아직 손님이 없어요,,'; ul.appendChild(li); return; }
@@ -2922,7 +2922,7 @@ function studentLook(key){ const S_=SCHOOLS[key], w=S_.girls||Math.random()<0.55
   hs:w?pick(['long','bob','pony','bangs','long','bun']):pick(['short','side','short','spiky','slick']),hair:pick(['#16110d','#22140c','#2d1d12','#3e2516','#16110d']),school:key});
  S_.f(L,w); L.skirt=L.bot==='skirt'; L.long=L.hs==='long'; return L; }
 function spawnStudents(asGuests){ const key=pick(['sungsim','sungsim','sungsim','sogang','sogang','sogang','design','seoulg']),   /* 성심여고·서강대 are regulars */ n=Math.random()<0.2?5:2+((Math.random()*2)|0), side=Math.random()<0.5?-1:1, out=[];
- if(asGuests&&!S.mp){ for(let i=0;i<n;i++){ const g=spawnGuest({look:studentLook(key),side,force:true}); if(g){ g.pos.x+=side*i*0.6; g.pos.z+=(i%2)*0.2; out.push(g); } } if(out.length&&typeof groupUp==='function') groupUp(out,n>3?'file':'trio'); return out.length; }
+ if(asGuests&&(!S.mp||S.solo)){ for(let i=0;i<n;i++){ const g=spawnGuest({look:studentLook(key),side,force:true}); if(g){ g.pos.x+=side*i*0.6; g.pos.z+=(i%2)*0.2; out.push(g); } } if(out.length&&typeof groupUp==='function') groupUp(out,n>3?'file':'trio'); return out.length; }
  const z=5.5+Math.random()*1.0, chat=Math.random()<0.45?{x:-1.4+Math.random()*3.4,z:5.35,n,lead:0}:null, plan=chat?'chat':(Math.random()<0.5?'look':'pass');
  for(let i=0;i<n;i++) spawnWalker({look:studentLook(key),side,z:z+(i%2)*0.42,off:Math.floor(i/2)*0.7,speed:1.35,chat,ci:i,plan:i===0||chat?plan:'pass'}); return n; }
 /* office workers in suits: 4-5 at once, same suits, only the tie colour differs. They come in, line up and order like anyone else. */
@@ -2953,9 +2953,9 @@ let started=false, lastVisit=0;
 function tick(dt){
  S.simT+=dt; if(S.live&&S.speed===1) S.simMs=Date.now(); else S.simMs+=dt*1000;
  updShopPhase();
- if(shopOpen()&&!S.mp){ spawnT-=dt; if(spawnT<=0){ spawnTick(); spawnT=(22+Math.random()*26)/rateNow(); } }
- walkT-=dt; if(walkT<=0){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=S.mp?(md==='night'?30:14)+Math.random()*16:(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;   /* 같이 보기: passers-by now and then (each screen has its own), they never come in */
-  if(n<(S.mp?6:10)&&md!=='night'&&Math.random()<0.3){ spawnStudents(false); } else if(n<(S.mp?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
+ if(shopOpen()&&(!S.mp||S.solo)){ spawnT-=dt; if(spawnT<=0){ spawnTick(); spawnT=(22+Math.random()*26)/rateNow(); } }
+ walkT-=dt; if(walkT<=0){ const md=mood(), n=agents.filter(a=>a.kind==='walker').length; walkT=S.mp&&!S.solo?(md==='night'?30:14)+Math.random()*16:(md==='night'?9:md==='pre'?5:2.5)+Math.random()*5;   /* 같이 보기: passers-by now and then (each screen has its own), they never come in */
+  if(n<(S.mp&&!S.solo?6:10)&&md!=='night'&&Math.random()<0.3){ spawnStudents(false); } else if(n<(S.mp&&!S.solo?4:10)){ if(md!=='night'&&Math.random()<0.13) spawnCrowd(); else spawnWalker(); } }
  if(S.visitNo>=lastVisit+10){ lastVisit=S.visitNo; cleanDue=true; }
  agents.slice().forEach(a=>{ const think=!S.mp||MP.isHost(); if(a.kind==='guest'){ if(think) guestBrain(a,dt); } else if(a.kind==='walker') walkerBrain(a,dt); else if(!a.leaving&&(think||!a.netPose)) staffBrain(a); a.update(dt); if(a.dead){ if(a.kind==='staff'){ const i=staff.indexOf(a); if(i>=0) staff.splice(i,1); } if(a===player) tourEnd(); a.remove(); } });
  const h=hourOf(simDate()); let tmp=(h>11&&h<17?1.15:0.95)*(S.rain?0.8:1); if(S.season===3) tmp*=1.9; if(S.season===5) tmp*=0.45; if(S.season===4) tmp*=0.8;
@@ -3464,14 +3464,14 @@ let last=performance.now(), acc=0; const FIX=1/60; let uiT=0;
 const MP_WS_DEFAULT='';
 const MP_SITE=/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent|localhost|127\.0\.0\.1/.test(location.host);   /* the real site: always 같이 보기, room 1 unless ?room= says otherwise */   /* room server base, e.g. 'wss://yeomni.<account>.workers.dev' — empty = same host as the page */
 const MP=(()=>{
- const q=new URLSearchParams(location.search); const room=(q.get('room')||(MP_SITE?'1':'')).replace(/[^\w가-힣-]/g,'').slice(0,40); const base=MP_WS_DEFAULT||(/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent/.test(location.host)?(location.protocol==='https:'?'wss://':'ws://')+location.host:''); const url=q.get('mp')||(room&&base?base+'/room/'+room:''); const api={on:!!url,isHost:()=>!!(st.me&&st.host===st.me)};
+ const q=new URLSearchParams(location.search); const room=(q.get('room')||(MP_SITE?'1':'')).replace(/[^\w가-힣-]/g,'').slice(0,40); const base=MP_WS_DEFAULT||(/^https?:$/.test(location.protocol)&&!/claude\.ai|claudeusercontent/.test(location.host)?(location.protocol==='https:'?'wss://':'ws://')+location.host:''); let url=q.get('mp')||(room&&base?base+'/room/'+room:''); const api={on:!!url,isHost:()=>!!(st.me&&st.host===st.me)}; api.solo=()=>{ if(st.ready) return; url='local'; api.on=true; start(); };
  const st={ws:null,me:null,host:null,name:'',players:new Map(),/* id -> {p:agent,st,d} */ lastSt:new Map(),tSend:0,tStaff:0,ready:false,stAt:0};
  const HOSTCTL=new Set(['queue','atPOS','ordering','waiting','ready','pickup','atPick','sitdown','eating','standup','binning']);
  const TRANS=new Set(['sitdown','standup','binning']); const curSt=a=>TRANS.has(a.mpSt)?a.mpSt:a.state; const hostCtl=a=>HOSTCTL.has(curSt(a));
  const send=m=>{ if(st.ws&&st.ws.readyState===1) st.ws.send(JSON.stringify(m)); };
  const heldDesc=a=>{ const h=a.held.find(o=>o&&o.userData.cupRef); if(!h) return null; const c=h.userData.cupRef, o=c.order; return {kind:o.kind,fl:o.fl.slice(0,o.kind==='pack'?o.n:2),taste:o.taste,packed:!!c.packed,eat:a.eatWalk?1:0,n:c.scoops.length}; };
  const mkAgent=(info)=>{ const look=Object.assign({},info.look||lookFor('normal')); look.name=info.name; const a=new Agent('guest',look); a.mpId=info.id; a.mpSt='free'; a.state='free'; a.alpha=1;
-  a.order=Object.assign(makeOrder('cup'),{guest:a}); a.speed=1.55; a.place(v(info.x,info.z),info.f||0); setTag(a,info.id===st.me?'나 · '+info.name:info.name,info.id===st.me?'me':''); a.netTo={x:info.x,z:info.z,f:info.f||0}; return a; };
+  a.order=Object.assign(makeOrder('cup'),{guest:a}); a.speed=1.55; a.place(v(info.x,info.z),info.f||0); setTag(a,info.id===st.me?(info.name==='나'?'나':'나 · '+info.name):info.name,info.id===st.me?'me':''); a.netTo={x:info.x,z:info.z,f:info.f||0}; return a; };
  /* a cup built from a description (for a player the host is serving, seen from a non-host screen) */
  const buildHeld=(a,d)=>{ const cur=heldDesc(a); if(!d){ if(cur){ const h=a.held.find(o=>o&&o.userData.cupRef); if(h){ cups.delete(h.userData.cupRef); dropItem(a,a.held.indexOf(h)); } a.eatWalk=false; if(a.spoon){ a.spoon.parent&&a.spoon.parent.remove(a.spoon); a.spoon=null; } } return; }
   if(cur&&cur.kind===d.kind&&cur.n===d.n&&cur.packed===d.packed){ if(d.eat&&!a.eatWalk) startEatWalk(a); return; }
@@ -3480,9 +3480,10 @@ const MP=(()=>{
   const n=Math.min(d.n,d.kind==='pack'?d.fl.length:2); for(let i=0;i<n;i++){ c.addScoop(FLAVORS[d.fl[i]],d.kind==='pack'?120:90,false); } if(d.kind==='cup'&&d.taste!=null&&d.n>2) c.addScoop(FLAVORS[d.taste],30,true);
   if(d.packed) c.pack(); holdItem(a,d.eat?0:1,c.g); if(d.eat) startEatWalk(a); };
  /* ---- joining ---- */
- function start(){ if(!api.on) return; S.mp=true; document.body.classList.add('mp');
+ function start(){ if(!api.on) return; if(st.ready) return; S.mp=true; S.solo=url==='local'; document.body.classList.add('mp');
   /* 같이 보기 has no NPC guests: whoever is already in the shop (the two opening-time guests, passers-by) leaves right away, the line and seats are cleared */
-  agents.slice().forEach(a=>{ if(a.kind==='guest'||a.kind==='walker'){ if(a.seat){ a.seat.who=null; a.seat=null; } a.remove(); } }); queue.length=0; orders.length=0; seats.forEach(se=>{ se.who=null; }); SPOTS.forEach(sp=>{ sp.who=null; }); staff.forEach(st_=>{ st_.clear(); st_.order=null; st_.helping=false; dropItem(st_,0); dropItem(st_,1); if(st_.pad) dropPaddle(st_); }); const look=lookFor('normal'); delete look.name;
+  if(!S.solo){ agents.slice().forEach(a=>{ if(a.kind==='guest'||a.kind==='walker'){ if(a.seat){ a.seat.who=null; a.seat=null; } a.remove(); } }); queue.length=0; orders.length=0; seats.forEach(se=>{ se.who=null; }); SPOTS.forEach(sp=>{ sp.who=null; }); staff.forEach(st_=>{ st_.clear(); st_.order=null; st_.helping=false; dropItem(st_,0); dropItem(st_,1); if(st_.pad) dropPaddle(st_); }); } const gx=S.solo&&GUESTS[0]; const look=gx?codeLook(gx.c):lookFor('normal'); delete look.name;
+  if(url==='local'){ /* 혼자 보기: no server, I am the only player and the host */ const ws={readyState:1,send(){},close(){}}; st.ws=ws; const me='me'; setTimeout(()=>onMsg({t:'welcome',id:me,host:me,name:'나',players:[{id:me,name:'나',x:-0.3,z:5.3,look:Object.assign({},look)}]}),30); return; }
   const u=new URL(url,location.href); u.searchParams.set('look',JSON.stringify(look)); st.ws=new WebSocket(u.toString().replace(/^http/,'ws'));
   st.ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(x){ return; } onMsg(m); };
   st.ws.onclose=()=>{ toast('연결이 끊겼어요,, 새로고침해 주세요'); st.ready=false; };
@@ -3490,7 +3491,7 @@ const MP=(()=>{
  function onMsg(m){
   if(m.t==='welcome'){ st.me=m.id; st.host=m.host; st.name=m.name;
    m.players.forEach(pl=>{ const a=mkAgent(pl); st.players.set(pl.id,{p:a,st:pl.st||'free'}); if(pl.id===st.me){ player=a; a.player=true; a.netTo=null; a.place(v(-0.8+Math.random()*1.6,5.2+Math.random()*0.3),Math.PI); } });
-   S.mode='tour'; S.fp=false; S.panX=0; S.panZ=0; document.body.classList.add('tour'); st.ready=true; bar(); narr(`${st.name}(으)로 들어왔어요,,\n바닥을 톡 누르면 걸어가요`); paintCount();
+   S.mode='tour'; S.fp=false; S.panX=0; S.panZ=0; document.body.classList.add('tour'); st.ready=true; bar(); narr(S.solo?'염리점에 도착했읍니다,,\n바닥을 톡 누르면 걸어가요':`${st.name}(으)로 들어왔어요,,\n바닥을 톡 누르면 걸어가요`); paintCount();
    if(api.isHost()) hostInit(); else if(m.snap) onMsg(m.snap); return; }
   if(m.t==='join'){ if(!st.players.has(m.p.id)){ st.players.set(m.p.id,{p:mkAgent(m.p),st:'free'}); toast(`${m.p.name} 님이 들어왔어요,,`); paintCount(); } return; }
   if(m.t==='leave'){ const e=st.players.get(m.id); if(e){ if(api.isHost()) hostDrop(e.p); e.p.dead=true; e.p.remove(); st.players.delete(m.id); toast(`${e.p.look.name} 님이 나갔어요,,`); paintCount(); } return; }
@@ -3579,7 +3580,7 @@ const MP=(()=>{
   if(s==='ordering'&&player.order&&!player.order.chosen&&(api.isHost()?player.order.asked:st.choose)) { b.push(['🍨 컵으로 주세요',()=>request('choose',{kind:'cup'}),1],['🛍 포장해주세요',()=>request('choose',{kind:'pack'}),1],['맛은 랜덤으로 선택됩니다,,',null]); }   /* one set of buttons, shown once the staff has asked */
   if(s==='free'&&cup) b.push(['🗑 컵 버리기',()=>request('bin'),0]);
   if(s==='eating') b.push(['🚶 일어나기',()=>request('stand'),0]);
-  b.push([S.fp?'🧍 3인칭':'👁 1인칭',()=>{ S.fp=!S.fp; S.fpYaw=0; S.fpPitch=-0.1; bar(); }]);
+  b.push([S.fp?'🧍 3인칭':'👁 1인칭',()=>{ S.fp=!S.fp; S.fpYaw=0; S.fpPitch=-0.1; bar(); }]); if(S.solo) b.push(['나가기',()=>api.leave()]);
   tbarSet(b); const sn=tbarR.querySelector('.tnote'); if(sn) sn.classList.add('stat'); paintEmo(); }
  /* what am I doing right now: a small line above the buttons */
  function statusText(){ if(!player) return ''; const s=myState(), h=player.held.find(o=>o&&o.userData.cupRef), pk=h&&h.userData.cupRef.order.kind==='pack';
@@ -3664,8 +3665,8 @@ const MP=(()=>{
  const pxB=document.createElement('button'); pxB.type='button'; pxB.id='pxB'; pxB.hidden=true; document.body.appendChild(pxB);
  const paintPxB=()=>{ const off=PX_OFF(); pxB.textContent=off?'⚙ 픽셀 켜기':'⚙ 픽셀 해제'; pxB.setAttribute('aria-pressed',off?'true':'false'); };
  pxB.onclick=()=>{ pxLv=PX_OFF()?0:3; lsSet('yeomni-pxoff',PX_OFF()?1:0); paintPx(); paintPxB(); toast(PX_OFF()?'픽셀 해제,, 선명한 화면이에요':'픽셀 다시 켰어요,,'); };
- function paintCount(){ if(pxB.hidden&&st.ready){ pxB.hidden=false; if(+lsGet('yeomni-pxoff',0)===1){ pxLv=3; paintPx(); } paintPxB(); } cnt.textContent=st.ready?`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`:''; }
- api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
+ function paintCount(){ if(pxB.hidden&&st.ready){ pxB.hidden=false; if(+lsGet('yeomni-pxoff',0)===1){ pxLv=3; paintPx(); } paintPxB(); } cnt.textContent=!st.ready?'':S.solo?'혼자 보기':`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`; }
+ api.leave=()=>{ if(!S.solo) return; const me=player; if(me){ hostDrop(me); me.dead=true; me.remove(); } st.players.clear(); st.ready=false; st.me=st.host=null; st.ws=null; url='local'; S.mp=false; S.solo=false; S.mode='iso'; S.fp=false; document.body.classList.remove('mp','tour'); player=null; clearDest(); tbarSet([]); narr(''); paintCount(); emoBox.hidden=true; pxB.hidden=true; }; api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
 function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); return; }   /* capped at 60 fps: on 120 Hz screens every other refresh is skipped (cooler, less battery, same look) */
  let dt=Math.max(0,Math.min(0.1,(now-last)/1000)); last=now; acc+=dt*S.speed; let n=0;
  while(acc>=FIX && n<16){ tick(FIX); acc-=FIX; n++; } if(n>=16) acc=0;
