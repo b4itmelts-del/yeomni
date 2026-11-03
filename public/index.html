@@ -1660,6 +1660,7 @@ class Rig{
    const l=box(EW+0.012,0.016*(EV.th||1),0.014,ink,x,EY-0.004,EZ,N); l.visible=false; this.eyes.line.push(l);
    const h=box(0.016*(EV.hik||1),0.02*(EV.hik||1),0.004,'#ffffff',x+0.012*(EV.k||1),EY+0.018*(EV.k||1),EZ+0.008,N); h.visible=!!EV.hiOn; this.eyes.hi.push(h); });
   this.mouth={visible:false}; this.blush=[];
+  if(capHair){ N.scale.multiplyScalar(1.13); N.position.y-=0.01; }   /* no hair volume under the tight cap: scale the head up to the same overall size as everyone else's head-with-hair */
   if(HV===4){ /* round head: hair and hat shells must not peek out under the chin, so their front-bottom is pushed back behind the face */ const HC=new T3.Color(H).getHexString(), CC=L.cap?new T3.Color(L.cap).getHexString():null, HT=L.hat?new T3.Color(L.hat).getHexString():null;
    N.children.forEach(m=>{ if(!m.isMesh||m.userData.head||!m.material||!m.material.color) return; const col=m.material.color.getHexString(); if(col!==HC&&col!==CC&&col!==HT) return; if(m.rotation.x||m.rotation.y||m.rotation.z) return;
     const g=m.geometry=m.geometry.clone(); const P=g.attributes.position; let ch=false; for(let i=0;i<P.count;i++){ const y=P.getY(i)*m.scale.y+m.position.y-HY, z=P.getZ(i)*m.scale.z+m.position.z; if(y<-HR*HSY*0.3&&z>HR*0.3){ P.setZ(i,(HR*0.3-m.position.z)/(m.scale.z||1)); ch=true; } } if(ch){ P.needsUpdate=true; g.computeVertexNormals(); } }); }
