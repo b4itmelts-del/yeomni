@@ -2456,7 +2456,7 @@ const LOOKS=[null,
  {n:'비비드',N:['#1b2a5c','#3b5296','#8fa6de',0.28,'#5a6fb0',0.7],DAWN:['#8fc0f0','#ffd3a4','#ffd6a0',0.58,'#a0a8c8',0.52],DAY:['#58a8ec','#d6e9f7','#fff2cf',1.2,'#b8cde6',0.62],GOLD:['#7fa9e4','#ffcf9a','#ffa552',1.05,'#caa08c',0.46],DUSK:['#6f87d8','#ffb89a','#ee7f6c',0.44,'#8886b8',0.6],hemi:['#9fc4ea','#5a5f6a']},
  {n:'필름',N:['#23305a','#45578e','#9aa8d0',0.3,'#66729a',0.72],DAWN:['#a2c2e4','#f9d9bc','#f8d4a6',0.56,'#a8b0c2',0.55],DAY:['#7db4e6','#e2ecf3','#fff0d4',1.1,'#c2cfdc',0.66],GOLD:['#9bb3da','#f8ccaa','#f7ad78',0.98,'#cdb0a0',0.5],DUSK:['#8192c8','#f3c0aa','#e08a7a',0.42,'#9494b2',0.62],hemi:['#bcd0e4','#6a6e74']},
  {n:'종이',N:['#2e3a58','#4d5a80','#9aa8cc',0.3,'#66729a',0.72],DAWN:['#aac6dc','#f4dcc4','#f6d8b0',0.55,'#a8b0c2',0.55],DAY:['#8fbfe0','#e6eef0','#fff1d8',1.05,'#c6d2d8',0.68],GOLD:['#a9bfd6','#f3d6b8','#f4b784',0.92,'#cdb4a4',0.52],DUSK:['#8a9ac4','#ecc6b2','#d99487',0.42,'#9494b2',0.62],hemi:['#c9d6cf','#6a6e74']}];
-let LOOK=+lsGet('yeomni-look',1); if(!(LOOK>=1&&LOOK<=4)) LOOK=1;
+let LOOK=1;   /* 매트·원색, fixed */
 function setLook_(k){ LOOK=k; lsSet('yeomni-look',k); pipe.mat.uniforms.gLook.value=k; const L=LOOKS[k]; hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); if(window.paintLookB) paintLookB(); }
 function skyKeys(r,s){ const L=LOOKS[LOOK], N=L.N, DAWN=L.DAWN, DAY=L.DAY, GOLD=L.GOLD, DUSK=L.DUSK;
  return [[0,...N],[r-0.6,...N],[r+0.2,...DAWN],[r+1.2,...DAY],[s-1.0,...DAY],[s-0.1,...GOLD],[s+0.6,...DUSK],[s+1.3,...N],[24,...N]]; }
@@ -2886,7 +2886,7 @@ requestAnimationFrame(leafFrame);
 const sheet=$('#sheet');
 function openSheet(){ gRender(); const closed=['pre','night'].includes(mood()); $('#mTour').disabled=closed; $('#mWork').disabled=closed; $('#gmsg').textContent=closed?'지금은 영업 시간이 아니에요,, 12시부터 열어요':''; sheet.hidden=false; }
 $('#sheetX').onclick=()=>sheet.hidden=true;
-$('#mTour').onclick=()=>{ sheet.hidden=true; if(!shopOpen()){ toast('지금은 문 닫았어요,,'); return; } MP.solo(); };
+$('#mTour').onclick=()=>{ sheet.hidden=true; MP.solo(); };
 $('#mWork').onclick=()=>{ sheet.hidden=true; workStart(); };
 $('#gadd').onclick=()=>{ const inp=$('#gin'); const x=gAdd(inp.value,''); if(!x){ $('#gmsg').textContent='코드를 다시 확인해 주세요,,'; return; } gSave(); inp.value=''; $('#gmsg').textContent=`${x.c.name||'손님'} 님이 ${gFmt(x.c.time)} 이후에 찾아와요,,`; gRender(); };
 function gRender(){ const ul=$('#glist'); ul.textContent=''; if(!GUESTS.length){ const li=document.createElement('li'); li.textContent='아직 손님이 없어요,,'; ul.appendChild(li); return; }
@@ -3565,7 +3565,7 @@ const MP=(()=>{
  /* ---- joining ---- */
  function start(){ if(!api.on) return; if(st.ready) return; S.mp=true; S.solo=url==='local'; document.body.classList.add('mp');
   /* 같이 보기 has no NPC guests: whoever is already in the shop (the two opening-time guests, passers-by) leaves right away, the line and seats are cleared */
-  if(!S.solo){ agents.slice().forEach(a=>{ if(a.kind==='guest'||a.kind==='walker'){ if(a.seat){ a.seat.who=null; a.seat=null; } a.remove(); } }); queue.length=0; orders.length=0; seats.forEach(se=>{ se.who=null; }); SPOTS.forEach(sp=>{ sp.who=null; }); staff.forEach(st_=>{ st_.clear(); st_.order=null; st_.helping=false; dropItem(st_,0); dropItem(st_,1); if(st_.pad) dropPaddle(st_); }); } const gx=S.solo&&GUESTS[0]; const look=gx?codeLook(gx.c):HERO_LOOK(); delete look.name;
+  if(!S.solo){ agents.slice().forEach(a=>{ if(a.kind==='guest'||a.kind==='walker'){ if(a.seat){ a.seat.who=null; a.seat=null; } a.remove(); } }); queue.length=0; orders.length=0; seats.forEach(se=>{ se.who=null; }); SPOTS.forEach(sp=>{ sp.who=null; }); staff.forEach(st_=>{ st_.clear(); st_.order=null; st_.helping=false; dropItem(st_,0); dropItem(st_,1); if(st_.pad) dropPaddle(st_); }); } const look=HERO_LOOK(); delete look.name;   /* I am the 주인공 */
   if(url==='local'){ /* 혼자 보기: no server, I am the only player and the host */ const ws={readyState:1,send(){},close(){}}; st.ws=ws; const me='me'; setTimeout(()=>onMsg({t:'welcome',id:me,host:me,name:'나',players:[{id:me,name:'나',x:-0.3,z:5.3,look:Object.assign({},look)}]}),30); return; }
   const u=new URL(url,location.href); u.searchParams.set('look',JSON.stringify(look)); st.ws=new WebSocket(u.toString().replace(/^http/,'ws'));
   st.ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(x){ return; } onMsg(m); };
@@ -3746,9 +3746,7 @@ const MP=(()=>{
  const cnt=document.createElement('div'); cnt.id='mpCount'; document.body.appendChild(cnt);
  /* settings: turn the pixel effect off (sharp, full-resolution picture) or back on; remembered on this device */
  const pxB=document.createElement('button'); pxB.type='button'; pxB.id='pxB'; pxB.hidden=false; document.body.appendChild(pxB);
- const lookB=document.createElement('button'); lookB.type='button'; lookB.id='lookB'; document.body.appendChild(lookB);
- window.paintLookB=()=>{ lookB.textContent='🎨 '+LOOKS[LOOK].n; lookB.hidden=false; };
- lookB.onclick=()=>{ setLook_(LOOK%4+1); toast('룩: '+LOOKS[LOOK].n); };
+
  const paintPxB=()=>{ const off=PX_OFF(); pxB.textContent=off?'⚙ 픽셀 켜기':'⚙ 픽셀 해제'; pxB.setAttribute('aria-pressed',off?'true':'false'); if(window.paintLookB) paintLookB(); };
  pxB.onclick=()=>{ pxLv=PX_OFF()?0:3; lsSet('yeomni-pxoff',PX_OFF()?1:0); paintPx(); paintPxB(); toast(PX_OFF()?'픽셀 해제,, 선명한 화면이에요':'픽셀 다시 켰어요,,'); };
  function paintCount(){ if(!pxB._init){ pxB._init=1; pxLv=3; paintPx(); paintPxB(); pxB.hidden=true; }   /* the pixel effect stays off; no toggle */ cnt.textContent=!st.ready?'':S.solo?'혼자 보기':`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`; }
@@ -3763,7 +3761,7 @@ function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); ret
  uiT-=dt; if(uiT<=0){ uiT=0.25; syncBig(); updCupCard(); }
  requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
-setTimeout(endSplash,2600); setTimeout(()=>{ try{ MP._paintBtns(); }catch(e){} },50); if(MP.on) setTimeout(()=>MP.start(),600); setTimeout(()=>toast('확대하면 가게 안이 보여요,,'),3400);
+setTimeout(endSplash,2600); setTimeout(()=>{ try{ MP._paintBtns(); }catch(e){} },50); if(MP.on) setTimeout(()=>MP.start(),600); else setTimeout(()=>MP.solo(),900);   /* no room: you still get your own 주인공 to walk around with */ setTimeout(()=>toast('확대하면 가게 안이 보여요,,'),3400);
 })();
 </script>
 
