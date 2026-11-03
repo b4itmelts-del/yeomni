@@ -290,6 +290,9 @@ function blendPalette(wd,wg,wn){ if(Math.abs(wd-palW[0])+Math.abs(wg-palW[1])+Ma
 const FRAG = `
 precision highp float;
 uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float outline; uniform float dither; uniform float quant; uniform float pxMode; uniform float pxMix; uniform float pxSat; uniform float pxLev; uniform float pxEdge; uniform float pxVig; uniform vec3 pxTint; uniform float pxRamp; uniform float pxGlow;
+uniform float gTime; uniform float gGrain;
+float hash21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+uniform float gNight; uniform float gGold; uniform vec2 gSun; uniform float gSunOn; uniform float gRays; uniform float gBloom; uniform float gGrade;
 uniform vec3 palLab[64]; uniform vec3 palRGB[64];
 varying vec2 vUv;
 vec3 toLin(vec3 c){ return mix(c/12.92, pow((c+0.055)/1.055, vec3(2.4)), step(0.04045,c)); }
@@ -309,7 +312,35 @@ void main(){
                 max(texture2D(tDepth, vUv+vec2(0.0,px.y)).r, texture2D(tDepth, vUv-vec2(0.0,px.y)).r)) - d;
   if(e > 0.0035) c *= 0.42;
  }
- if(quant < 0.5){ gl_FragColor = vec4(c,1.0); return; }
+ if(quant < 0.5){
+  if(gGrade < 0.5){ gl_FragColor = vec4(c,1.0); return; }
+  /* ===== the 'dusty print' look: flat matte colour, a cream-sage-pink triad, tinted soft shadows, paper grain. No bloom, no rays. ===== */
+  float lum = dot(c, vec3(0.299,0.587,0.114));
+  /* 1) pull everything toward a limited, desaturated palette, keep the accents (reds, yellows, blues) a little punchier */
+  float sat = length(c - vec3(lum));
+  vec3 cream = vec3(0.96,0.93,0.86), sage = vec3(0.62,0.72,0.66), dusk = vec3(0.56,0.60,0.74), blush = vec3(0.93,0.78,0.78);
+  vec3 shadowC = mix(sage, dusk, gNight);                     /* what the dark side leans toward */
+  vec3 lightC  = mix(cream, blush, 0.35*gGold + 0.15);        /* what the lit side leans toward */
+  vec3 tint = mix(shadowC, lightC, smoothstep(0.18, 0.82, lum));
+  float keep = smoothstep(0.08, 0.45, sat);                   /* strongly coloured things keep their hue */
+  c = mix(mix(vec3(lum)*tint/max(dot(tint,vec3(0.299,0.587,0.114)),1e-3), c, 0.55), c, keep*0.6);
+  c = mix(vec3(dot(c,vec3(0.299,0.587,0.114))), c, 0.9 + 0.25*keep);  /* overall a touch desaturated, accents less so */
+  /* 2) lifted blacks and softened whites: no pure black, no pure white */
+  c = c*0.86 + 0.07; c = mix(c, c*c*(3.0-2.0*c), 0.25);
+  c = min(c, vec3(0.965));
+  /* 3) hour: warm cream at golden hour, slate-blue at night (never a saturated blue) */
+  c = mix(c, c*vec3(1.05,0.98,0.90), gGold*0.5);
+  c = mix(c, mix(c, vec3(0.36,0.42,0.60), 0.28)*vec3(0.88,0.93,1.10), gNight*0.7);   /* slate-blue night; warm lamps stay warm because this scales, not replaces */
+  /* 4) live paper grain: coarse riso-style dots that re-roll every frame (the shimmer), strongest in the midtones, with a tiny pink/green misregister like a 2-colour print */
+  vec2 cell = floor(gl_FragCoord.xy / 2.0); float seed = floor(gTime*18.0);
+  float n1 = hash21(cell + seed), n2 = hash21(cell*1.7 + seed + 11.0), n3 = hash21(cell*0.9 + seed + 23.0);
+  float mid = 1.0 - abs(lum-0.5)*1.3; float gs = gGrain * (0.045 + 0.03*gNight);
+  c += vec3(n1-0.5, n2-0.5, n3-0.5) * vec3(1.0, 0.85, 0.9) * gs * mid;
+  c += (hash21(gl_FragCoord.xy*0.5 + seed*3.0) - 0.5) * 0.012;   /* fine film grain on top */
+  /* 5) a soft vignette, barely there */
+  vec2 vq = vUv - 0.5; c *= 1.0 - dot(vq,vq)*0.22;
+  gl_FragColor = vec4(c,1.0); return; }
+
  // palette glow: at night a bright pixel bleeds one pixel into its dark neighbours (windows, signs, lamps)
  if(pxGlow > 0.0){ vec2 px = 1.0/res; float l0 = dot(c, vec3(0.299,0.587,0.114)); vec3 nb = c; float nl = l0;
   vec3 s1 = texture2D(tColor, vUv+vec2(px.x,0.0)).rgb, s2 = texture2D(tColor, vUv-vec2(px.x,0.0)).rgb, s3 = texture2D(tColor, vUv+vec2(0.0,px.y)).rgb, s4 = texture2D(tColor, vUv-vec2(0.0,px.y)).rgb;
@@ -340,10 +371,10 @@ void main(){
 class PixelPipe{
  constructor(canvas,keep){
   this.r = new T3.WebGLRenderer({canvas, antialias:false, alpha:false, powerPreference:'high-performance', preserveDrawingBuffer:!!keep});
-  this.r.setPixelRatio(1); this.r.shadowMap.enabled = true; this.r.shadowMap.type = T3.BasicShadowMap;
+  this.r.setPixelRatio(1); this.r.shadowMap.enabled = true; this.r.shadowMap.type = T3.PCFSoftShadowMap;   /* soft-edged shadows for the matte print look (the pixel pass snaps them anyway) */
   this.qs = new T3.Scene(); this.qc = new T3.OrthographicCamera(-1,1,1,-1,0,1);
   this.mat = new T3.ShaderMaterial({
-   uniforms:{tColor:{value:null},tDepth:{value:null},res:{value:new T3.Vector2(1,1)},outline:{value:0},dither:{value:0.0},quant:{value:1},pxMode:{value:2},pxMix:{value:0.55},pxSat:{value:1.2},pxLev:{value:7},pxEdge:{value:0.6},pxVig:{value:0.12},pxTint:{value:new T3.Vector3(1.02,1.0,0.97)},pxRamp:{value:0.35},pxGlow:{value:0},palLab:{value:palLab},palRGB:{value:palRGB}},
+   uniforms:{tColor:{value:null},tDepth:{value:null},res:{value:new T3.Vector2(1,1)},outline:{value:0},dither:{value:0.0},quant:{value:1},pxMode:{value:2},pxMix:{value:0.55},pxSat:{value:1.2},pxLev:{value:7},pxEdge:{value:0.6},pxVig:{value:0.12},pxTint:{value:new T3.Vector3(1.02,1.0,0.97)},gTime:{value:0},gGrain:{value:1},gNight:{value:0},gGold:{value:0},gSun:{value:new T3.Vector2(0.5,0.9)},gSunOn:{value:0},gRays:{value:0.5},gBloom:{value:0.5},gGrade:{value:1},pxRamp:{value:0.35},pxGlow:{value:0},palLab:{value:palLab},palRGB:{value:palRGB}},
    vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.0,1.0); }',
    fragmentShader:FRAG, depthTest:false, depthWrite:false});
   this.qs.add(new T3.Mesh(new T3.PlaneGeometry(2,2), this.mat)); this.rt=null; this.w=8; this.h=8;
@@ -492,9 +523,9 @@ scene = new T3.Scene();
 const cam = new T3.OrthographicCamera(-5,5,4,-4,0.1,120);
 const fpCam = new T3.PerspectiveCamera(62,1,0.05,80);
 const sun = new T3.DirectionalLight('#fff6e0',1.0); sun.castShadow=true; sun.shadow.mapSize.set(1536,1536);
-Object.assign(sun.shadow.camera,{left:-13,right:13,top:13,bottom:-13,near:1,far:80}); sun.shadow.bias=-0.0008;
+Object.assign(sun.shadow.camera,{left:-13,right:13,top:13,bottom:-13,near:1,far:80}); sun.shadow.bias=-0.0008; sun.shadow.radius=4;
 scene.add(sun); scene.add(sun.target); sun.target.position.set(0,0,0);
-const hemi = new T3.HemisphereLight('#b8c8d8','#434a52',0.6); scene.add(hemi);
+const hemi = new T3.HemisphereLight('#c9d6cf','#6a6e74',0.6)   /* sage sky fill, warm-grey ground: shadow sides are tinted, never black */; scene.add(hemi);
 const FY=0.005;                      // shop floor = street level in the diorama
 const FLOOR=FY, H1=3.8;              // ground floor height (8 diorama units)
 const BX0=-3.05, BX1=3.05, BZ0=-3.05, BZ1=3.05; // inner walls (6.1 × 6.1 m); door wall faces +z
@@ -2385,13 +2416,14 @@ function popCodeGuest(){ const now=simDate(), k=now.getHours()*60+now.getMinutes
 const _c1=new T3.Color(),_c2=new T3.Color();
 function mixHex(a,b,t){ return _c1.set(a).clone().lerp(_c2.set(b),t); }
 // [hour, skyTop, skyBottom, sunColour, sunI, ambColour, ambI] — kept light and airy
-function skyKeys(r,s){ const N=['#22325c','#41598f','#8fa3d6',0.28,'#5a6fa8',0.7], DAWN=['#9cc8ef','#ffd9b0','#ffd9a8',0.55,'#a0a8c0',0.52], DAY=['#6fb6ee','#d4ecfb','#fff3d6',1.18,'#bccde0',0.6], GOLD=['#8fb7e8','#ffd3a6','#ffb070',1.0,'#c8a898',0.45], DUSK=['#7d93d6','#f6c3a8','#e08a7a',0.42,'#8a8ab0',0.6];
+function skyKeys(r,s){ const N=['#2e3a58','#4d5a80','#9aa8cc',0.3,'#66729a',0.72], DAWN=['#aac6dc','#f4dcc4','#f6d8b0',0.55,'#a8b0c2',0.55], DAY=['#8fbfe0','#e6eef0','#fff1d8',1.05,'#c6d2d8',0.68], GOLD=['#a9bfd6','#f3d6b8','#f4b784',0.92,'#cdb4a4',0.52], DUSK=['#8a9ac4','#ecc6b2','#d99487',0.42,'#9494b2',0.62];
  return [[0,...N],[r-0.6,...N],[r+0.2,...DAWN],[r+1.2,...DAY],[s-1.0,...DAY],[s-0.1,...GOLD],[s+0.6,...DUSK],[s+1.3,...N],[24,...N]]; }
 let shopLight=1;
 const TREE_COL={0:['#5f7436','#93a85a'],1:['#f29db0','#93a85a'],2:['#2e8a63','#5f7436'],3:['#5f7436','#93a85a'],4:['#e0843c','#f5e08a'],5:['#f4f6f7','#d2d8dd']};
 const GRASS_COL={0:'#93a85a',1:'#93a85a',2:'#5f9a48',3:'#a8b062',4:'#c99a36',5:'#93a85a'};
 function applySeason(){ if(window.TREES&&TREES.rebuild) TREES.rebuild(); const tc=TREE_COL[S.season]||TREE_COL[0]; poplarA.color.set(tc[0]); poplarB.color.set(tc[1]); S.rain=!!SEAS[S.season].rain; lsSet('yeomni3-season',S.season); }
 let lightN=8+Math.random()*10;
+const _gv=new T3.Vector3(), _gv2=new T3.Vector3();
 function updLighting(dt){
  const d=simDate(), h=hourOf(d), st=sunTimes(d), keys=skyKeys(st.rise,st.set);
  let i=0; while(i<keys.length-2&&h>=keys[i+1][0]) i++; const a=keys[i],b=keys[i+1]; const t=clamp((h-a[0])/((b[0]-a[0])||1),0,1);
@@ -2404,7 +2436,14 @@ function updLighting(dt){
  ambI+=0.22*(1-clamp(1-sunI/0.9,0,1));
  const night=clamp(1-sunI/0.9,0,1);
  paintSky(top,bot,night,wet>0.5,dt);
- sun.color.copy(sunC); sun.intensity=sunI*LG.sun; hemi.color.copy(ambC); hemi.intensity=ambI*LG.sky;
+ const flat=PX_OFF()?1:0; sun.color.copy(sunC); sun.intensity=sunI*LG.sun*(1+0.12*flat); hemi.color.copy(ambC); hemi.intensity=ambI*LG.sky*(1-0.18*flat);   /* 원샷: a single key, shadow sides as one flat tinted plane */
+ /* the film grade follows the hour: how dark it is, how golden, and where the light comes from on screen */
+{ const U=pipe.mat.uniforms; U.gTime.value=(U.gTime.value+dt)%1000.0; const gold=clamp(1-Math.abs(sunI-0.95)/0.5,0,1)*(1-night)*(h>14.5||h<9?1:0.25); U.gNight.value=lerp(U.gNight.value,night,0.1); U.gGold.value=lerp(U.gGold.value,gold,0.1);
+   const c_=activeCam(); if(night>0.6){ /* night: the glow comes from the shop front */ _gv.set(0,FLOOR*TUNE.h+1.6,BZ1*TUNE.d+0.3).project(c_); U.gSun.value.set((_gv.x+1)/2,(_gv.y+1)/2); U.gSunOn.value=lerp(U.gSunOn.value,c_===fpCam?0:0.7,0.1); }
+   else { /* daytime: the sun arcs over the top of the screen, left in the morning and right in the evening; rays are strongest when it is low (morning / golden hour) */
+     const day_=h>st.rise&&h<st.set, f_=day_?(h-st.rise)/(st.set-st.rise):0.5; const sxs=lerp(-0.15,1.15,f_), sys=0.9+0.35*Math.sin(f_*Math.PI);
+     const low=1-Math.sin(f_*Math.PI); const strength=day_?(0.35+0.65*low)*(1-wet)*(c_===fpCam?0.6:1):0;
+     U.gSun.value.set(sxs,sys); U.gSunOn.value=lerp(U.gSunOn.value,strength,0.08); } }
  const day=h>st.rise&&h<st.set; const f=day?(h-st.rise)/(st.set-st.rise):0; const stepF=day?(Math.floor(f*4)+0.5)/4:0;   // four daytime blocks; the lamp 'moves' between them over ~20 game-minutes
  const blend=day?clamp(((f*4)%1-0.42)/0.16,0,1):0; const fS=day?lerp((Math.floor(f*4)+0.5)/4,(Math.min(3,Math.floor(f*4)+1)+0.5)/4,blend):0;
  const az=day?lerp(-1.3,1.3,fS):0.6; const el=day?Math.max(0.3,Math.sin(fS*Math.PI)):0.9;
@@ -2570,7 +2609,7 @@ function toggleInside(){ S.forceIn=!S.forceIn; if(!S.forceIn&&S.zoom>=INZ) S.zoo
 let PXB=1, cssPx=0, mainRect={left:0,top:0,w:0,h:0};
 let CSS0_OVR=0; const DPR=()=>window.devicePixelRatio||1, CSS0=()=>CSS0_OVR||Math.max(2,Math.round((window.innerWidth<560?2.6:3.1)*DPR()))/DPR();   // pixel size at zoom 1 (unchanged default look)
 const PX_BEAT=0.085, PX_STEPS=[1,1.4,1.9,2.5];
-const PX_LV=['약','중','강','끄기'], PX_EXP=[0.13,0.29,0.5,0]; let pxLv=0;   /* always start at 약 */   // 끄기: full resolution, real colours (for tuning the scene itself)
+const PX_LV=['약','중','강','끄기'], PX_EXP=[0.13,0.29,0.5,0]; let pxLv=3;   /* default: the pixel effect is off (the graded full-res look); 픽셀 켜기 turns it on */   // 끄기: full resolution, real colours (for tuning the scene itself)
 const PX_OFF=()=>pxLv===3;
 const LG_DEF={auto:1,az:55,el:35,sun:1,sky:1,room:1,jar:1,pend:1,ray:1,spill:1};
 const LG=Object.assign({},LG_DEF,lsGet('yeomni9-light',{}));
@@ -3665,7 +3704,7 @@ const MP=(()=>{
  const pxB=document.createElement('button'); pxB.type='button'; pxB.id='pxB'; pxB.hidden=true; document.body.appendChild(pxB);
  const paintPxB=()=>{ const off=PX_OFF(); pxB.textContent=off?'⚙ 픽셀 켜기':'⚙ 픽셀 해제'; pxB.setAttribute('aria-pressed',off?'true':'false'); };
  pxB.onclick=()=>{ pxLv=PX_OFF()?0:3; lsSet('yeomni-pxoff',PX_OFF()?1:0); paintPx(); paintPxB(); toast(PX_OFF()?'픽셀 해제,, 선명한 화면이에요':'픽셀 다시 켰어요,,'); };
- function paintCount(){ if(pxB.hidden&&st.ready){ pxB.hidden=false; if(+lsGet('yeomni-pxoff',0)===1){ pxLv=3; paintPx(); } paintPxB(); } cnt.textContent=!st.ready?'':S.solo?'혼자 보기':`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`; }
+ function paintCount(){ if(pxB.hidden&&st.ready){ pxB.hidden=false; const v=lsGet('yeomni-pxoff',null); if(v!=null){ pxLv=+v===1?3:0; paintPx(); } paintPxB(); } cnt.textContent=!st.ready?'':S.solo?'혼자 보기':`접속 ${st.players.size}명 · ${api.isHost()?'진행 중':'참여 중'}`; }
  api.leave=()=>{ if(!S.solo) return; const me=player; if(me){ hostDrop(me); me.dead=true; me.remove(); } st.players.clear(); st.ready=false; st.me=st.host=null; st.ws=null; url='local'; S.mp=false; S.solo=false; S.mode='iso'; S.fp=false; document.body.classList.remove('mp','tour'); player=null; clearDest(); tbarSet([]); narr(''); paintCount(); emoBox.hidden=true; pxB.hidden=true; }; api._dbg={seatMeshes,setHL,clearHL,setDest,setTrail,seats,route,get player(){ return player; }}; api.start=start; api.state=st; api.bar=bar; api.request=request; return api; })();
 function frame(now){ if(now-last<1000/60-2.5){ requestAnimationFrame(frame); return; }   /* capped at 60 fps: on 120 Hz screens every other refresh is skipped (cooler, less battery, same look) */
  let dt=Math.max(0,Math.min(0.1,(now-last)/1000)); last=now; acc+=dt*S.speed; let n=0;
