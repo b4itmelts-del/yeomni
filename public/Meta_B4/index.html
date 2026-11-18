@@ -4473,7 +4473,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
    if(bo){ boUntil=performance.now()+4300; boT0=performance.now(); if(window.BO){ window.BO.t0=window.__rT0!=null?window.__rT0:performance.now()/1000;   /* the engine's own clock */ window.BO.hs=null; } jumpT=performance.now(); } };   /* 오기전에: people only jump / freeze with fright when the power goes; a plain strike is just the flash */   /* a plain strike: everyone jumps; the one-in-five: lights out, only eyes blinking in the dark, then the lamps come back */
   window.__thTick=function(){ if(window.__ccupSweep) try{ window.__ccupSweep(); }catch(e){} const now=performance.now(), dt=Math.min(0.1,(now-lt)/1000); lt=now; const summer=S.season===2||S.season===3;
    if(!rod){ if(summer) build(); else return; } rod.visible=summer&&FADE.u.value<0.5;   /* goes with the 2nd floor when that is cut away */
-   if(summer&&now>=nextT&&!S.noRender){ nextT=now+(7000+Math.random()*13000)/Math.max(0.5,Math.min(3,S.speed||1)); window.__thStrike(); }
+   if(S.season===2&&now>=nextT&&!S.noRender){ nextT=now+(7000+Math.random()*13000)/Math.max(0.5,Math.min(3,S.speed||1)); window.__thStrike(); }
    if(now<boUntil) S.blackout=Math.max(S.blackout||0,0.06);
    /* 오기전에: in a blackout the unlit (self-lit) things go dark too — light boxes, signs, clocks, screens — everything but the street lamp */
    { const bk=S.__boK||0; if(bk>0.01&&!window.__boBasic){ const L=[], seen=new Set(), bb=new T3.Box3(), c=new T3.Vector3(); scene.traverse(o=>{ if(!o.isMesh||!o.material||Array.isArray(o.material)) return; const m=o.material; if(!m.isMeshBasicMaterial||m.blending===T3.AdditiveBlending||seen.has(m)) return; let v=o; while(v){ if(!v.visible) return; v=v.parent; } bb.setFromObject(o); if(bb.isEmpty()) return; bb.getCenter(c); if(Math.hypot(c.x-4.65,c.z-4.37)<1.2) return; if(eyes.indexOf(o)>=0) return; seen.add(m); L.push({m,c0:m.color.clone()}); }); window.__boBasic=L; }
@@ -7512,7 +7512,7 @@ var FLOW=(function(){
     G.pack=G.m.every(function(M){return M.P.pack;});
     F.groups.push(G);return true;}
   /* ---- a member's target for this frame ---- */
-  function arrive(M,p){var P=M.P,dx=p[0]-P.g.position.x,dz=p[1]-P.g.position.z,d=Math.hypot(dx,dz);if(d<0.001)return true;var dt=F.dt,stp=GSP*dt*(M.sp||1);if(d<=stp){P.g.position.x=p[0];P.g.position.z=p[1];return true;}
+  function arrive(M,p){var P=M.P,dx=p[0]-P.g.position.x,dz=p[1]-P.g.position.z,d=Math.hypot(dx,dz);if(d<0.001)return true;var dt=F.dt,stp=GSP*dt*(M.sp||1)*((typeof WXMODE!=='undefined'&&WXMODE==='hot'&&!P.cool&&P.g.position.x>(posts().fx||0)-0.2)?0.85:1);if(d<=stp){P.g.position.x=p[0];P.g.position.z=p[1];return true;}
    var ux=dx/d,uz=dz/d,O=posts(),i;
    /* 오기전에: walk round the lamp post / statue / pillar sign: near one, the inward part of the step turns into a sidestep along its edge (same walking speed, no sliding) */
    if(P.g.position.x>O.fx-0.2){for(i=0;i<O.length;i++){var Q=O[i];if(Math.hypot(p[0]-Q.x,p[1]-Q.z)<Q.r+0.1)continue;var ox=P.g.position.x-Q.x,oz=P.g.position.z-Q.z,od=Math.hypot(ox,oz)||1e-3,R=Q.r+Q.m;if(od>=R)continue;
@@ -7547,7 +7547,7 @@ var FLOW=(function(){
       /* 오기전에: people standing on the pavement in front of the shop (the queue, someone at the door): walkers on the pavement step out onto the road to pass them, never in toward the shop */
       if(want<T.roadX2-0.05){ if(T.qLo==null){ T.qLo=toRaw(0,4.9)[0]; T.qHi=toRaw(0,6.25)[0]; } var PPl=window.__ppl?window.__ppl():[]; for(var qi=0;qi<PPl.length;qi++){ var Qp=PPl[qi]; if(!Qp||Qp===P||!Qp.g||!Qp.g.visible||(Qp.__fl&&Qp.__fl.pass)) continue; var qx=Qp.g.position.x, dzq=(Qp.g.position.z-P.g.position.z)*A.dir; if(qx>T.qLo&&qx<T.qHi&&dzq>-1.4&&dzq<5){ want=T.roadX2; break; }   /* well out onto the road (still the near half, away from the cars) */ } }
       P.g.position.x+=(want-P.g.position.x)*Math.min(1,dt*2.5); shove(P);
-      if(A.st==='walk'){ P.g.position.z+=A.dir*GSP*A.sp*dt*0.85; moving=true;
+      if(A.st==='walk'){ P.g.position.z+=A.dir*GSP*A.sp*dt*0.85*((WXMODE==='hot'&&!P.cool)?0.85:1);   /* 오기전에: worn out by the heat: 15% slower */ moving=true;
         /* in front of the shop: a glance, then maybe the queue */
         if(A.look&&!A.looked&&Math.abs(P.g.position.z-0.2)<1.2){A.looked=true;A.glance=s+1.8;}   /* a glance at the shop while walking on */
         else if(A.chat&&!A.chatted&&Math.abs(P.g.position.z-A.chatZ)<0.6){A.chatted=true;A.st='chat';A.t=0;A.chatT=6+Math.random()*8;}   /* a pair stops in the road for a chat */
