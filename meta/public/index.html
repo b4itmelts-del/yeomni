@@ -5471,7 +5471,7 @@ function visBig(n){return visAvoid(function(){var k=[],i;if(Math.random()<0.4){v
 /* visit deck: every cycle each kind of visit shows up, never the same special visit twice in a row */
 /* 오기전에: how busy the street is, by season. spring / autumn: short gaps, lots of people. summer heat and winter: long gaps; rain longest.
    (later this is meant to follow the real Seoul weather) */
-window.__seasonMul=function(){var m=WXMODE;if(m==='spring'||m==='autumn')return 0.5;if(m==='rain')return 2.4;if(m==='hot')return 1.7;if(m==='winter')return 2.0;return 1;};
+window.__seasonMul=function(){var m=WXMODE;if(m==='spring'||m==='autumn')return 0.3;if(m==='rain')return 1.5;if(m==='hot')return 1.7;if(m==='winter')return 0.8;return 1;};
 function deckNext(){var busy=window.__seasonMul()<1,quiet=window.__seasonMul()>1.3;var key=(moodName==='day'?'d':'e')+(busy?'B':quiet?'Q':'');
   if(vDeck.key!==key||!vDeck.a.length){if(vDeck.key!==key)vDeck.h=[];vDeck.key=key;
     var day=key[0]==='d',cnt=day?(busy?{preg:3,swarm:5,rush:22,leg:10}:quiet?{preg:3,swarm:3,rush:6,leg:28}:{preg:3,swarm:5,rush:12,leg:20}):(busy?{preg:2,swarm:8,rush:18,leg:12}:quiet?{preg:2,swarm:5,rush:5,leg:28}:{preg:2,swarm:9,rush:9,leg:20}),G=day?{preg:8,swarm:5,rush:busy?1:2}:{preg:12,swarm:3,rush:busy?1:3},h=(vDeck.h||[]).slice(),seq=[],steps=0,names=Object.keys(cnt);
