@@ -9403,8 +9403,8 @@ window.__ph='rt';
   var REG=[], rc=new THREE.Raycaster(), down=null, glowT=-1, GL=[];
   var css=document.createElement('style');css.textContent=
    '#objPop{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:max(18px,env(safe-area-inset-top,0px)) 16px max(18px,env(safe-area-inset-bottom,0px));background:rgba(16,14,22,.82);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;transition:opacity .28s}'+
-   '#objPop.on{opacity:1}#objPop img,#objPop .ph{max-width:100%;max-height:calc(100% - 92px);object-fit:contain;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.45);transform:scale(.96);transition:transform .32s}#objPop.on img,#objPop.on .ph{transform:none}'+
-   '#objPop .ph{width:min(78vw,340px);aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.4);color:rgba(255,255,255,.75);font:600 14px/1.5 var(--sans,sans-serif);text-align:center}'+
+   '#objPop.on{opacity:1}'+'#objPop .fr{position:relative;flex:none;width:min(74vw,330px,calc((100vh - 230px)*0.75));aspect-ratio:3/4;margin:14px 0 6px;background:#1d1a26;transform:scale(.96);transition:transform .32s;box-shadow:0 -6px 0 0 #f4f0e6,0 6px 0 0 #f4f0e6,-6px 0 0 0 #f4f0e6,6px 0 0 0 #f4f0e6,0 -12px 0 0 #285686,0 12px 0 0 #285686,-12px 0 0 0 #285686,12px 0 0 0 #285686,-6px -6px 0 0 #285686,6px -6px 0 0 #285686,-6px 6px 0 0 #285686,6px 6px 0 0 #285686,10px 16px 0 6px rgba(0,0,0,.35)}#objPop.on .fr{transform:none}'+'#objPop .fr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .25s}#objPop .fr img.ok{opacity:1}'+'#objPop .spin{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;background:conic-gradient(#f4f0e6 0 25%,transparent 0 50%,#f4f0e6 0 75%,transparent 0);image-rendering:pixelated;animation:opSpin .9s steps(8) infinite}@keyframes opSpin{to{transform:rotate(360deg)}}'+
+   '#objPop .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.4);color:rgba(255,255,255,.75);font:600 14px/1.5 var(--sans,sans-serif);text-align:center}'+
    '#objPop b{color:#fff;font:800 16px/1.3 var(--sans,sans-serif)}#objPop small{color:rgba(255,255,255,.7);font:500 12.5px/1.4 var(--sans,sans-serif);text-align:center}'+
    '#objPop button{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:20px;cursor:pointer}'+
    '#objPop .nav{top:50%;transform:translateY(-50%);width:44px;height:44px;font-size:28px;line-height:1;background:rgba(255,255,255,.18)}#objPop .pv{left:max(10px,env(safe-area-inset-left,0px));right:auto}#objPop .nx{right:max(10px,env(safe-area-inset-right,0px))}'+
@@ -9413,14 +9413,16 @@ window.__ph='rt';
   function open(it){ var o=document.getElementById('objPop'); if(o) o.remove(); o=document.createElement('div'); o.id='objPop'; o.setAttribute('role','dialog'); o.setAttribute('aria-label',it.title||'');
     var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','닫기'); o.appendChild(x);
     var pages=it.pages||[{src:it.src,title:it.title,note:it.note}], pi=0;
-    var im=document.createElement('img'), ph=document.createElement('div'); ph.className='ph'; ph.textContent='실물 사진 준비 중,,'; o.appendChild(im); o.appendChild(ph);
+    var fr=document.createElement('div'); fr.className='fr'; var im=document.createElement('img'), ph=document.createElement('div'), sp=document.createElement('i'); sp.className='spin'; ph.className='ph'; ph.textContent='실물 사진 준비 중,,'; im.decoding='async'; fr.appendChild(sp); fr.appendChild(im); fr.appendChild(ph); o.appendChild(fr);   /* 오기전에: a fixed pixel frame (3:4) so the layout never jumps; a spinner turns until the photo is in */
+    im.onload=function(){ im.classList.add('ok'); sp.style.display='none'; }; im.onerror=function(){ sp.style.display='none'; };
     var t=document.createElement('b'), n=document.createElement('small'), dots=document.createElement('div'); dots.className='dots'; o.appendChild(t); o.appendChild(n); o.appendChild(dots);
-    function show(k){ pi=(k+pages.length)%pages.length; var P=pages[pi]; if(P.src){ im.src=P.src; im.alt=P.title||''; im.style.display=''; ph.style.display='none'; } else { im.style.display='none'; ph.style.display=''; } t.textContent=P.title||it.title||''; n.textContent=P.note||''; n.style.display=P.note?'':'none';
+    function show(k){ pi=(k+pages.length)%pages.length; var P=pages[pi]; if(P.src){ im.classList.remove('ok'); sp.style.display=''; im.alt=P.title||''; im.style.display=''; ph.style.display='none'; im.src=P.src; if(im.complete&&im.naturalWidth){ im.classList.add('ok'); sp.style.display='none'; } } else { im.style.display='none'; sp.style.display='none'; ph.style.display=''; } t.textContent=P.title||it.title||''; n.textContent=P.note||''; n.style.display=P.note?'':'none';
       dots.innerHTML=''; if(pages.length>1) pages.forEach(function(_,j){ var d=document.createElement('i'); if(j===pi) d.className='on'; dots.appendChild(d); }); }
     if(pages.length>1){ ['‹','›'].forEach(function(ch,j){ var b=document.createElement('button'); b.type='button'; b.className='nav '+(j?'nx':'pv'); b.textContent=ch; b.setAttribute('aria-label',j?'다음 사진':'이전 사진'); b.addEventListener('click',function(ev){ ev.stopPropagation(); show(pi+(j?1:-1)); }); o.appendChild(b); }); }
     show(0);
     document.body.appendChild(o); requestAnimationFrame(function(){ o.classList.add('on'); });
     function cl(){ o.classList.remove('on'); setTimeout(function(){ o.remove(); if(!busy()) glow(); },280); } o.addEventListener('click',cl); }   /* back from a photo: everything else that can be tapped lights up */
+  setTimeout(function(){ var seen={}; REG.forEach(function(it){ (it.pages||[{src:it.src}]).forEach(function(P){ if(P&&P.src&&!seen[P.src]){ seen[P.src]=1; var i=new Image(); i.decoding='async'; i.src=P.src; } }); }); },6000);   /* 오기전에: photos load quietly in the background after start, so a tap shows them at once */
   function cam(){ try{ if(window.AUTO&&AUTO.fpv&&AUTO.fpv()) return AUTO.fpCam; }catch(e){} return NOK.cam; }
   var _n=new THREE.Vector3(), _p=new THREE.Vector3(), _c=new THREE.Vector3();
   /* oneSide: a sticker on one face of the door only counts when the camera is on that side */
@@ -9526,7 +9528,7 @@ window.__ph='rt';
       aim();
       document.body.appendChild(sv); (function chk(){ if(!d.isConnected){ live=false; sv.remove(); return; } setTimeout(chk,300); })(); }catch(e){} }
     setTimeout(show,1500); })();
-  window.__objView={add:function(o,it){ it.o=o; REG.push(it); }, open:open, glow:glow, pick:pick, REG:REG};
+  window.__objView={show:function(i){ open(REG[i|0]); },add:function(o,it){ it.o=o; REG.push(it); }, open:open, glow:glow, pick:pick, REG:REG};
   window.addEventListener('pointerdown',function(e){ if(window.__hintsOn){ down=null; return; } if(e.target&&e.target.closest&&e.target.closest('button,a,input,textarea,.nub,#objPop,[role=dialog]')) { down=null; return; } down={x:e.clientX,y:e.clientY,t:e.timeStamp}; },true);
   window.addEventListener('pointerup',function(e){ var d=down; down=null; if(!d||busy()) return; if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||e.timeStamp-d.t>450) return; if(document.getElementById('objPop')) return; /* a tap on an object (or its white dot) opens its photo at once; a tap anywhere else makes every tappable object glow */ var it=pick(e.clientX,e.clientY); if(it){ clearGlow(); open(it); return; } /* a tap on nothing tappable shows what can be tapped */ glow(); },true);
   /* test set: a few more objects (real photos to come) */
@@ -9541,15 +9543,15 @@ window.__ph='rt';
     
     /* the grey board beside the showcase, minus the menu clipboard corner (an L of two flat pieces) */
     var bdA=zone(1.965,2.156,3.085,-0.015,1.315), bdB=zone(1.965,1.555,2.156,-0.015,0.881);
-    V.add(function(){ return [bdA,bdB]; },{src:'obj/board2.jpg',title:'추억이 걸린,, 게시판 입니다,,',note:'',wall:0});
+    V.add(function(){ return [bdA,bdB]; },{src:'obj/board2.webp',title:'추억이 걸린,, 게시판 입니다,,',note:'',wall:0});
     var mC=zone(1.96,1.613,2.156,0.881,1.197), mR=zone(1.955,1.687,1.984,1.192,1.31);
-    V.add(function(){ return [mC,mR]; },{dotAt:[1.955,1.84,1.25],src:'obj/rank.jpg',title:'메뉴판 옆을 보시면,, 인기 많은 메뉴 순위가 있습니다,,',note:'',wall:0});
+    V.add(function(){ return [mC,mR]; },{dotAt:[1.955,1.84,1.25],src:'obj/rank.webp',title:'메뉴판 옆을 보시면,, 인기 많은 메뉴 순위가 있습니다,,',note:'',wall:0});
     var pA=zone(2.27,2.596,2.891,1.581,1.994), pB=zone(2.27,2.257,2.552,1.581,1.998);
-    V.add(function(){ return [pA,pB]; },{src:'obj/poster.jpg',title:'손님들이 매우 자주 범하시는,, 인지적 오류,,',note:'',wall:0});
-    V.add(box({x:[-2.4,-1.95],y:[1.3,2.45],z:[1.2,1.95]}),{src:'obj/bag.jpg',title:'바닥이 보일 때가,, 새로운 희망의 시작입니다,,',note:'',wall:3});
+    V.add(function(){ return [pA,pB]; },{src:'obj/poster.webp',title:'손님들이 매우 자주 범하시는,, 인지적 오류,,',note:'',wall:0});
+    V.add(box({x:[-2.4,-1.95],y:[1.3,2.45],z:[1.2,1.95]}),{src:'obj/bag.webp',title:'바닥이 보일 때가,, 새로운 희망의 시작입니다,,',note:'',wall:3});
     /* round bookshelf: a flat disc over the whole ring, so the full circle lights up */
     var dk=new THREE.Mesh(new THREE.CircleGeometry(0.64,48),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false})); dk.rotation.y=Math.PI/2; dk.position.set(-1.99,2.54,2.57); dk.userData.__zone=1; NOK.scene.add(dk);
-    var shB=box({x:[-2.4,-1.9],y:[1.9,3.4],z:[1.9,3.4],dio:'wallD'}); V.add(dk,{lines:1,glow:function(){ return shB(); },src:'obj/shelf.jpg',title:'방명록 책장,,',note:'',wall:3});
+    var shB=box({x:[-2.4,-1.9],y:[1.9,3.4],z:[1.9,3.4],dio:'wallD'}); V.add(dk,{lines:1,glow:function(){ return shB(); },src:'obj/shelf.webp',title:'방명록 책장,,',note:'',wall:3});
     /* 오기전에: the two yellow blocks on the side wall above the cup rack (incl. the merged copy built later) */
     (function(){ function hideY(){ var b=new THREE.Box3(), L=[]; NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||Array.isArray(m.material)||!m.material.color||m.material.color.getHexString()!=='d9b36a') return; b.setFromObject(m); if(!b.isEmpty()&&b.min.x>2.1&&b.max.x<2.32&&b.min.y>1.5&&b.max.y<1.75&&b.min.z>-0.55&&b.max.z<0.1){ L.push(m); } }); L.forEach(function(m){ m.visible=false; if(m.parent) m.parent.remove(m); }); } hideY(); setTimeout(hideY,3000); setTimeout(hideY,9000); })();
     /* blue year stickers, one per year since opening, down the door jamb (the side facing the doorway, right of the door seen from inside); the long white strip that sat there goes */
@@ -9562,11 +9564,11 @@ window.__ph='rt';
       var t=new THREE.CanvasTexture(cv); t.anisotropy=4; var w=0.13, h=w*H/W*N;
       var st=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:t,transparent:true,alphaTest:0.05})); st.rotation.y=Math.PI/2; st.position.set(-1.112,2.26-h/2,3.62); st.userData.__stk=1; NOK.scene.add(st);
       (function lp(){ requestAnimationFrame(lp); st.visible=!(NOK.WFADE&&NOK.WFADE.value.z>0.4); })();
-      V.add(st,{src:'obj/stickers.jpg',title:'파란 딱지들에 대해 궁금하시다면,,',note:'실제 매장 내 QR을 찾아주세요,,',wall:2}); })();
+      V.add(st,{src:'obj/stickers.webp',title:'파란 딱지들에 대해 궁금하시다면,,',note:'실제 매장 내 QR을 찾아주세요,,',wall:2}); })();
     /* kiosk: a clean rectangle over the device body only (not the sign on its pole) */
-    var kB=box({x:[0.05,0.45],y:[1.3,1.7],z:[-0.75,-0.3]}); V.add(zoneZ(-0.37,0.13,0.355,1.345,1.67),{lines:1,glow:function(){ return kB(); },src:'obj/kiosk2.jpg',title:'키오스크 아닙니다,,',note:'주문은 직원에게 직접,, 부탁드립니다,,(스몰토크 가능,,)',wall:-1});
+    var kB=box({x:[0.05,0.45],y:[1.3,1.7],z:[-0.75,-0.3]}); V.add(zoneZ(-0.37,0.13,0.355,1.345,1.67),{lines:1,glow:function(){ return kB(); },src:'obj/kiosk2.webp',title:'키오스크 아닙니다,,',note:'주문은 직원에게 직접,, 부탁드립니다,,(스몰토크 가능,,)',wall:-1});
     /* right of the 인지적 오류 sheets: the long article, the framed drawing and the gift card */
-    V.add(box({x:[2.15,2.33],y:[2.0,3.2],z:[2.05,2.97]}),{src:'obj/article.jpg',title:'요모조모,,',note:'',wall:0});
+    V.add(box({x:[2.15,2.33],y:[2.0,3.2],z:[2.05,2.97]}),{src:'obj/article.webp',title:'요모조모,,',note:'',wall:0});
     /* under the counter: the pile of school plushies on the brown Marshall speaker (photo) */
     (function(){ var OLD=['f4f1ea','d9a75a','1f2a4a','f2c72a','7a3a2a'], SPK=[]; NOK.scene.updateMatrixWorld(true); NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||Array.isArray(m.material)||!m.material.color) return; var b=new THREE.Box3().setFromObject(m); if(b.isEmpty()) return; var c=b.getCenter(new THREE.Vector3()); if(c.x<1.6||c.x>2.0||c.z<0.45||c.z>0.85||c.y>0.6) return; var h=m.material.color.getHexString();
         if(OLD.indexOf(h)>=0&&c.y>0.2) m.layers.set(5); else if(h==='7a5034'||h==='2a2622'||h==='c9a24a'){ SPK.push(m); if(h==='7a5034'){ m.material=m.material.clone(); m.material.color.set('#9a5c32'); } if(h==='2a2622'){ m.material=m.material.clone(); m.material.color.set('#d6c8a6'); } } });
@@ -9592,13 +9594,13 @@ window.__ph='rt';
       sph(0.04,'#18181c',X+0.012,Y2+0.035,0.745); bx(0.004,0.01,0.06,'#c8382c',X-0.028,Y2+0.05,0.745); sph(0.036,'#f6f4ee',X+0.012,Y2+0.095,0.745); bx(0.02,0.012,0.02,'#f2c230',X-0.022,Y2+0.088,0.745); eyes(X-0.02,Y2+0.105,0.745,0.8); bx(0.07,0.01,0.07,'#141416',X+0.012,Y2+0.135,0.745); bx(0.004,0.04,0.004,'#e0b83a',X-0.02,Y2+0.115,0.715);
       G.traverse(function(o){ if(o.isMesh){ o.castShadow=false; o.receiveShadow=true; } });
       (function lp(){ requestAnimationFrame(lp); G.visible=!(NOK.WFADE&&NOK.WFADE.value.x>0.4); })();
-      V.add(function(){ var L=[]; G.traverse(function(o){ if(o.isMesh) L.push(o); }); return L.concat(SPK); },{src:'obj/plush.jpg',title:'어떤 위치에 있던 동일하게 애정합니다,,',note:'',wall:0}); })();
+      V.add(function(){ var L=[]; G.traverse(function(o){ if(o.isMesh) L.push(o); }); return L.concat(SPK); },{src:'obj/plush.webp',title:'어떤 위치에 있던 동일하게 애정합니다,,',note:'',wall:0}); })();
     /* 2F front: in the left half of the double window, the two cats and two dogs stuck on the glass (cut out from the photo) */
     (function(){ var tl=new THREE.TextureLoader(); tl.load('obj/pets.png',function(t){ t.anisotropy=4; var w=1.42, h=w*258/512; var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:0.4,opacity:0.9,depthWrite:false,color:0xf2f2f2})); m.position.set(0.88,3.78+h/2,3.996); NOK.scene.add(m); var PC=[[[0.969,0.151],[0.953,0.143],[0.895,0.205],[0.828,0.205],[0.777,0.128],[0.719,0.132],[0.701,0.07],[0.68,0.039],[0.658,0.027],[0.65,0.0],[0.576,0.0],[0.537,0.066],[0.523,0.136],[0.521,0.279],[0.539,0.399],[0.533,0.419],[0.523,0.624],[0.518,0.647],[0.508,0.647],[0.492,0.601],[0.492,0.516],[0.477,0.512],[0.441,0.419],[0.428,0.329],[0.426,0.283],[0.447,0.062],[0.426,0.074],[0.4,0.116],[0.328,0.116],[0.301,0.058],[0.289,0.054],[0.283,0.066],[0.283,0.143],[0.297,0.31],[0.283,0.407],[0.289,0.624],[0.283,0.636],[0.279,0.725],[0.27,0.729],[0.262,0.632],[0.244,0.593],[0.242,0.504],[0.234,0.496],[0.234,0.453],[0.225,0.426],[0.225,0.403],[0.211,0.376],[0.205,0.306],[0.207,0.233],[0.223,0.159],[0.225,0.112],[0.209,0.109],[0.18,0.147],[0.115,0.128],[0.074,0.14],[0.064,0.244],[0.066,0.391],[0.057,0.45],[0.055,0.643],[0.045,0.69],[0.031,0.86],[0.035,0.981],[0.266,0.984],[0.27,0.787],[0.279,0.783],[0.291,0.872],[0.305,0.919],[0.299,0.957],[0.303,0.984],[0.533,0.984],[0.535,0.996],[0.541,0.984],[0.645,0.984],[0.646,0.996],[0.736,0.996],[0.748,0.953],[0.744,0.814],[0.76,0.775],[0.754,0.663],[0.738,0.628],[0.732,0.581],[0.738,0.345],[0.756,0.318],[0.758,0.279],[0.77,0.275],[0.799,0.329],[0.818,0.453],[0.818,0.508],[0.809,0.585],[0.816,0.647],[0.799,0.686],[0.797,0.81],[0.807,0.872],[0.803,0.996],[0.961,0.996],[0.953,0.64],[0.936,0.558],[0.936,0.384],[0.943,0.295],[0.963,0.279],[0.971,0.205]]], pz=[]; PC.forEach(function(c){ var sh=new THREE.Shape(); c.forEach(function(q,i){ var x=(q[0]-0.5)*w, y=(0.5-q[1])*h; if(i) sh.lineTo(x,y); else sh.moveTo(x,y); }); var z=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false})); z.position.copy(m.position); z.position.z+=0.002; z.userData.__zone=1; NOK.scene.add(z); pz.push(z); });   /* the outline follows each animal, not the square picture */
-      V.add(function(){ return pz; },{lines:1,src:'obj/pets_photo.jpg',title:'백이와 석이,, 백미와 복순이,,',note:'맴버들의 소중한 반려동물들 입니다,,',wall:2,oneSide:1});
+      V.add(function(){ return pz; },{lines:1,src:'obj/pets_photo.webp',title:'백이와 석이,, 백미와 복순이,,',note:'맴버들의 소중한 반려동물들 입니다,,',wall:2,oneSide:1});
       (function lp(){ requestAnimationFrame(lp); m.visible=!(NOK.WFADE&&NOK.WFADE.value.z>0.4); })(); }); })();
     /* right of the door (seen from the street): the dinosaur height-chart light box */
-    V.add(function(){ var L=[]; NOK.scene.traverse(function(m){ if(m.isMesh&&m.userData.dio==='c149') L.push(m); }); return L; },{lines:1,src:'obj/dino.jpg',title:'키를 재봅시다,,',note:'',wall:0});
+    V.add(function(){ var L=[]; NOK.scene.traverse(function(m){ if(m.isMesh&&m.userData.dio==='c149') L.push(m); }); return L; },{lines:1,src:'obj/dino.webp',title:'키를 재봅시다,,',note:'',wall:0});
     /* outside the shop's only window (side wall): a white board with five framed news pages, a white track with four spotlights washing the wall in soft orange */
     (function(){ var X=2.505, Z0=1.45, Z1=3.05, G=new THREE.Group(); NOK.scene.add(G);
       function pl(w,h,mat,x,y,z){ var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat); m.rotation.y=Math.PI/2; m.position.set(x,y,z); G.add(m); return m; }
@@ -9624,7 +9626,7 @@ window.__ph='rt';
     (function(){ var L=[]; NOK.scene.updateMatrixWorld(true); NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||m.userData.__zone||m.userData.__glow) return; var a=m.geometry&&m.geometry.attributes; if(!a||a.aW) return; var b=new THREE.Box3().setFromObject(m); if(b.isEmpty()) return; var c=b.getCenter(new THREE.Vector3()); if(c.x>1.85&&c.x<2.45&&c.z>-0.5&&c.z<3.3&&c.y>1.3&&c.y<3.4) L.push(m); });
       (function lp(){ requestAnimationFrame(lp); var f=NOK.WFADE&&NOK.WFADE.value.x>0.4; for(var i=0;i<L.length;i++){ var m=L[i]; if(f){ if(m.layers.mask!==32) m.layers.set(5); } else if(m.layers.mask!==1) m.layers.set(0); } })(); })();
     /* black metal shelf left of the bin */
-    V.add(box({x:[-2.32,-1.8],y:[0,1.0],z:[-0.03,0.43]}),{src:'obj/shelf2.jpg',title:'천장에는 과연,,',note:'사장님,, 저기 누가 아이스크림을 흘리고 갔는데요,,',wall:-1});
+    V.add(box({x:[-2.32,-1.8],y:[0,1.0],z:[-0.03,0.43]}),{src:'obj/shelf2.webp',title:'천장에는 과연,,',note:'사장님,, 저기 누가 아이스크림을 흘리고 갔는데요,,',wall:-1});
     /* hanging inside the left door (seen from inside): the opening-gift fish and our socks */
     (function(){ var Z=3.77, Y=2.2, G=new THREE.Group(); NOK.scene.add(G);
       function cvTex(w,h,draw){ var c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); var t=new THREE.CanvasTexture(c); t.anisotropy=4; return t; }
@@ -9650,7 +9652,7 @@ window.__ph='rt';
       var spl=plane(0.12,0.24,stx); spl.position.set(0,-0.14,0); S.add(spl);
       S.add(bx(0.07,0.012,0.012,0xc9a24a,0,-0.012,0)); S.add(bx(0.006,0.03,0.006,0xc9a24a,-0.025,0.004,0)); S.add(bx(0.006,0.03,0.006,0xc9a24a,0.025,0.004,0));
       (function lp(){ requestAnimationFrame(lp); var t=performance.now()/1000; F.rotation.z=Math.sin(t*0.9)*0.035; S.rotation.z=Math.sin(t*0.7+1.3)*0.03; G.visible=!(NOK.WFADE&&NOK.WFADE.value.z>0.4); })();
-       V.add(S,{src:'obj/socks.jpg',title:'마더그라운드와 함께 만든 녹기전에 양말,,',note:'품절,, 되었습니다,,',wall:2}); })();
+       V.add(S,{src:'obj/socks.webp',title:'마더그라운드와 함께 만든 녹기전에 양말,,',note:'품절,, 되었습니다,,',wall:2}); })();
     /* door stickers on the swinging leaf (left seen from the street): 당기세요 outside, 미세요 inside (+ the little photo sticker under it) */
     (function(){ var L=window.__doorL, R=window.__doorR, W=window.__doorLW, H=window.__doorH; if(!L||!W) return; var T=0.05, sx=W-0.08, ry=0.53*H;
       function tex(w,h,draw){ var c=document.createElement('canvas'); c.width=w; c.height=h; var g=c.getContext('2d'); draw(g,w,h); var t=new THREE.CanvasTexture(c); t.anisotropy=4; return t; }
@@ -9671,8 +9673,8 @@ window.__ph='rt';
       var tp=tex(170,26,function(g,w,h){ g.fillStyle='#f4f4f2'; g.fillRect(0,0,w*0.78,h); g.fillRect(w*0.8,0,w*0.2,h); g.fillStyle='#1a1a1a'; g.font='500 14px "Noto Sans KR",sans-serif'; g.textBaseline='middle'; g.fillText('아름다운 사람은 머문',6,h/2+1); });
       stk(L,0.12,0.018,tp,sx+0.005,ry+0.37,true);
       var all=[pull,push,pic]; (function lp(){ requestAnimationFrame(lp); var on=!(NOK.WFADE&&NOK.WFADE.value.z>0.4); L.children.concat(R?R.children:[]).forEach(function(m){ if(m.material&&m.material.map&&m.geometry&&m.geometry.type==='PlaneGeometry'&&m.position.z!==0) m.visible=on; }); })();
-      V.add(pull,{src:'obj/pull.jpg',title:'아이스크림이,, 당기세요?',note:'문도 당기는게 맞습니다,,',wall:2,oneSide:1});
-      V.add(function(){ return [push,pic]; },{src:'obj/push.jpg',title:'우리말 겨루기,,',note:'지나간 자리를 살펴봅시다,, 분실물 주의,,',wall:2,oneSide:1}); })();
+      V.add(pull,{src:'obj/pull.webp',title:'아이스크림이,, 당기세요?',note:'문도 당기는게 맞습니다,,',wall:2,oneSide:1});
+      V.add(function(){ return [push,pic]; },{src:'obj/push.webp',title:'우리말 겨루기,,',note:'지나간 자리를 살펴봅시다,, 분실물 주의,,',wall:2,oneSide:1}); })();
   }catch(e){} },5000);
 })();
 /* ===== 오기전에: the guestbook — the mint 'BEFORE IT MELTS' notebook in the corner left of the door (window side), on little wings: it lifts off, hovers, settles, lifts off again. Later the guestbook feature will open it and type into it. ===== */
@@ -9717,7 +9719,7 @@ window.__ph='rt';
     G.position.set(cx,top,cz);G.rotation.y=Math.atan2(-cx,-cz)+0.35;NOK.scene.add(G);
     var t0=performance.now()/1000;
     window.__gbook={g:G,book:B,wl:wl,wr:wr};
-    try{ window.__objView&&__objView.add(G,{src:'obj/guestbook.jpg',title:'녹기전에 방명록,,',note:'웬아이워즈영과 함께 만든,, 방명록 노트 판매중입니다,,'}); }catch(e){}
+    try{ window.__objView&&__objView.add(G,{src:'obj/guestbook.webp',title:'녹기전에 방명록,,',note:'웬아이워즈영과 함께 만든,, 방명록 노트 판매중입니다,,'}); }catch(e){}
     (function tick(){requestAnimationFrame(tick);var t=performance.now()/1000-t0,P=6.4,u=t%P,lift=0,flap=0.15+Math.sin(t*2)*0.05;
       /* 0–2.4 s sitting · 2.4–3.1 take off · 3.1–5.4 hover · 5.4–6.4 settle */
       if(u<2.4){lift=0;flap=0.18+Math.sin(t*1.6)*0.06;}
