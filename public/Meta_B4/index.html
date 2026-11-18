@@ -8015,7 +8015,7 @@ stage.addEventListener('wheel',function(e){e.preventDefault();if(FPV){fpFov=clam
 document.getElementById('reset').addEventListener('click',function(){if(FPV&&window.__tourFp&&window.__T&&window.__T.st!=='off'){window.__T.oy=0;window.__T.op=0;fpFov=74;touch();return;}   /* on a visit the home view is: looking at the staff */ if(FPV){fpYaw=FPYAW0;fpPitch=-0.12;fpFov=window.__tourFp?74:80;touch();return;}tth=0.78;tph=0.6;tzm=HOMEZ;tpan.set(0,0,-1.5);touch();});
 var fpvB=document.getElementById('fpv');
 function fpvSet(on){if(on===FPV)return;FPV=on;fpvB.setAttribute('aria-pressed',on?'true':'false');fpvB.innerHTML=on?'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg>';fpvB.setAttribute('aria-label',on?'근무 시점 나가기':'근무 시점 보기');
-  if(on){fpPrev=stf.visible;var b=new THREE.Box3().setFromObject(stf),top=b.max.y;if(!isFinite(top))top=3.2;top=clamp(top,2.6,4.4);fpPos.set(CHOME[0]-0.35,top+1.5,CHOME[1]);fpYaw=FPYAW0;fpPitch=-0.52;   /* 오기전에: a little higher up (the staff are smaller now) */fpFov=window.__tourFp?74:80;}
+  if(on){fpPrev=stf.visible;var b=new THREE.Box3().setFromObject(stf),top=b.max.y;if(!isFinite(top))top=3.2;top=clamp(top,2.6,4.4);fpPos.set(CHOME[0]-0.35,top+0.95,CHOME[1]);fpYaw=FPYAW0;fpPitch=-0.46;   /* 오기전에: eye height brought down a bit */   /* 오기전에: a little higher up (the staff are smaller now) */fpFov=window.__tourFp?74:80;}
   else{stf.visible=fpPrev;stfHead.visible=true;gest2=false;}
   touch();}
 fpvB.addEventListener('click',function(){fpvSet(!FPV);});
@@ -8657,9 +8657,10 @@ function setSt(n){T.st=n;window.__gFade=(n==='order'||n==='inside');if(n==='seat
     if(st==='seated'&&!T.touched&&!window.__tp3){var lt=(now()-(T.lookT||now()))-3; if(lt>0){var LP=60, ph=Math.min(1,lt/LP); T.oy=0.75*Math.sin(ph*Math.PI*2)*Math.min(1,lt/4); T.op*=0.97;}}   /* hands-off: one slow look to the left and one to the right while sitting */
     var bob=mv?0.07*Math.abs(Math.sin(tn*8.5)):0;
     fpPos.set(T.px,T.ey+bob,T.pz+(mv?0.05*Math.sin(tn*4.2):0));
-    var lkX=stf.position.x,lkZ=stf.position.z;if(T.st==='totrash'||T.st==='dump'){lkX=TRASH.x;lkZ=TRASH.z;}else if(T.st==='intro'||(T.st==='arrive'&&T.px>9.2)){lkX=6.3;lkZ=0.0;}   /* outside: straight at the doorway (the door sits in the middle of the view) */   /* 오기전에: on the way to the bin the view holds on the bin; otherwise on the staff */
+    var lkX=stf.position.x,lkZ=stf.position.z;if(T.st==='totrash'||T.st==='dump'){lkX=TRASH.x;lkZ=TRASH.z;}else if(T.st==='walkout'&&T.px<8.4){lkX=9.6;lkZ=1.4;}else if(T.st==='intro'||(T.st==='arrive'&&T.px>9.2)){lkX=6.3;lkZ=0.0;}   /* outside: straight at the doorway (the door sits in the middle of the view) */   /* 오기전에: on the way to the bin the view holds on the bin; otherwise on the staff */
     if(T.st==='order'||T.st==='inside'){lkX=stf.position.x;lkZ=window.__tourHold?Math.max(-3.6,Math.min(0.4,T.pz)):stf.position.z;}   /* the staff's spot, not the staff's swaying body */
     var cyT=Math.atan2(-(lkX-T.px),-(lkZ-T.pz));if(isNaN(T.cy)||T.st==='intro'&&now()-T.ts<0.05)T.cy=cyT;else{var dcy=dAng(T.cy,cyT);if(Math.abs(dcy)>0.012||T.cyGo){T.cyGo=Math.abs(dcy)>0.002;T.cy+=dcy*Math.min(1,dt*6);}}   /* 오기전에: a dead zone — the view used to tremble with the staff's tiny movements, which made fine patterns (the case front, the ceiling) shimmer */
+    if(T.st==='totrash'||T.st==='dump'||(T.st==='walkout'&&T.px<8.4)){var kd_=Math.max(0,1-dt*4);T.oy*=kd_;T.op*=kd_;}   /* 오기전에: leaving from the seat — the view is taken to the bin (whatever way I was looking), then turns to the door on the way out */
     fpYaw=T.cy+T.oy;fpPitch=Math.max(-1.35,Math.min(0.95,T.bp+T.op));T.ly=fpYaw;T.lp=fpPitch;
     if(T.st==='arrive'&&T.px<7.2&&!T.hiT){T.hiT=now();}   /* in through the door: the staff says hello first, then comes over */
     var byeOn=T.byeT&&now()-T.byeT<3.2;
