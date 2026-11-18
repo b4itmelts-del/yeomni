@@ -7540,7 +7540,7 @@ var FLOW=(function(){
       { var PO=posts(); for(var oi=0;oi<PO.length;oi++){ var Ob=PO[oi], dzo=(Ob.z-P.g.position.z)*A.dir, clr=Ob.r+1.0; if(dzo>-Ob.r-0.8&&dzo<Ob.r+7&&Math.abs(want-Ob.x)<clr){ want=Ob.x+((A.lane>=Ob.x)?1:-1)*clr; } } }
       if(F.roadHud&&F.roadHud.length){ var kq=posts()[0].m/0.35; F.roadHud.forEach(function(H){ if(!H.lawnC) return; var o=toRaw(H.lawnC[0],H.lawnC[1]), dzo=(o[1]-P.g.position.z)*A.dir, clr=0.95*kq, hw=(H.m.length*0.4+0.6)*kq; if(dzo>-hw&&dzo<hw+6*kq&&Math.abs(want-o[0])<clr){ want=o[0]-clr; } }); }   /* 오기전에: a group having a quick bite on the road: walk round them on the road side */
       /* 오기전에: people standing on the pavement in front of the shop (the queue, someone at the door): walkers on the pavement step out onto the road to pass them, never in toward the shop */
-      if(want<T.roadX-0.05){ if(T.qLo==null){ T.qLo=toRaw(0,4.9)[0]; T.qHi=toRaw(0,6.0)[0]; } var PPl=window.__ppl?window.__ppl():[]; for(var qi=0;qi<PPl.length;qi++){ var Qp=PPl[qi]; if(!Qp||Qp===P||!Qp.g||!Qp.g.visible||(Qp.__fl&&Qp.__fl.pass)) continue; var qx=Qp.g.position.x, dzq=(Qp.g.position.z-P.g.position.z)*A.dir; if(qx>T.qLo&&qx<T.qHi&&dzq>-1.4&&dzq<4.5){ want=T.roadX; break; } } }
+      if(want<T.roadX2-0.05){ if(T.qLo==null){ T.qLo=toRaw(0,4.9)[0]; T.qHi=toRaw(0,6.25)[0]; } var PPl=window.__ppl?window.__ppl():[]; for(var qi=0;qi<PPl.length;qi++){ var Qp=PPl[qi]; if(!Qp||Qp===P||!Qp.g||!Qp.g.visible||(Qp.__fl&&Qp.__fl.pass)) continue; var qx=Qp.g.position.x, dzq=(Qp.g.position.z-P.g.position.z)*A.dir; if(qx>T.qLo&&qx<T.qHi&&dzq>-1.4&&dzq<5){ want=T.roadX2; break; }   /* well out onto the road (still the near half, away from the cars) */ } }
       P.g.position.x+=(want-P.g.position.x)*Math.min(1,dt*2.5); shove(P);
       if(A.st==='walk'){ P.g.position.z+=A.dir*GSP*A.sp*dt*0.85; moving=true;
         /* in front of the shop: a glance, then maybe the queue */
@@ -7581,7 +7581,7 @@ var FLOW=(function(){
       G.m.forEach(function(M){var P=M.P;M.moving=false;M.talk=false;M.ordering=false;
         if(M.st==='in'){ if(!M.committed){ if(walk(M)){ /* at the pavement by the door: room or queue? */
               if(load+groupWeight(G)<=CAP_STAND&&!qg.length){G.m.forEach(function(Q){Q.committed=true;Q.wp=[T.doorIn[0],T.doorIn[1]];});load+=groupWeight(G);}
-              else{G.m.forEach(function(Q){Q.st='queue';Q.spot=take(T.queue,Q);Q.wp=Q.spot?[Q.spot.p]:[[9.3,-1.6-G.m.indexOf(Q)]];});} }
+              else{G.m.forEach(function(Q){Q.st='queue';Q.spot=take(T.queue,Q);Q.wp=Q.spot?[Q.spot.p]:[[9.3,-1.6-G.m.indexOf(Q)]];});if(G.m.length>=2&&Math.random()<0.75){var kq_=posts()[0].m/0.35;G.m.forEach(function(Q,qi){var pv=G.m[qi-1];if(qi%2===1&&Q.spot&&pv&&pv.spot){Q.wp=[[pv.spot.p[0]+0.42*kq_,pv.spot.p[1]+(Math.random()-0.5)*0.15*kq_]];}});}   /* 오기전에: friends wait side by side (the second one on the road side), not all in one file */} }
             else M.moving=true; }
           else { if(walk(M)){ /* inside: standing place */
               if(G.m.length>=3){if(!G.hs)G.hs=huddleSpots(G);M.spot=G.hs[M.q];M.st='huddle';}
