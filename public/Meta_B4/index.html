@@ -4872,13 +4872,13 @@ html button{opacity:.95}.xclosed .gt{display:none!important}.xtt{word-break:keep
 body,button,input,textarea,select{font-family:"Galmuri",var(--sans),sans-serif;-webkit-font-smoothing:none}
 </style>
 <style>
-#splash{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;background:#fff;opacity:1;transition:opacity 0.8s cubic-bezier(.4,0,.2,1);pointer-events:auto}
+#splash{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;background:#fff;opacity:1;transition:opacity 2.2s cubic-bezier(.45,0,.25,1);pointer-events:auto}
 #splash.night{background:#285686}
 #splash.out{opacity:0;pointer-events:none}
 #splash #splashLg{display:block;width:min(78vw,520px);height:auto;opacity:0;transition:opacity 1s cubic-bezier(.4,0,.2,1)}
-#splash.show #splashLg{opacity:1}
+#splash.show #splashLg{opacity:1;transition:opacity 1.6s cubic-bezier(.4,0,.2,1)}
 #splash.night #splashLg{filter:brightness(0) invert(1)}
-#splash.van #splashLg{opacity:0;transition:opacity 2.4s cubic-bezier(.4,0,.6,1)}
+#splash.van #splashLg{opacity:0;transition:opacity 2.6s cubic-bezier(.45,0,.3,1)}
 #splash canvas{display:none}
 #splash .ring{position:absolute;left:50%;top:50%;margin:-13px 0 0 -13px}
 #splash.lgo .ring{animation:none;opacity:0;transition:opacity .6s}
@@ -4893,7 +4893,7 @@ body,button,input,textarea,select{font-family:"Galmuri",var(--sans),sans-serif;-
 (function(){var sp=document.getElementById('splash'),h=new Date().getHours(),t0=Date.now(),ready=false,done=false,shown=false;if(h>=18||h<6)sp.classList.add('night');
 function ok(){ready=true;}
 if(document.readyState==='complete')ok();else window.addEventListener('load',ok);
-function finish(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},1600);}
+function finish(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},2400);}
 setTimeout(finish,24000);
 function pxVan(){var im=document.getElementById('splashLg');if(!im||done)return;
   try{var r=im.getBoundingClientRect(),dp=Math.min(2,window.devicePixelRatio||1),W=Math.round(r.width*dp),H=Math.round(r.height*dp);
@@ -4917,8 +4917,8 @@ var good=0,lastT=0;(function fm(t){if(done)return;if(lastT){if(t-lastT>45)good=0
 (function poll(){if(done)return;var e=Date.now()-t0;
   if(!shown&&((ready&&e>=800&&good>=45)||e>14000)){shown=true;sp.classList.add('lgo');
     requestAnimationFrame(function(){requestAnimationFrame(function(){sp.classList.add('show');});});
-    setTimeout(pxVan,1500);
-    setTimeout(finish,2650);}
+    setTimeout(function(){if(!done)sp.classList.add('van');},2600);   /* 오기전에: the logo lingers, then slowly melts away; only after that does the background fade */
+    setTimeout(finish,5300);}
   setTimeout(poll,120);})();})();
 </script>
 
