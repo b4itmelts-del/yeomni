@@ -2493,7 +2493,7 @@ function updLighting(dt){
  let i=0; while(i<keys.length-2&&h>=keys[i+1][0]) i++; const a=keys[i],b=keys[i+1]; const t=clamp((h-a[0])/((b[0]-a[0])||1),0,1);
  const top=mixHex(a[1],b[1],t), bot=mixHex(a[2],b[2],t), sunC=mixHex(a[3],b[3],t); let sunI=lerp(a[4],b[4],t); const ambC=mixHex(a[5],b[5],t); let ambI=lerp(a[6],b[6],t);
  const wet=S.rainAmt; top.lerp(_c1.set('#848d96'),wet*0.5); bot.lerp(_c1.set('#aab2ba'),wet*0.5); sunI*=1-wet*0.6; ambI*=1-wet*0.15;
- if(S.season===3) sunI*=1.2;
+ if(S.season===3) sunI*=1.45;
  if(S.season===5){ ambI*=1.1; top.lerp(_c1.set('#b3cdf2'),0.2); bot.lerp(_c1.set('#f4f6f7'),0.25); }
  if(false&&S.season===2&&wet>0.6){ lightN-=dt; if(lightN<=0){ lightN=7+Math.random()*14; S.flash=1; if(Math.random()<0.22){ S.blackout=3; const g=agents.find(x=>x.kind==='guest'); if(g) say(g,'앗,,',2); } } }
  S.flash=Math.max(0,S.flash-dt*5); top.lerp(_c1.set('#ffffff'),S.flash*0.8); bot.lerp(_c1.set('#ffffff'),S.flash*0.8); ambI+=S.flash*1.2;
@@ -2502,7 +2502,7 @@ function updLighting(dt){
  paintSky(top,bot,night,wet>0.5,dt);
  const vivid=PX_OFF()?1:0; sun.color.copy(sunC); sun.intensity=sunI*LG.sun*(1+0.18*vivid); hemi.color.copy(ambC); hemi.intensity=ambI*LG.sky; S.__boK=lerp(S.__boK||0,S.blackout>0?1:0,1-Math.exp(-dt*6)); if(S.__boK>0.01){ sun.intensity*=1-0.85*S.__boK; hemi.intensity*=1-0.8*S.__boK; }   /* 오기전에: power cut: the whole place goes dark */   /* a strong warm key for the vivid look */
  /* the film grade follows the hour: how dark it is, how golden, and where the light comes from on screen */
-{ const U=pipe.mat.uniforms; U.gTime.value=(U.gTime.value+dt)%1000.0; const gold=clamp(1-Math.abs(sunI-0.95)/0.5,0,1)*(1-night)*(h>14.5||h<9?1:0.25); U.gNight.value=lerp(U.gNight.value,night,0.1); U.gGold.value=lerp(U.gGold.value,gold,0.1);
+{ const U=pipe.mat.uniforms; U.gTime.value=(U.gTime.value+dt)%1000.0; { const hs=S.season===3?1:0; U.gRays.value=lerp(U.gRays.value,0.5+0.7*hs*(1-night),0.05); U.gBloom.value=lerp(U.gBloom.value,0.5+0.35*hs*(1-night),0.05); }   /* 오기전에: blazing summer — strong light and sun shafts (no lens flare) */ const gold=clamp(1-Math.abs(sunI-0.95)/0.5,0,1)*(1-night)*(h>14.5||h<9?1:0.25); U.gNight.value=lerp(U.gNight.value,night,0.1); U.gGold.value=lerp(U.gGold.value,gold,0.1);
    const c_=activeCam(); if(night>0.6){ /* night: the glow comes from the shop front */ _gv.set(0,FLOOR*TUNE.h+1.6,BZ1*TUNE.d+0.3).project(c_); U.gSun.value.set((_gv.x+1)/2,(_gv.y+1)/2); U.gSunOn.value=lerp(U.gSunOn.value,c_===fpCam?0:0.7,0.1); }
    else { /* daytime: the sun arcs over the top of the screen, left in the morning and right in the evening; rays are strongest when it is low (morning / golden hour) */
      const day_=h>st.rise&&h<st.set, f_=day_?(h-st.rise)/(st.set-st.rise):0.5; const sxs=lerp(-0.15,1.15,f_), sys=0.9+0.35*Math.sin(f_*Math.PI);
@@ -5720,7 +5720,8 @@ function wxPose(P,s,mv,q){
   if(md==='winter'){P.sa=Math.max(0,Math.min(1,P.sa+(out?wxDt*0.16:-wxDt*0.5)));wxFoot(P);}else P.sa=Math.max(0,P.sa-wxDt*2);
   var nsn=Math.ceil(P.sa*P.sn.length-0.001);for(k=0;k<P.sn.length;k++){var sv=k<nsn&&P.sa>0.02;P.sn[k].visible=sv;if(sv){var sc=0.55+0.6*P.sa;P.sn[k].scale.set(sc,sc*0.8,sc);}}
   /* hot summer: orange face, panting, sweat beads (outside only) */
-  var hot=md==='hot'&&out;
+  if(P.cup&&P.cup.visible)P.cool=true;   /* 오기전에: an ice cream in hand (or eaten) cools them down for good */
+  var hot=md==='hot'&&out&&!P.cool;
   P.hhot+=((hot?1:0)-P.hhot)*0.08;
   if(hot||P.hhot>0.003){var c0=new THREE.Color(P.skin0||'#f2c49b');c0.lerp(WORG,0.5*P.hhot);P.m.skin.color.copy(c0);P.m.skinD.color.copy(c0).multiplyScalar(0.88);
     if(hot){P.hd.rotation.x+=Math.sin(s*13+q)*0.1+0.06;P.body.position.y+=Math.abs(Math.sin(s*13+q))*0.035;}
@@ -5948,7 +5949,7 @@ function hotInit(){
 window.hotUpd=function(s,zs){
   if(!HOT.g)return;var dt=Math.min(0.1,Math.max(0,s-HOT.last));HOT.last=s;
   var on=WXMODE==='hot'&&HOT.g.visible&&moodName==='day',ph=(s+8)%12,k=(on&&zs>0.5&&ph<6)?Math.pow(Math.sin(Math.PI*ph/6),1.3):0;HOT.k=k;
-  HOT.gm.color.setRGB(1+1.6*k,1+1.5*k,1+1.1*k);HOT.sh.forEach(function(m){m.opacity=0;});HOT.ring.material.opacity=0.8*k;HOT.cg.material.opacity=on?0.3*k:0;
+  HOT.gm.color.setRGB(1+1.6*k,1+1.5*k,1+1.1*k);HOT.sh.forEach(function(m){m.opacity=0;});HOT.ring.material.opacity=0;HOT.cg.material.opacity=on?0.3*k:0;
   var du=(WXMODE==='hot'&&HOT.g.visible&&(moodName==='dusk'||moodName==='night'))?1:0;HOT.du=(HOT.du||0)+(du-(HOT.du||0))*Math.min(1,dt*2);var dk=HOT.du,pu=0.75+0.25*Math.sin(s*1.6);
   HOT.mint.forEach(function(m,i){m.opacity=0.55*dk*(0.8+0.2*Math.sin(s*1.6+i));});HOT.gs.forEach(function(m){m.opacity=0.55*dk*pu;});if(dk>0.02)HOT.gm.color.setRGB(1-0.35*dk,1+0.7*dk,1+0.15*dk);
   HOT.ff.forEach(function(F){var sp=F.sp;sp.visible=dk>0.02;F.co.visible=dk>0.02;if(dk<=0.02)return;sp.position.set(Math.sin(s*F.a+F.c)*6.2+Math.sin(s*F.b*2.3)*0.6,F.h+0.5*Math.sin(s*F.b*1.7+F.d),Math.cos(s*F.b+F.d)*6.2);var tw=0.5+0.5*Math.sin(s*3.1+F.c*3);sp.material.opacity=dk*(0.55+0.45*tw);sp.scale.setScalar(1.5+0.7*tw);F.co.visible=true;F.co.position.copy(sp.position);F.co.material.opacity=dk*(0.6+0.4*tw);F.co.scale.setScalar(0.8+0.5*tw);});
@@ -7335,7 +7336,7 @@ window.__mkV=mkV;window.__applyV=applyV;function mkV(kind){
   else if(kind==='foreign'){var wh=Math.random()<0.5;V.fr=true;V.sc=1.32;V.hs=rv([0,0,4,1,3]);V.bt=1;V.skin=wh?pick(['#f7d9c4','#f3cfb8']):pick(['#6b4429','#5a3820']);V.hair=wh?pick(['#e8c66a','#f0d27a','#dcb04e']):'#141012';V.top=pick(['#4aa3df','#2f2f38','#f08a3c','#e2574c','#ffffff','#7bc67b']);V.bot=pick(['#35405a','#2a2a30','#5a6f93']);V.hat=0;V.bd=Math.random()<0.15?rv([1,2,3]):0;}
   else if(kind==='guest'&&curGuest){V=curGuest;curGuest=null;}
   V.kd=kind;return V;}
-function look(P,kind){var V0=mkV(kind);applyV(P,V0);P.got=false;var nt=moodName==='dusk'||moodName==='night',pp=PKG.n<=1?(nt?0.7:0.1):(nt?0.2:0.04);P.pack=(V0.preg?Math.random()<0.5:(!V0.fr&&kind!=='guest'&&Math.random()<pp));flwSet(P);}
+function look(P,kind){var V0=mkV(kind);applyV(P,V0);P.got=false;P.cool=false;var nt=moodName==='dusk'||moodName==='night',pp=PKG.n<=1?(nt?0.7:0.1):(nt?0.2:0.04);P.pack=(V0.preg?Math.random()<0.5:(!V0.fr&&kind!=='guest'&&Math.random()<pp));flwSet(P);}
 function flwSet(P){P.flw=Math.random()<0.07;P.flwOn=false;if(!P.bq)return;P.bq.visible=P.flw;if(P.fe)P.fe.visible=false;if(!P.flw)return;
   var uni=Math.random()<0.45,c0=FLW_COLS[(Math.random()*FLW_COLS.length)|0];P.bqm.forEach(function(mt){mt.color.set(uni?c0:FLW_COLS[(Math.random()*FLW_COLS.length)|0]);});}
 /* ===== 손님 넣기: 손님 만들기에서 만든 코드를 붙여넣으면, 정한 시간 뒤 다음 방문에 찾아와요 ===== */
@@ -8201,7 +8202,7 @@ function loop(t){
   var ctx_=tgt.x+pan.x,cty_=tgt.y+pan.y,ctz_=tgt.z+pan.z;cam.position.set(ctx_+R*Math.cos(ph)*Math.sin(th),cty_+R*Math.sin(ph),ctz_+R*Math.cos(ph)*Math.cos(th));
   cam.lookAt(ctx_,cty_,ctz_);cam.zoom=zm*(1-0.03*ez);cam.updateProjectionMatrix();cam.updateMatrixWorld();
   if(FPV){fpCam.position.copy(fpPos);fpCam.rotation.set(fpPitch,fpYaw,0,'YXZ');var fa_=fpCam.aspect;fpCam.fov=fa_<1?Math.min(98,2*Math.atan(Math.tan(fpFov*Math.PI/360*0.8)/fa_)*180/Math.PI):fpFov;fpCam.updateProjectionMatrix();fpCam.updateMatrixWorld();stfHead.visible=!!window.__tourFp;if(!window.__tourFp)stf.visible=false;}   /* 오기전에: in the staff's own view the body is hidden (the eye now sits inside it); only my hands show */
-  var ac_=FPV?fpCam:cam;fvec.set(6.4,5.2,0).project(ac_);U.uSun.value.set(fvec.x*0.5+0.5,fvec.y*0.5+0.5);U.uFlare.value=flareK*Math.max(0,wallC.userData.f);
+  var ac_=FPV?fpCam:cam;fvec.set(6.4,5.2,0).project(ac_);U.uSun.value.set(fvec.x*0.5+0.5,fvec.y*0.5+0.5);U.uFlare.value=(window.NOK&&NOK.S.season===3?0:1)*flareK*Math.max(0,wallC.userData.f);
   fadeWalls();bubK();
   var zs=clamp((1.30-zm)/0.18,0,1);fl2.visible=zs>0.01;capPl.forEach(function(m){m.visible=!(zs>0.5);});window.lampFix.forEach(function(m){m.visible=zs>0.5;});hangObjs.forEach(function(m){m.visible=zs>0.5;});window.ctrH.forEach(function(m){m.visible=!fl2.visible;});fl2.scale.y=Math.max(0.02,zs*zs*(3-2*zs));if(window.xmUpd)xmUpd(s,zs);if(window.hotUpd)hotUpd(s,zs);if(window.spUpd)spUpd(s,zs);if(window.exUpd)exUpd(s,zs);var hk=1+0.4*zs*zs*(3-2*zs);hmSign[0].scale.set(1,1,hk);hmSign[1].scale.set(hk,1,1);
   if(FPV){fl2.visible=!!window.__tourFp;if(fl2.visible)fl2.scale.y=1;capPl.forEach(function(m){m.visible=true;});window.lampFix.forEach(function(m){m.visible=true;});hangObjs.forEach(function(m){m.visible=true;});window.ctrH.forEach(function(m){m.visible=true;});}
