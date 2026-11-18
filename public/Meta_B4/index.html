@@ -2969,7 +2969,7 @@ requestAnimationFrame(leafFrame);
 
 /* visit sheet + guest codes */
 const sheet=$('#sheet');
-function openSheet(){ gRender(); const closed=['pre','night'].includes(mood()); $('#mTour').disabled=closed; $('#mWork').disabled=closed; $('#n_gmsg').textContent=closed?'지금은 영업 시간이 아니에요,, 12시부터 열어요':''; sheet.hidden=false; }
+function openSheet(){ gRender(); const closed=['pre','night'].includes(mood()); $('#mTour').disabled=closed; $('#mWork').disabled=closed; $('#n_gmsg').textContent=closed?'지금은 영업시간이 아니에요,, 12시부터 열어요':''; sheet.hidden=false; }
 $('#sheetX').onclick=()=>sheet.hidden=true;
 $('#mTour').onclick=()=>{ sheet.hidden=true; MP.solo(); };
 $('#mWork').onclick=()=>{ sheet.hidden=true; workStart(); };
@@ -3956,7 +3956,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
  mGroup('체험','seg',[mBtn('방문',go(()=>{ closeAll(); A().tour(); })),mBtn('근무',go(()=>{ closeAll(); A().work(); }))]);
  /* 오기전에: press 낮 again for 오픈 전 (before opening), 밤 again for 마감 후 (after closing); a third press goes back */
  mGroup('영업시간','seg',[mBtn('낮',go(()=>{ A().time('day'); })),mBtn('밤',go(()=>{ A().time('dusk'); }))   /* 오기전에: 낮 = open by day, 밤 = open in the evening. No hidden second press into 오픈 전 / 마감 (those closed the shop and guests stopped) */]);
- mGroup('준비 시간','seg',[mBtn('아침',go(()=>{ A().time('pre'); })),mBtn('마감',go(()=>{ A().time('night'); }))]);   /* 오기전에: the closed shop on its own row — before opening, after closing */
+ mGroup('준비시간','seg',[mBtn('아침',go(()=>{ A().time('pre'); })),mBtn('마감',go(()=>{ A().time('night'); }))]);   /* 오기전에: the closed shop on its own row — before opening, after closing */
  mGroup('계절','seg',[mBtn('봄',go(()=>A().season(1))),mBtn('여름',go(()=>A().season(2))),mBtn('가을',go(()=>A().season(3))),mBtn('겨울',go(()=>A().season(4)))]);
  /* 오기전에: the games, last in the logo menu */
  mGroup('미니게임','seg',[mBtn('스쿠핑 게임',go(()=>{ closeAll(); const t=document.querySelector('button[aria-label="녹기 전에 잘 담기 게임"]'); if(t) t.click(); })),mBtn('빨리 담기',go(()=>{ closeAll(); openQuick(); }))]);
