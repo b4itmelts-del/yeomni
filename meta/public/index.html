@@ -3961,7 +3961,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
  /* 오기전에: press 낮 again for 오픈 전 (before opening), 밤 again for 마감 후 (after closing); a third press goes back */
  mGroup('계절변경','seg',[mBtn('봄',go(()=>A().season(1))),mBtn('여름',go(()=>A().season(2))),mBtn('가을',go(()=>A().season(3))),mBtn('겨울',go(()=>A().season(4)))]);
  /* 오기전에: 시간 변경 — 영업시간 (낮 · 밤) and under it 준비시간 (아침 · 마감) */
- { const sub=(t,btns)=>{ const h=document.createElement('div'); h.textContent=t; h.style.cssText='font-size:11px;font-weight:700;opacity:.75;margin:6px 0 4px'; const w=document.createElement('div'); w.className='seg'; w.style.gridTemplateColumns=`repeat(${btns.length},1fr)`; btns.forEach(b=>w.appendChild(b)); return [h,w]; };
+ { const sub=(t,btns)=>{ const h=document.createElement('div'); h.textContent=t; h.style.cssText='font-size:11px;font-weight:700;opacity:.75;margin:6px 0 4px;text-align:center'; const w=document.createElement('div'); w.className='seg'; w.style.gridTemplateColumns=`repeat(${btns.length},1fr)`; btns.forEach(b=>w.appendChild(b)); return [h,w]; };
    const g=document.createElement('div'); g.className='mg'; const h=document.createElement('h4'); h.textContent='시간변경'; g.appendChild(h);
    sub('영업시간',[mBtn('낮',go(()=>{ A().time('day'); })),mBtn('밤',go(()=>{ A().time('dusk'); }))]).forEach(e=>g.appendChild(e)); sub('준비시간',[mBtn('아침',go(()=>{ A().time('pre'); })),mBtn('마감',go(()=>{ A().time('night'); }))]).forEach(e=>g.appendChild(e)); menu.appendChild(g); }
  /* 오기전에: the games, last in the logo menu */
