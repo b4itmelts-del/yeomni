@@ -8790,7 +8790,7 @@ window.__ph='sys';/* ---- 근무체험: 손님이 주문할 때마다 대화 자
     var lines=[];meta.forEach(function(m){var f=m.tr?fs*0.82:fs;g.font='800 '+f+'px sans-serif';var cur='';for(var i=0;i<m.p.length;i++){var ch=m.p[i];if(g.measureText(cur+ch).width>MW&&cur){lines.push({t:cur,f:f,tr:m.tr});cur=ch.trim()===''?'':ch;}else cur+=ch;}if(cur||!m.p)lines.push({t:cur,f:f,tr:m.tr});});
     var LHs=lines.map(function(l){return l.f*1.28;}),th=LHs.reduce(function(a,b){return a+b;},0),bh=Math.round(th+2*u+22),TL=3*u;
     if(gC.width!==CW||gC.height!==bh+TL+8){gC.width=CW;gC.height=bh+TL+8;}g=gC.getContext('2d');g.imageSmoothingEnabled=false;
-    var D='#2b1f33',FL_=staff?'rgba(255,231,163,0.78)':'rgba(255,255,255,0.78)';
+    var D='#2b1f33',FL_=staff?'rgba(255,231,163,0.55)':'rgba(255,255,255,0.55)';
     function pr(x,y,w,h,c){g.fillStyle=c;g.fillRect(x+u,y,w-2*u,h);g.fillRect(x,y+u,w,h-2*u);}
     function fr(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h);}
     g.clearRect(0,0,gC.width,gC.height);pr(x0,y0,w0,bh,D);g.clearRect(x0+u,y0+u+u,w0-2*u,bh-4*u);g.clearRect(x0+2*u,y0+u,w0-4*u,bh-2*u);pr(x0+u,y0+u,w0-2*u,bh-2*u,FL_);
