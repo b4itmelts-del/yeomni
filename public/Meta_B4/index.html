@@ -9545,13 +9545,13 @@ window.__ph='rt';
     var bdA=zone(1.965,2.156,3.085,-0.015,1.315), bdB=zone(1.965,1.555,2.156,-0.015,0.881);
     V.add(function(){ return [bdA,bdB]; },{src:'obj/board2.webp',title:'추억이 걸린,, 게시판 입니다,,',note:'',wall:0});
     var mC=zone(1.96,1.613,2.156,0.881,1.197), mR=zone(1.955,1.687,1.984,1.192,1.31);
-    V.add(function(){ return [mC,mR]; },{dotAt:[1.955,1.84,1.25],src:'obj/rank.webp',title:'메뉴판 옆을 보시면,, 인기 많은 메뉴 순위가 있습니다,,',note:'',wall:0});
+    V.add(function(){ return [mC,mR]; },{dotAt:[1.955,1.84,1.25],src:'obj/rank.webp',title:'메뉴판 옆을 보시면,, 인기 많은 메뉴 순위가 있습니다,,',note:'1. 이천쌀,,',wall:0});
     var pA=zone(2.27,2.596,2.891,1.581,1.994), pB=zone(2.27,2.257,2.552,1.581,1.998);
     V.add(function(){ return [pA,pB]; },{src:'obj/poster.webp',title:'손님들이 매우 자주 범하시는,, 인지적 오류,,',note:'',wall:0});
     V.add(box({x:[-2.4,-1.95],y:[1.3,2.45],z:[1.2,1.95]}),{src:'obj/bag.webp',title:'바닥이 보일 때가,, 새로운 희망의 시작입니다,,',note:'',wall:3});
     /* round bookshelf: a flat disc over the whole ring, so the full circle lights up */
     var dk=new THREE.Mesh(new THREE.CircleGeometry(0.64,48),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false})); dk.rotation.y=Math.PI/2; dk.position.set(-1.99,2.54,2.57); dk.userData.__zone=1; NOK.scene.add(dk);
-    var shB=box({x:[-2.4,-1.9],y:[1.9,3.4],z:[1.9,3.4],dio:'wallD'}); V.add(dk,{lines:1,glow:function(){ return shB(); },src:'obj/shelf.webp',title:'방명록 책장,,',note:'',wall:3});
+    var shB=box({x:[-2.4,-1.9],y:[1.9,3.4],z:[1.9,3.4],dio:'wallD'}); V.add(dk,{lines:1,glow:function(){ return shB(); },src:'obj/shelf.webp',title:'방명록 책장,,',note:'무려 2027년이면 10주년,,',wall:3});
     /* 오기전에: the two yellow blocks on the side wall above the cup rack (incl. the merged copy built later) */
     (function(){ function hideY(){ var b=new THREE.Box3(), L=[]; NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||Array.isArray(m.material)||!m.material.color||m.material.color.getHexString()!=='d9b36a') return; b.setFromObject(m); if(!b.isEmpty()&&b.min.x>2.1&&b.max.x<2.32&&b.min.y>1.5&&b.max.y<1.75&&b.min.z>-0.55&&b.max.z<0.1){ L.push(m); } }); L.forEach(function(m){ m.visible=false; if(m.parent) m.parent.remove(m); }); } hideY(); setTimeout(hideY,3000); setTimeout(hideY,9000); })();
     /* blue year stickers, one per year since opening, down the door jamb (the side facing the doorway, right of the door seen from inside); the long white strip that sat there goes */
@@ -9600,7 +9600,7 @@ window.__ph='rt';
       V.add(function(){ return pz; },{lines:1,src:'obj/pets_photo.webp',title:'백이와 석이,, 백미와 복순이,,',note:'맴버들의 소중한 반려동물들 입니다,,',wall:2,oneSide:1});
       (function lp(){ requestAnimationFrame(lp); m.visible=!(NOK.WFADE&&NOK.WFADE.value.z>0.4); })(); }); })();
     /* right of the door (seen from the street): the dinosaur height-chart light box */
-    V.add(function(){ var L=[]; NOK.scene.traverse(function(m){ if(m.isMesh&&m.userData.dio==='c149') L.push(m); }); return L; },{lines:1,src:'obj/dino.webp',title:'키를 재봅시다,,',note:'',wall:0});
+    V.add(function(){ var L=[]; NOK.scene.traverse(function(m){ if(m.isMesh&&m.userData.dio==='c149') L.push(m); }); return L; },{lines:1,src:'obj/dino.webp',title:'키를 재봅시다,,',note:'기다리시는 동안,,',wall:0});
     /* outside the shop's only window (side wall): a white board with five framed news pages, a white track with four spotlights washing the wall in soft orange */
     (function(){ var X=2.505, Z0=1.45, Z1=3.05, G=new THREE.Group(); NOK.scene.add(G);
       function pl(w,h,mat,x,y,z){ var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat); m.rotation.y=Math.PI/2; m.position.set(x,y,z); G.add(m); return m; }
