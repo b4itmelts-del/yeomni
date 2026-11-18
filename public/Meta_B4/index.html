@@ -3957,11 +3957,13 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
  menu.textContent=''; Object.keys(MB).forEach(k=>delete MB[k]);
  const go=f=>()=>{ try{ f(); }catch(e){ console.error(e); } setTimeout(()=>syncMenu(),150); setTimeout(()=>syncMenu(),700); };
  const closeAll=()=>{ setMenu(false); if(LOGO.open){ toggleLogo(); logoB.classList.remove('open'); staffRow.classList.remove('open'); } };
- mGroup('체험','seg',[mBtn('방문',go(()=>{ closeAll(); A().tour(); })),mBtn('근무',go(()=>{ closeAll(); A().work(); }))]);
+ mGroup('방문&근무체험','seg',[mBtn('방문',go(()=>{ closeAll(); A().tour(); })),mBtn('근무',go(()=>{ closeAll(); A().work(); }))]);
  /* 오기전에: press 낮 again for 오픈 전 (before opening), 밤 again for 마감 후 (after closing); a third press goes back */
- mGroup('영업시간','seg',[mBtn('낮',go(()=>{ A().time('day'); })),mBtn('밤',go(()=>{ A().time('dusk'); }))   /* 오기전에: 낮 = open by day, 밤 = open in the evening. No hidden second press into 오픈 전 / 마감 (those closed the shop and guests stopped) */]);
- mGroup('준비시간','seg',[mBtn('아침',go(()=>{ A().time('pre'); })),mBtn('마감',go(()=>{ A().time('night'); }))]);   /* 오기전에: the closed shop on its own row — before opening, after closing */
- mGroup('계절','seg',[mBtn('봄',go(()=>A().season(1))),mBtn('여름',go(()=>A().season(2))),mBtn('가을',go(()=>A().season(3))),mBtn('겨울',go(()=>A().season(4)))]);
+ mGroup('계절변경','seg',[mBtn('봄',go(()=>A().season(1))),mBtn('여름',go(()=>A().season(2))),mBtn('가을',go(()=>A().season(3))),mBtn('겨울',go(()=>A().season(4)))]);
+ /* 오기전에: 시간 변경 — 영업시간 (낮 · 밤) and under it 준비시간 (아침 · 마감) */
+ { const sub=(t,btns)=>{ const h=document.createElement('div'); h.textContent=t; h.style.cssText='font-size:11px;font-weight:700;opacity:.75;margin:6px 0 4px'; const w=document.createElement('div'); w.className='seg'; w.style.gridTemplateColumns=`repeat(${btns.length},1fr)`; btns.forEach(b=>w.appendChild(b)); return [h,w]; };
+   const g=document.createElement('div'); g.className='mg'; const h=document.createElement('h4'); h.textContent='시간변경'; g.appendChild(h);
+   sub('영업시간',[mBtn('낮',go(()=>{ A().time('day'); })),mBtn('밤',go(()=>{ A().time('dusk'); }))]).forEach(e=>g.appendChild(e)); sub('준비시간',[mBtn('아침',go(()=>{ A().time('pre'); })),mBtn('마감',go(()=>{ A().time('night'); }))]).forEach(e=>g.appendChild(e)); menu.appendChild(g); }
  /* 오기전에: the games, last in the logo menu */
  mGroup('미니게임','seg',[mBtn('스쿠핑 게임',go(()=>{ closeAll(); const t=document.querySelector('button[aria-label="녹기 전에 잘 담기 게임"]'); if(t) t.click(); })),mBtn('빨리 담기',go(()=>{ closeAll(); openQuick(); }))]);
  /* 오기전에: 녹기전에 빨리담기 — full-screen over the shop, with a way back */
@@ -9512,7 +9514,7 @@ window.__ph='rt';
     function logoHint(){ if(busy()) return; try{ var lg=document.getElementById('xnuLogo'); if(!lg) return; if(!document.getElementById('logoHintCss')){ var c=document.createElement('style'); c.id='logoHintCss';
         c.textContent='#logoHint{position:fixed;left:50%;top:33%;transform:translate(-50%,-50%);z-index:35;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 20px;border-radius:14px;background:rgba(20,16,28,.34);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#fff;font:400 13px/1.5 var(--sans,sans-serif);letter-spacing:.03em;white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,.35);opacity:0;animation:startIn .35s ease-out 0s 1 both}#logoHint small{font-size:11.5px;opacity:.85}'+
           '#logoArrow{position:fixed;inset:0;z-index:35;pointer-events:none;opacity:0;animation:startIn .35s ease-out 0s 1 both}#logoArrow path.l{stroke-dasharray:6 6;animation:arrowRun .9s linear infinite}#logoArrow g{animation:arrowBob 1.3s ease-in-out infinite}@keyframes arrowRun{to{stroke-dashoffset:-12}}@keyframes arrowBob{0%,100%{transform:translate(0,0)}50%{transform:translate(-3px,-3px)}}'; document.head.appendChild(c); }
-      var d=document.createElement('div'); d.id='logoHint'; d.innerHTML='<b style="font-weight:400">왼쪽 위 로고를 눌러 보세요,,</b><small>메뉴 · 계절 바꾸기 · 근무 체험 · 방문 체험</small>'; document.body.appendChild(d);
+      var d=document.createElement('div'); d.id='logoHint'; d.innerHTML='<b style="font-weight:400">왼쪽 상단 ‘녹기전에’ 로고를 누르시면,</b><small>방문&amp;근무체험, 계절변경, 시간 변경 및 미니 게임이 가능합니다.</small>'; document.body.appendChild(d);
       var ns='http://www.w3.org/2000/svg', sv=document.createElementNS(ns,'svg'); sv.id='logoArrow'; sv.innerHTML='<g><path class="l" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" style="filter:drop-shadow(0 0 3px rgba(0,0,0,.7))"/><path class="h" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px rgba(0,0,0,.45))"/></g>';
       var pl=sv.querySelector('.l'), ph=sv.querySelector('.h'), live=true;
       /* the logo may still be loading: follow wherever it really sits (fallback: its CSS spot, 16px in, 14px down, 46×42) */
