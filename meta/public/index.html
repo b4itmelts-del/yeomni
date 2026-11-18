@@ -9815,10 +9815,13 @@ window.__ph='rt';
   /* ---- the logo menu drives this page ---- */
   function clk(sel){ var e=document.querySelector(sel); if(e) e.click(); return !!e; }
   AUTO.mkPerson=function(){ var P=mkPerson(); window.__addBow(P); window.__addVarsity(P); return P; }; AUTO.mkV=mkV; AUTO.applyV=function(P,V){ applyV(P,V); };
+  /* 오기전에: summer is the blazing summer by day and the rainy summer in the evening / at night */
+  function sumW(){ var m=moodName; return (m==='night'||m==='dusk')?0:1; }
+  setInterval(function(){ try{ if(WX.s===2){ var w=sumW(); if(WX.w!==w){ WX.w=w; try{ wxSave(); }catch(e){} wxApply(); } } }catch(e){} },500);
   window.AUTO_UI={
     tour:function(){ clk('#gtour'); }, work:function(){ clk('#gwork'); },
     time:function(k){ window.__stmClk=1; PRE=false; clk('#t-'+k); window.__stmClk=0; },
-    season:function(s){ WX.s=s; WX.w=0; try{ wxSave(); }catch(e){} wxApply(); },
+    season:function(s){ WX.s=s; WX.w=(s===2)?sumW():0; try{ wxSave(); }catch(e){} wxApply(); },
     seasonIdx:function(){ return WX.s; }, mood:function(){ return moodName; },
     speed:function(){ clk('#sspd'); var v=+(document.getElementById('sspd').getAttribute('data-v')||1); if(window.NOK) window.NOK.S.speed=v; },
     speedVal:function(){ return +(document.getElementById('sspd').getAttribute('data-v')||1); },
