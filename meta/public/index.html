@@ -8171,7 +8171,7 @@ function loop(t){
   var R=45;
   var ctx_=tgt.x+pan.x,cty_=tgt.y+pan.y,ctz_=tgt.z+pan.z;cam.position.set(ctx_+R*Math.cos(ph)*Math.sin(th),cty_+R*Math.sin(ph),ctz_+R*Math.cos(ph)*Math.cos(th));
   cam.lookAt(ctx_,cty_,ctz_);cam.zoom=zm*(1-0.03*ez);cam.updateProjectionMatrix();cam.updateMatrixWorld();
-  if(FPV){fpCam.position.copy(fpPos);fpCam.rotation.set(fpPitch,fpYaw,0,'YXZ');var fa_=fpCam.aspect;fpCam.fov=fa_<1?Math.min(98,2*Math.atan(Math.tan(fpFov*Math.PI/360*0.8)/fa_)*180/Math.PI):fpFov;fpCam.updateProjectionMatrix();fpCam.updateMatrixWorld();stfHead.visible=!!window.__tourFp;}
+  if(FPV){fpCam.position.copy(fpPos);fpCam.rotation.set(fpPitch,fpYaw,0,'YXZ');var fa_=fpCam.aspect;fpCam.fov=fa_<1?Math.min(98,2*Math.atan(Math.tan(fpFov*Math.PI/360*0.8)/fa_)*180/Math.PI):fpFov;fpCam.updateProjectionMatrix();fpCam.updateMatrixWorld();stfHead.visible=!!window.__tourFp;if(!window.__tourFp)stf.visible=false;}   /* 오기전에: in the staff's own view the body is hidden (the eye now sits inside it); only my hands show */
   var ac_=FPV?fpCam:cam;fvec.set(6.4,5.2,0).project(ac_);U.uSun.value.set(fvec.x*0.5+0.5,fvec.y*0.5+0.5);U.uFlare.value=flareK*Math.max(0,wallC.userData.f);
   fadeWalls();bubK();
   var zs=clamp((1.30-zm)/0.18,0,1);fl2.visible=zs>0.01;capPl.forEach(function(m){m.visible=!(zs>0.5);});window.lampFix.forEach(function(m){m.visible=zs>0.5;});hangObjs.forEach(function(m){m.visible=zs>0.5;});window.ctrH.forEach(function(m){m.visible=!fl2.visible;});fl2.scale.y=Math.max(0.02,zs*zs*(3-2*zs));if(window.xmUpd)xmUpd(s,zs);if(window.hotUpd)hotUpd(s,zs);if(window.spUpd)spUpd(s,zs);if(window.exUpd)exUpd(s,zs);var hk=1+0.4*zs*zs*(3-2*zs);hmSign[0].scale.set(1,1,hk);hmSign[1].scale.set(hk,1,1);
