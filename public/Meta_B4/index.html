@@ -8239,7 +8239,7 @@ function pxImg(t,oc,fc,ns){var W=t.length*6+4,H=11,c=document.createElement('can
   function put(col,ox,oy,fill){for(var i=0;i<t.length;i++){g.fillStyle=(fill&&i>=ns[0]&&i<ns[1])?fc:col;var gl=PXF[t[i]];if(!gl)continue;var rows=gl.split(',');for(var r=0;r<7;r++)for(var q=0;q<5;q++)if(rows[r][q]==='1')g.fillRect(2+i*6+q+ox,2+r+oy,1,1);}}
   for(var dx=-1;dx<=1;dx++)for(var dy=-1;dy<=1;dy++)if(dx||dy)put(oc,dx,dy);put('#ffffff',0,0,true);return {u:c.toDataURL(),w:W};}
 var DFILL=['#d8c4f0','#ff8fb8','#7fb8ff','#ff7a3d','#e0a24a','#9fd8ff'];var dEl=document.createElement('img');dEl.className='exd';dEl.style.imageRendering='pixelated';document.body.appendChild(dEl);var dLast='';
-function dTxt(){var n=new Date(),d=Math.floor((Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())-Date.UTC(2017,2,1))/864e5);var t='DAY +'+d+' SINCE OPENING,,';var dWi=window.__dWi||0;var key=t+dWi;if(key!==dLast){dLast=key;var r=pxImg(t,WXOUT[dWi]||'#3a2a3e',DFILL[dWi]||'#fff',[4,5+String(d).length]);dEl.src=r.u;dEl.style.width=Math.round(r.w*1.15)+'px';dEl.style.height='auto';}}
+function dTxt(){var n=new Date(),d=Math.floor((Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())-Date.UTC(2017,2,1))/864e5);var t='DAY +'+d+' SINCE OPENING,,';var dWi=window.__dWi||0;var key=t+dWi;if(key!==dLast){dLast=key;var r=pxImg(t,WXOUT[dWi]||'#3a2a3e',DFILL[dWi]||'#fff',[4,5+String(d).length]);dEl.src=r.u;dEl.style.width=Math.round(r.w*1.31)+'px';dEl.style.height='auto';}}
 window.__dTxt=dTxt;dTxt();
 /* glass cover over the small white clock above the door (like the floor clock) */
 (function(){var gy=6.8,gx=7.17,F=(window.__fadeL=window.__fadeL||[]);F.push(box(0.1,1.42,2.36,glass('#d5eaff',0.2),gx,gy,0,world,true));F.push(plane(2.3,1.36,sheenMat(0.2),gx+0.06,gy,0,world,Math.PI/2));
