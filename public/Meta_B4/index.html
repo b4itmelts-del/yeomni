@@ -3266,16 +3266,14 @@ const PROPS=(()=>{ const w=TUNE.w,h=TUNE.h,d=TUNE.d, Y0=FLOOR*h, root=new T3.Gro
  /* on top of the black flip clock (shop photo): the silver Instagram 10K plaque (mirror face) with a cotton sprig at its foot, and the white
     Marx bust on a 'Das Kapital' base with a pink ribbon bow */
  { const TOP=1.94, x=-1.9, y=TOP+0.15, zb=3.6;   /* seen from inside the shop: plaque on the left (+x), bust on the right */
-   const pq=canvasTex(96,120,(g,w,h)=>{ const gr=g.createLinearGradient(0,0,w,h); gr.addColorStop(0,'#eef1f4'); gr.addColorStop(0.45,'#b9c0c8'); gr.addColorStop(0.55,'#d9dee3'); gr.addColorStop(1,'#9aa2ab'); g.fillStyle=gr; g.fillRect(0,0,w,h);
-     g.fillStyle='rgba(255,255,255,0.35)'; g.beginPath(); g.moveTo(10,0); g.lineTo(34,0); g.lineTo(6,40); g.lineTo(0,40); g.lineTo(0,12); g.fill();   /* mirror glint */
-     g.fillStyle='rgba(120,90,60,0.35)'; g.fillRect(8,74,22,16); g.fillRect(70,62,18,28);   /* shop reflected in the mirror */
+   const pq=canvasTex(96,120,(g,w,h)=>{ g.fillStyle='#c9ced4'; g.fillRect(0,0,w,h);   /* plain matte silver, no reflections */
      g.strokeStyle='#5a616a'; g.lineWidth=7; const r=10, X=26, Y=10, S=44; g.beginPath(); g.moveTo(X+r,Y); g.arcTo(X+S,Y,X+S,Y+S,r); g.arcTo(X+S,Y+S,X,Y+S,r); g.arcTo(X,Y+S,X,Y,r); g.arcTo(X,Y,X+S,Y,r); g.stroke();
      g.strokeStyle='#ffffff'; g.lineWidth=3; g.stroke(); g.lineWidth=7; g.strokeStyle='#5a616a'; g.beginPath(); g.arc(48,32,11,0,7); g.stroke(); g.strokeStyle='#ffffff'; g.lineWidth=3; g.stroke();
      g.fillStyle='#5a616a'; g.beginPath(); g.arc(61,19,4,0,7); g.fill(); g.fillStyle='#ffffff'; g.beginPath(); g.arc(61,19,2.2,0,7); g.fill();
      g.fillStyle='#5d636b'; g.font='5px sans-serif'; g.textAlign='center'; g.fillText('Presented to',48,68); g.font='bold 7px sans-serif'; g.fillText('@before.it.melts',48,78); g.font='5px sans-serif'; g.fillText('for passing 10,000 followers',48,86);
      g.strokeStyle='#4f555c'; g.lineWidth=2; g.strokeRect(20,94,12,12); g.beginPath(); g.arc(26,100,3,0,7); g.stroke(); g.font='italic bold 10px serif'; g.textAlign='left'; g.fillStyle='#4f555c'; g.fillText('Instagram',36,104); });
-   C.box(0.25,0.31,0.022,C.P('#d4d9de',110),x,y,zb);   /* brushed silver frame */
-   C.box(0.212,0.27,0.004,C.L('#ffffff',{map:pq,emissive:'#2a2c30'}),x,y,zb-0.012);   /* mirror face */
+   C.box(0.25,0.31,0.022,C.L('#d4d9de'),x,y,zb);   /* brushed silver frame */
+   C.box(0.212,0.27,0.004,C.L('#ffffff',{map:pq,emissive:'#3a3c40'}),x,y,zb-0.016);   /* mirror face */
    C.box(0.07,0.06,0.04,'#3a3f45',x,y-0.07,zb+0.03,0.25);   /* easel foot behind */
    /* cotton sprig leaning at the plaque's foot */
    C.cyl(0.003,0.003,0.07,'#4a3426',x+0.075,TOP+0.03,zb-0.04,0,0,-0.6);
