@@ -7519,6 +7519,8 @@ var FLOW=(function(){
       if(A.dir>0){ for(var o=0;o<F.pass.length;o++){ var B=F.pass[o]; if(B===A||B.dir===A.dir) continue; var dz=(B.P.g.position.z-P.g.position.z)*A.dir, dx=Math.abs(B.P.g.position.x-P.g.position.x); if(dz>0&&dz<9&&dx<1.1){ A.side=-0.9; break; } } }
       want=A.lane+(A.side||0); if(A.lane>T.edgeX){ v.set(P.g.position.x,0,P.g.position.z); v.copy(AUTO.fwd(v)); W.localToWorld(v); var CARS=(window.NOK&&NOK.cars)||[];for(var c=0;c<CARS.length;c++){var cg=CARS[c].g; if(cg.visible&&Math.abs(cg.position.x-v.x)<5.5){want=T.edgeX;break;}} }
       { var PO=posts(); for(var oi=0;oi<PO.length;oi++){ var Ob=PO[oi], dzo=(Ob.z-P.g.position.z)*A.dir, clr=Ob.r+1.0; if(dzo>-Ob.r-0.8&&dzo<Ob.r+7&&Math.abs(want-Ob.x)<clr){ want=Ob.x+((A.lane>=Ob.x)?1:-1)*clr; } } }
+      /* 오기전에: people standing on the pavement in front of the shop (the queue, someone at the door): walkers on the pavement step out onto the road to pass them, never in toward the shop */
+      if(want<T.roadX-0.05){ if(T.qLo==null){ T.qLo=toRaw(0,4.9)[0]; T.qHi=toRaw(0,6.0)[0]; } var PPl=window.__ppl?window.__ppl():[]; for(var qi=0;qi<PPl.length;qi++){ var Qp=PPl[qi]; if(!Qp||Qp===P||!Qp.g||!Qp.g.visible||(Qp.__fl&&Qp.__fl.pass)) continue; var qx=Qp.g.position.x, dzq=(Qp.g.position.z-P.g.position.z)*A.dir; if(qx>T.qLo&&qx<T.qHi&&dzq>-1.4&&dzq<4.5){ want=T.roadX; break; } } }
       P.g.position.x+=(want-P.g.position.x)*Math.min(1,dt*2.5); shove(P);
       if(A.st==='walk'){ P.g.position.z+=A.dir*GSP*A.sp*dt*0.85; moving=true;
         /* in front of the shop: a glance, then maybe the queue */
@@ -9895,18 +9897,7 @@ window.__ph='rt';
 
 window.__autoQ=loop;
 })();
-/* 오기전에: phones whose browser bars show above/below the page (status bar, bottom toolbar) — tint the page background and theme colour
-   with the scene's own top and bottom edge colours (sampled from the finished frame twice a second), so those strips look like more sky */
-(function(){ var last=0, b=new Uint8Array(4), mt=null, curT='', curB='';
-  function hx(){ return '#'+((1<<24)|(b[0]<<16)|(b[1]<<8)|b[2]).toString(16).slice(1); }
-  function hook(){ var r=window.NOK&&NOK.pipe&&NOK.pipe.r; if(!r){ setTimeout(hook,500); return; }
-    mt=document.querySelector('meta[name="theme-color"]'); if(!mt){ mt=document.createElement('meta'); mt.name='theme-color'; document.head.appendChild(mt); }
-    var orig=r.render; r.render=function(sc,cm){ orig.call(r,sc,cm); var now=performance.now(); if(now-last<500||r.getRenderTarget()!==null) return; last=now;
-      try{ var gl=r.getContext(), cv=r.domElement, W=cv.width, H=cv.height; if(!W||!H) return;
-        gl.readPixels(2,H-3,1,1,gl.RGBA,gl.UNSIGNED_BYTE,b); var t=hx(); gl.readPixels(2,2,1,1,gl.RGBA,gl.UNSIGNED_BYTE,b); var bo=hx();
-        if(t!==curT){ curT=t; mt.content=t; } if(bo!==curB){ curB=bo; }
-        var de=document.documentElement; de.style.background='linear-gradient('+curT+' 0 50%,'+curB+' 50% 100%)'; de.style.backgroundColor=curB; document.body.style.background='transparent'; }catch(e){} }; }
-  hook(); })();
+
 
 </script>
 
