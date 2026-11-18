@@ -9896,6 +9896,18 @@ window.__ph='rt';
 
 window.__autoQ=loop;
 })();
+/* 오기전에: phones whose browser bars show above/below the page (status bar, bottom toolbar) — tint the page background and theme colour
+   with the scene's own top and bottom edge colours (sampled from the finished frame twice a second), so those strips look like more sky */
+(function(){ var last=0, b=new Uint8Array(4), mt=null, curT='', curB='';
+  function hx(){ return '#'+((1<<24)|(b[0]<<16)|(b[1]<<8)|b[2]).toString(16).slice(1); }
+  function hook(){ var r=window.NOK&&NOK.pipe&&NOK.pipe.r; if(!r){ setTimeout(hook,500); return; }
+    mt=document.querySelector('meta[name="theme-color"]'); if(!mt){ mt=document.createElement('meta'); mt.name='theme-color'; document.head.appendChild(mt); }
+    var orig=r.render; r.render=function(sc,cm){ orig.call(r,sc,cm); var now=performance.now(); if(now-last<500||r.getRenderTarget()!==null) return; last=now;
+      try{ var gl=r.getContext(), cv=r.domElement, W=cv.width, H=cv.height; if(!W||!H) return;
+        gl.readPixels(2,H-3,1,1,gl.RGBA,gl.UNSIGNED_BYTE,b); var t=hx(); gl.readPixels(2,2,1,1,gl.RGBA,gl.UNSIGNED_BYTE,b); var bo=hx();
+        if(t!==curT){ curT=t; mt.content=t; } if(bo!==curB){ curB=bo; }
+        var de=document.documentElement; de.style.background='linear-gradient('+curT+' 0 50%,'+curB+' 50% 100%)'; de.style.backgroundColor=curB; document.body.style.background='transparent'; }catch(e){} }; }
+  hook(); })();
 
 </script>
 
