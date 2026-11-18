@@ -3581,6 +3581,8 @@ const KITCH=(()=>{ const root=new T3.Group(); root.userData.noZ=true; scene.add(
  scene.updateMatrixWorld(true);
  // the black flip clock right of the door: its face had sunk 4 cm inside its own case, so only the black case showed — bring it to the front
  dioGroup('wallC').children.forEach(m=>{ if(!m.isMesh||!m.material||m.material.map!==FLIP_IN.tex) return; bb.setFromObject(m); if(bb.min.z>3.38&&bb.min.z<3.46) mv(m,0,0,3.362-bb.min.z); });
+ // the column of little white pegs on the side wall's front end (it showed as white dots once the front wall went see-through) goes
+ dioGroup('wallA').children.forEach(m=>{ if(!m.isMesh||!m.material.color||m.material.color.getHexString()!=='ffffff'||m.material.map) return; bb.setFromObject(m); if(bb.min.x>2.18&&bb.max.x<2.3&&bb.min.z>3.7&&bb.max.z<3.9&&bb.min.y>1.2&&bb.max.y<2.8) m.visible=false; });
  // the thin black bar under the round wall clock (left of the door) goes
  dioGroup('wallA').children.forEach(m=>{ if(!m.isMesh||!m.material.color||m.material.color.getHexString()!=='101012') return; bb.setFromObject(m); if(bb.min.x>2.0&&bb.min.y>2.1&&bb.max.y<2.25&&bb.min.z>2.85&&bb.max.z<3.65) m.visible=false; });
  // the shadow box over the bench right of the door, from the site photo: a deep, dark weathered wooden frame holding a little
