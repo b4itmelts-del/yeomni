@@ -7193,7 +7193,7 @@ function mkPerson(){
     P.__taster=function(){var k=P.cA.color.getHex()*16777216+P.cB.color.getHex();if(P.__cK!==k){P.__cK=k;try{var a=P.cA.color,b=P.cB.color,best=null,bd=-1,C=new THREE.Color();var TP=['#f2a6b8','#9fd8bf','#f6c928','#b58be0','#f28a1e','#7fc8f0','#e85a6e','#8fd16a','#d9a46a','#f5e3a1','#c79bff','#ff9fc4'];TP.forEach(function(h,i){C.set(h);var d=Math.min(Math.hypot(C.r-a.r,C.g-a.g,C.b-a.b),Math.hypot(C.r-b.r,C.g-b.g,C.b-b.b))+((i*7+(k%13))%5)*0.03;if(d>bd){bd=d;best=h;}});P.cC.color.set(best||'#f5e3a1');}catch(e){}P.cC.emissive.copy(P.cC.color).multiplyScalar(0.5);}};
     var sp=new THREE.Group();sp.position.set(0.1,0.5,0.02);sp.rotation.z=-0.3;cg.add(sp);
     var h1=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.42,0.025),L('#f6e7a8'));h1.position.y=0.3;sp.add(h1);
-    var h2=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,0.03),L('#f6e7a8'));h2.position.y=0.05;sp.add(h2);P.cFill=[dA,dB,sp];})();
+    var h2=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,0.03),L('#f6e7a8'));h2.position.y=0.05;sp.add(h2);P.cFill=[dA,dB,sp,tz];})();
   return P;}
 /* V = 겉모습 한 벌. g(0치마계열/1바지계열) hs머리 hat모자 bt(0치마 1바지 2반바지) acc gl안경 bd(0없음 1콧수염 2턱수염 3콧수염+턱수염)
    색은 모두 #hex. art={fr,bk} (144칸, 0=없음, n=팔레트 n-1) */
