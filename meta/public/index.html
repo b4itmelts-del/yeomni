@@ -3959,7 +3959,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
  mGroup('준비 시간','seg',[mBtn('아침',go(()=>{ A().time('pre'); })),mBtn('마감',go(()=>{ A().time('night'); }))]);   /* 오기전에: the closed shop on its own row — before opening, after closing */
  mGroup('계절','seg',[mBtn('봄',go(()=>A().season(1))),mBtn('여름',go(()=>A().season(2))),mBtn('가을',go(()=>A().season(3))),mBtn('겨울',go(()=>A().season(4)))]);
  /* 오기전에: the games, last in the logo menu */
- mGroup('게임','seg',[mBtn('스쿠핑 게임',go(()=>{ closeAll(); const t=document.querySelector('button[aria-label="녹기 전에 잘 담기 게임"]'); if(t) t.click(); })),mBtn('빨리 담기',go(()=>{ closeAll(); openQuick(); }))]);
+ mGroup('미니게임','seg',[mBtn('스쿠핑 게임',go(()=>{ closeAll(); const t=document.querySelector('button[aria-label="녹기 전에 잘 담기 게임"]'); if(t) t.click(); })),mBtn('빨리 담기',go(()=>{ closeAll(); openQuick(); }))]);
  /* 오기전에: 녹기전에 빨리담기 — full-screen over the shop, with a way back */
  function openQuick(){ let ov=document.getElementById('quickOv'); if(!ov){ ov=document.createElement('div'); ov.id='quickOv'; ov.style.cssText='position:fixed;inset:0;z-index:100000;background:#e8edf6;display:flex;flex-direction:column';
    const bar=document.createElement('div'); bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:#16202c;color:#fff;font:700 13px/1 -apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif';
