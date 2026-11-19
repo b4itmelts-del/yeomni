@@ -6516,10 +6516,10 @@ function bubK(){var fc=Math.max(0,wallC.userData.f),fd=Math.max(0,wallD.userData
     var H=rise?360-Math.acos(ch)/R:Math.acos(ch)/R;H/=15;var T=H+RA-0.06571*t-6.622,UT=((T-lh)%24+24)%24;return Date.UTC(y,mo,d)+UT*3600e3;}
   function phase(ts){var k=new Date(ts+9*3600e3),y=k.getUTCFullYear(),mo=k.getUTCMonth(),d=k.getUTCDate(),r=sunT(y,mo,d,true),st=sunT(y,mo,d,false);
     var nn=Date.UTC(y,mo,d,3);while(r>nn)r-=864e5;while(r<nn-864e5)r+=864e5;while(st<nn)st+=864e5;while(st>nn+864e5)st-=864e5;
-    if(ts<r)return 'night';if(ts<Date.UTC(y,mo,d,3))return 'pre';var cl=Date.UTC(y,mo,d,k.getUTCDay()===0?10:12,50);if(ts>=cl)return 'night';if(ts<st-40*6e4)return 'day';return 'dusk';}
+    if(ts<r)return 'night';if(ts<Date.UTC(y,mo,d,3))return 'pre';var cl=Date.UTC(y,mo,d,k.getUTCDay()===0?10:12,50);if(ts>=cl)return 'night';if(ts<st)return 'day';return 'dusk';}   /* 가기전에: 밤 starts right at sunset (it was 40 min before) */
   window.__sunPhase=phase;
   ['t-pre','t-day','t-dusk','t-night'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('click',function(ev){if(ev.isTrusted||window.__stmClk)manual=true;});});
-  function tick(){if(manual||typeof moodName==='undefined')return;var p=phase(window.__fakeNow||Date.now()),cur=PRE?'pre':moodName;if(p!==cur){var e=document.getElementById('t-'+p);if(e)e.click();}}
+  function tick(){if(manual||typeof moodName==='undefined')return;var p=phase(window.__fakeNow||Date.now()),cur=PRE?'pre':moodName;window.__autoMood=1;try{if(p!==cur){var e=document.getElementById('t-'+p);if(e)e.click();}}finally{window.__autoMood=0;}if(window.NOK&&NOK.S&&!window.__fakeNow){NOK.S.live=true;}}   /* following the real time: the sky shows the real hour too */
   setTimeout(tick,900);setInterval(tick,30000);})();
 
 /* ---- second staff for the biggest rushes (swarm 11 / rush 10 / rush 14) ---- */
@@ -8163,7 +8163,7 @@ function MM(){return(moodName==='night'&&window.__nHold)?MOODS.night2:MOODS[mood
 function setMood(n,nh){
   window.__nHold=(n==='night'&&!nh);if(window.__nHold)window.__nT0=simT;
   try{ var ev=(n==='dusk'||n==='night')?1:0; if(window.__staffShift&&window.__staffEv!==ev){ window.__staffEv=ev; moodName=n; window.__staffShift(); } }catch(e){}   /* 오기전에: the shift changes with the evening */
-  var m=(n==='night'&&window.__nHold)?MOODS.night2:MOODS[n];moodName=n;wxFactors();window.__moodName=n;if(window.NOK&&window.__nokMood!==n){window.__nokMood=n;window.NOK.setMoodHour(n);}
+  var m=(n==='night'&&window.__nHold)?MOODS.night2:MOODS[n];moodName=n;wxFactors();window.__moodName=n;if(window.NOK&&window.__nokMood!==n){window.__nokMood=n;if(window.__autoMood&&!window.__fakeNow){window.NOK.S.live=true;window.NOK.S.simMs=Date.now();}else window.NOK.setMoodHour(n);}
   U.uS0.value=V3(m.sky[0]);U.uS1.value=V3(m.sky[1]);U.uS2.value=V3(m.sky[2]);U.uS3.value=V3(m.sky[3]);
   U.uStars.value=m.stars;U.uCloud.value=m.cloud;U.uMoon.value=V3(m.moon);
   amb.color.setHex(m.amb[0]);amb.intensity=m.amb[1];hemi.intensity=m.hemi;sun.color.setHex(m.sun[0]);sun.intensity=m.sun[1];
