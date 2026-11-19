@@ -9978,21 +9978,21 @@ window.__autoQ=loop;
 
 <style>#stage{display:none!important}#splash{visibility:hidden!important;pointer-events:none!important}html body #xnuFab,html body #xnuC,html body #xnuLogo,html body #xnuHi,html body #xnuStaff,html body #xnuLeaf,html body .xg,html body .xs,html body #bgmB,html body .ui{display:none!important}</style>
 <style>
-#ytb{position:fixed;right:max(16px,env(safe-area-inset-right,0px));top:calc(64px + env(safe-area-inset-top,0px));z-index:9;width:208px;border:4px solid var(--navy,#285686);background:var(--crm,#f4f0e6);border-radius:6px;box-shadow:0 4px 0 rgba(40,86,134,.25);font:800 12px/1 Galmuri,var(--sans,sans-serif);color:var(--navy,#285686);image-rendering:pixelated}
-#ytb .bar{display:flex;align-items:center;gap:6px;padding:5px 6px 5px 8px;cursor:pointer;user-select:none;-webkit-user-select:none}
+#ytb{position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(112px + env(safe-area-inset-top,0px));z-index:9;width:46px;height:46px;color:var(--navy,#285686);filter:drop-shadow(0 0 2px rgba(255,255,255,.95)) drop-shadow(0 0 1px rgba(255,255,255,.9))}   /* 가기전에: 시점 초기화 아래 음표 버튼 하나 */
+#ytb .bar{width:46px;height:46px;justify-content:center;padding:0!important;display:flex;align-items:center;gap:6px;padding:5px 6px 5px 8px;cursor:pointer;user-select:none;-webkit-user-select:none}
 #ytb .bar b{flex:1;letter-spacing:.5px}
-#ytb .bar i{font-style:normal;width:18px;height:18px;display:grid;place-items:center;border:2px solid var(--navy,#285686);border-radius:3px;background:#fbf8ef;font-size:10px}
+#ytb .bar i{display:none!important;font-style:normal;width:18px;height:18px;display:grid;place-items:center;border:2px solid var(--navy,#285686);border-radius:3px;background:#fbf8ef;font-size:10px}
 #ytb .vw{border-top:4px solid var(--navy,#285686);height:113px;background:#0e1d33}
 #ytb iframe{display:block;width:100%;height:100%;border:0}
 #ytb.min{width:auto}
-#ytb.on .bar i{background:#285686;color:#f4f0e6}
+#ytb .ytX{display:block}#ytb.on .ytX{display:none}#ytb:not(.on){opacity:.75}#ytb .bar:active{transform:scale(.88)}#ytb.on .bar i{background:#285686;color:#f4f0e6}
 #ytb.min .vw{position:absolute;left:0;top:0;width:2px;height:2px;overflow:hidden;opacity:0.01;pointer-events:none;border:0}
 </style>
-<div id="ytb" class="min"><div class="bar"><span aria-hidden="true">&#9835;</span><b>BGM</b><i id="ytbT">&#9654;</i></div></div>
+<div id="ytb" class="min"><div class="bar" role="button" aria-label="BGM 켜기/끄기" title="BGM"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M9 4h11v3H12v10.5A3.5 3.5 0 1 1 9 14.3z"/><path class="ytX" d="M4 4l16 16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><i id="ytbT"></i></div></div>
 <script>
 /* BGM: a little chiptune carol ("We Wish You a Merry Christmas", public domain) played by the page itself (the link page can't show YouTube).
    It starts on the first touch / click / key anywhere (browsers only allow sound after that); the BGM button turns it on and off. */
-(function(){ var box=document.getElementById('ytb'), tg=document.getElementById('ytbT'), ac=null, master=null, on=false, want=false, timer=null, nextT=0, idx=0;
+(function(){ var box=document.getElementById('ytb'), tg=document.getElementById('ytbT'), ac=null, master=null, on=false, want=true, timer=null, nextT=0, idx=0;
  var N={C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25};
  // "We Wish You a Merry Christmas" (traditional English carol, public domain), 3/4 — melody [note,beats]
  N.Fs4=369.99;
@@ -10009,9 +10009,9 @@ window.__autoQ=loop;
   for(;;){ var lp=Math.floor(mi/AT.length), a=AT[mi%AT.length], st=t0+lp*L+a[0]*SPB; if(st>ahead) break; if(a[1]!=='-'){ tone(N[a[1]],st,a[2]*SPB*0.9,'square',0.07); tone(N[a[1]]*2,st,0.25,'sine',0.035,0.35); } mi++; }
   for(;;){ var bt=t0+bi*BPB*SPB; if(bt>ahead) break; var bn=N[B[bi%B.length]]; tone(bn,bt,SPB*0.95,'triangle',0.12); tone(bn*1.5,bt+SPB,SPB*0.8,'triangle',0.06); tone(bn*1.5,bt+2*SPB,SPB*0.8,'triangle',0.06); for(var q=0;q<BPB;q++) tone(4200,bt+q*SPB,0.03,'square',q?0.008:0.014,0.05); bi++; } }   /* oom-pah-pah */
  var t0=0;
- function start(){ try{ if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)(); master=ac.createGain(); master.gain.value=0.9; master.connect(ac.destination); } ac.resume(); }catch(e){ return; }
+ function start(){ try{ if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)(); master=ac.createGain(); master.gain.value=0.45; master.connect(ac.destination); } ac.resume(); }catch(e){ return; }
   if(on) return; on=true; mi=0; bi=0; t0=ac.currentTime+0.08; sched(); timer=setInterval(sched,200); tg.innerHTML='&#9632;'; box.classList.add('on'); }
- function stop(){ on=false; clearInterval(timer); if(master&&ac){ var m=master; m.gain.setTargetAtTime(0,ac.currentTime,0.05); master=ac.createGain(); master.gain.value=0.9; master.connect(ac.destination); setTimeout(function(){ try{ m.disconnect(); }catch(e){} },400); } tg.innerHTML='&#9654;'; box.classList.remove('on'); }
+ function stop(){ on=false; clearInterval(timer); if(master&&ac){ var m=master; m.gain.setTargetAtTime(0,ac.currentTime,0.05); master=ac.createGain(); master.gain.value=0.45; master.connect(ac.destination); setTimeout(function(){ try{ m.disconnect(); }catch(e){} },400); } tg.innerHTML='&#9654;'; box.classList.remove('on'); }
  box.querySelector('.bar').addEventListener('click',function(e){ e.stopPropagation(); gest=true; if(on){ want=false; stop(); } else { want=true; start(); } });
  ['pointerdown','touchstart','wheel'].forEach(function(n){ box.addEventListener(n,function(e){ e.stopPropagation(); },{passive:true}); });
  var gest=false, winter=function(){ return !!(window.NOK&&NOK.S&&NOK.S.season===5); };
