@@ -4750,17 +4750,28 @@ let C146=null;   /* 오기전에: the 2F side window (c146) sat in the roof grou
  window.__nokPre=function(now){ let ran=false; try{ shadowTick(); window.__lightCull(now); }catch(e){} if(!C146){ C146=[]; scene.traverse(m=>{ if(m.isMesh&&m.userData.dio==='c146') C146.push(m); }); } if(C146.length){ const up=FADE.u.value<0.5; C146.forEach(m=>{ if(m.visible!==up) m.visible=up; }); } if(window.__autoQ){ ran=true; const f=window.__autoQ; window.__autoQ=null; const t0=performance.now(); if(window.__unmap) window.__unmap(); try{ if(!window.__autoPause) f(now); else window.__autoQ=f; }catch(e){ console.error(e); } if(window.__PROF){ window.__PROF.a+=performance.now()-t0; window.__PROF.an++; } } if(ran&&window.__poseTick) window.__poseTick(now); if(ran&&window.__bubFix) window.__bubFix(); if(ran&&window.__remap) window.__remap(); if(ran&&window.__laneTick) window.__laneTick(now); if(window.__sitFix) window.__sitFix(); if(window.AUTO&&AUTO.fpv()){ const fc=AUTO.fpCam, a=pipe.w/pipe.h; if(Math.abs(fc.aspect-a)>1e-3||fc.fov>80){ fc.aspect=a;  fc.updateProjectionMatrix(); } } if(window.__mergeTick) window.__mergeTick(); if(kLight){ kLight.visible=true; kLight.intensity=1.1; } lightsFollow(); shadowTick(); if(window.__idleSpin) window.__idleSpin(); if(window.__kitchenTick) window.__kitchenTick(); if(window.__rackTick) window.__rackTick(); if(window.__catTick) window.__catTick(); if(window.__shedTick) window.__shedTick(); if(window.__thTick) window.__thTick(); if(window.__nightFx) window.__nightFx(); if(window.__wiTick) window.__wiTick(); if(window.__roofLeaves){ const tt=performance.now(); window.__rlT=window.__rlT||tt; window.__roofLeaves(Math.min(0.1,(tt-window.__rlT)/1000)); window.__rlT=tt; } };
 })();
 
-/* 오기전에: winter — strings of Christmas lights spiral round a few of the trees and twinkle (built per tree, rebuilt when the trees change) */
-(function(){ const BC=['#ff3b3b','#ffd23a','#3bd16a','#4aa8ff','#fff3c8','#ff7ad1'], G=new T3.Group(); G.userData.noFX=true; scene.add(G); let sig='', bulbs=[], tAcc=0;
+/* 오기전에: winter — strings of Christmas lights spiral round a few of the trees and twinkle (built per tree, rebuilt when the trees change)
+   가기전에: 전구는 잎 덩어리 겉면에 붙고(광선으로 찾음, 줄기 아래로 늘어지지 않음) 나무의 자식이라 바람에 같이 흔들림 */
+(function(){ const BC=['#ff3b3b','#ffd23a','#3bd16a','#4aa8ff','#fff3c8','#ff7ad1'], G=new T3.Group(); G.userData.noFX=true; scene.add(G); let sig='', bulbs=[], hosts=[];
  const geo=new T3.SphereGeometry(0.085,6,4), mats=BC.map(c=>[new T3.MeshBasicMaterial({color:c}),new T3.MeshBasicMaterial({color:new T3.Color(c).multiplyScalar(0.35)})]);
- function build(){ G.clear(); bulbs=[]; const T=(window.TREES&&TREES.g)?TREES.g.children:[]; const bb=new T3.Box3(), c=new V3(), z=new V3(); let k=0;
-  T.forEach((t,i)=>{ if(i%2) return; t.updateMatrixWorld(true); bb.setFromObject(t); if(bb.isEmpty()) return; bb.getCenter(c); bb.getSize(z); const h=z.y; if(h<1) return;
-   const y0=bb.min.y+h*0.38, y1=bb.max.y-h*0.06, r0=Math.max(z.x,z.z)*0.5, N=34, turns=3.2;
-   for(let j=0;j<N;j++){ const u=j/(N-1), a=u*turns*Math.PI*2+i, r=r0*(1.02-0.55*u), m=new T3.Mesh(geo,mats[(j+k)%BC.length][0]); m.position.set(c.x+Math.cos(a)*r,y0+(y1-y0)*u,c.z+Math.sin(a)*r); m.frustumCulled=false; G.add(m); bulbs.push({m,ci:(j+k)%BC.length,ph:Math.random()*6.28,sp:1.5+Math.random()*2.5}); }
+ const rc=new T3.Raycaster(), o3=new V3(), d3=new V3(), wp=new V3();
+ function build(){ bulbs.forEach(b=>{ if(b.m.parent) b.m.parent.remove(b.m); }); bulbs=[]; const T=(window.TREES&&TREES.g)?TREES.g.children:[]; let k=0;
+  T.forEach((t,i)=>{ if(i%2||!t.isMesh||!t.geometry) return; t.updateMatrixWorld(true); const g=t.geometry; if(!g.boundingBox) g.computeBoundingBox(); const bb=g.boundingBox, h=bb.max.y-bb.min.y; if(h<1) return;
+   /* where the leaves are: vertices coloured green (not trunk brown, not snow white) */
+   const P=g.attributes.position, Cc=g.attributes.color; let ly0=1e9, ly1=-1e9; for(let v=0;v<P.count;v++){ if(!Cc) break; const r=Cc.getX(v), gg=Cc.getY(v), bl=Cc.getZ(v); if(gg>r+0.04&&!(r>0.85&&gg>0.85&&bl>0.85)){ const y=P.getY(v); if(y<ly0) ly0=y; if(y>ly1) ly1=y; } }
+   if(ly1<ly0){ ly0=bb.min.y+h*0.45; ly1=bb.max.y; }
+   const y0=ly0+(ly1-ly0)*0.12, y1=ly1-(ly1-ly0)*0.12, R=Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z)+2, N=30, turns=2.6;
+   for(let j=0;j<N;j++){ const u=j/(N-1), a=u*turns*Math.PI*2+i, ly=y0+(y1-y0)*u;
+    o3.set(Math.cos(a)*R,ly,Math.sin(a)*R); t.localToWorld(o3); wp.set(0,ly,0); t.localToWorld(wp); d3.copy(wp).sub(o3).normalize(); rc.set(o3,d3); rc.far=R+1;
+    const hit=rc.intersectObject(t,false)[0]; if(!hit) continue;
+    const p=t.worldToLocal(hit.point.clone()), out=new V3(p.x,0,p.z).normalize().multiplyScalar(0.05); p.add(out);
+    const ci=(j+k)%BC.length, m=new T3.Mesh(geo,mats[ci][0]); m.position.copy(p); m.frustumCulled=false; m.userData.noFX=true; t.add(m); bulbs.push({m,t,p0:p.clone(),ci,ph:Math.random()*6.28,sp:1.5+Math.random()*2.5}); }
    k+=2; }); }
- (function lp(){ requestAnimationFrame(lp); const on=S.season===5; G.visible=on; if(!on) return;
+ (function lp(){ requestAnimationFrame(lp); const on=S.season===5; bulbs.forEach(b=>{ b.m.visible=on; }); if(!on) return;
   const T=(window.TREES&&TREES.g)?TREES.g.children:[]; const sg=T.length+':'+T.map(t=>t.uuid+(t.position.x|0)).join(','); if(sg!==sig){ sig=sg; build(); }
-  const t=performance.now()/1000; bulbs.forEach(b=>{ const lit=Math.sin(t*b.sp+b.ph)>-0.35; const m=mats[b.ci][lit?0:1]; if(b.m.material!==m) b.m.material=m; }); })(); })();
+  const t=performance.now()/1000, wt=WIND.t.value, ws=WIND.s.value; bulbs.forEach(b=>{ const lit=Math.sin(t*b.sp+b.ph)>-0.35; const m=mats[b.ci][lit?0:1]; if(b.m.material!==m) b.m.material=m;
+   /* the same sway the tree's shader gives its leaves */ const p=b.p0; wp.copy(p); b.t.localToWorld(wp); const hh=Math.max(0,p.y-0.6), ph=wp.x*0.7+wp.z*0.9, gg=Math.sin(wt*1.1+ph)*0.6+Math.sin(wt*2.7+ph*1.7)*0.25+Math.sin(wt*0.37+ph*0.3)*0.4;
+   b.m.position.set(p.x+gg*hh*hh*0.05*ws,p.y,p.z+Math.cos(wt*0.9+ph)*hh*hh*0.026*ws); }); })(); })();
 window.NOK={WFADE,FADE,scene,S,pipe,cam,fpCam,worldG,dioGroups,TUNE,DS,FY,ZF,cars,sun,hemi,roomLight,mkVehicle,activeCam,CURTU,SHG,setClock,sunTimes,closeH,simDate,hourOf,mood,setSeason:function(i){ S.season=i|0; applySeason(); },setMoodHour:function(n){ const d=simDate(), st=sunTimes(d), c=closeH(d); setClock(n==='day'?13.5:n==='dusk'?Math.max(st.set+0.7,18.5):c+0.4); }};
 requestAnimationFrame(frame);
 setTimeout(endSplash,2600); setTimeout(()=>{ try{ MP._paintBtns(); }catch(e){} },50);    /* no room: you still get your own 주인공 to walk around with */ 
@@ -6907,6 +6918,19 @@ var fl2Win=[];
       var im=new Image();im.onload=function(){var lh=ph*1.0,lw=lh*im.width/im.height;g.save();g.beginPath();g.rect(px,py,pw,ph);g.clip();g.drawImage(im,px+(pw-lw)/2,py,lw,lh);g.restore();t.needsUpdate=true;};im.src='a/0cfd5f69a763.png';t.needsUpdate=true;},7.03,5.3,2.3);
     decal(8.2,8.4,820,840,function(g,t,w,h){var m=18,gx=30,pw=(w-2*m-gx)/2,ph=h-2*m,x2=m+pw+gx;
       var im=new Image();im.onload=function(){var ww=pw*0.98,wh=ww*im.height/im.width;var X=x2+pw*0.01,Y=m+ph-wh-ph*0.03,o=document.createElement('canvas');o.width=Math.ceil(ww);o.height=Math.ceil(wh);var og=o.getContext('2d');og.drawImage(im,0,0,ww,wh);og.globalCompositeOperation='source-in';og.fillStyle='#4a5a58';og.fillRect(0,0,o.width,o.height);var d=[[3,3],[2,4],[4,2]],k;g.drawImage(im,X-1.5,Y-1.5,ww+3,wh+3);g.drawImage(im,X-1,Y,ww+2,wh);g.drawImage(im,X,Y-1,ww,wh+2);g.drawImage(im,X,Y,ww,wh);t.needsUpdate=true;};im.src='a/272328696be7.png';},7.03,5.2,-4.5);
+  })();
+  /* 가기전에: 2층 창 로고(B 로고판 + Before it Melts 글자) 둘레에 하얀 꼬마전구 — 계절 상관없이 밤(밤 영업·마감)에만 켜지고 반짝반짝 */
+  (function(){
+    var R=[[3.6,9.0,288,720,7.02,5.3,2.3,8,537,134,712],[8.2,8.4,820,840,7.02,5.2,-4.5,420,598,806,806]],pts=[],st=0.2;
+    R.forEach(function(r){var w=r[0],h=r[1],sw=r[2],sh=r[3],x0=r[4],y0=r[5],z0=r[6];
+      var L=(r[7]/sw-0.5)*w,Rr=(r[9]/sw-0.5)*w,T=(0.5-r[8]/sh)*h,B=(0.5-r[10]/sh)*h,P=function(lx,ly){pts.push([x0+0.07,y0+ly,z0-lx]);},n,i;
+      n=Math.max(2,Math.round((Rr-L)/st));for(i=0;i<n;i++){P(L+(Rr-L)*i/n,T);P(Rr-(Rr-L)*i/n,B);}
+      n=Math.max(2,Math.round((T-B)/st));for(i=0;i<n;i++){P(Rr,T-(T-B)*i/n);P(L,B+(T-B)*i/n);}});
+    var IM=new THREE.InstancedMesh(new THREE.BoxGeometry(0.075,0.075,0.075),new THREE.MeshBasicMaterial({color:'#ffffff'}),pts.length),M4=new THREE.Matrix4(),C=new THREE.Color(),PH=[];
+    pts.forEach(function(q,i){M4.makeTranslation(q[0],q[1],q[2]);IM.setMatrixAt(i,M4);PH.push([Math.random()*6.28,1.2+Math.random()*2.2]);IM.setColorAt(i,C.set('#fffbe8'));});
+    IM.instanceMatrix.needsUpdate=true;IM.frustumCulled=false;IM.visible=false;fl2.add(IM);
+    (function lp(){requestAnimationFrame(lp);var mn=(typeof moodName!=='undefined')?moodName:'day',on=(mn==='dusk'||mn==='night');IM.visible=on;if(!on)return;
+      var t=performance.now()/1000;PH.forEach(function(b,i){var k=0.5+0.5*Math.sin(t*b[1]+b[0]),v=k>0.35?0.75+0.25*k:0.3;C.setRGB(v,v,v*0.95);IM.setColorAt(i,C);});IM.instanceColor.needsUpdate=true;})();
   })();
 
   /* 뒤쪽 천장: 사진처럼 왼쪽 반이 한 단 높음(앞면 단 없음) */
