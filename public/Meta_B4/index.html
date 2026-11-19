@@ -5471,8 +5471,8 @@ function fixGroup(ks){if(!ks||ks.length<2)return ks;var ST=['girl','univ'],NM=['
   return ks.map(function(k){return (ST.indexOf(k)>=0||k==='office')?NM[(Math.random()*NM.length)|0]:k;});}
 function visKind0(){var nt=moodName!=='day',W=nt?[['solo',14],['male',11],['female',11],['hat',4],['beard',3],['girl',20],['univ',8],['office',22]]:[['solo',12],['male',9],['female',9],['hat',5],['beard',3],['girl',18],['univ',8],['office',16],['grandpa',2],['grandma',2]],t=0,i;
   W.forEach(function(w){t+=w[1];});var x=Math.random()*t;for(i=0;i<W.length;i++){x-=W[i][1];if(x<0)return W[i][0];}return 'solo';}
-function visKind(){if(Math.random()<0.06)return 'foreign';return visAvoid(function(){return [visKind0()];})[0];}
-function visPair(){if(Math.random()<0.05)return['foreign','foreign'];if(Math.random()<0.07)return['preg',Math.random()<0.6?'male':'female'];   /* a pregnant guest with her husband or a friend */return visAvoid(function(){var q=Math.random();if(q<0.2)return['male','female'];if(q<0.38)return['univ','univ'];if(q<0.58)return['girl','girl'];if(q<0.72)return['office','office'];if(q<0.735&&moodName==='day')return['grandpa','grandma'];return[visKind0(),visKind0()];});}
+function visKind(){if(Math.random()<0.06)return 'foreign';if(Math.random()<0.4)return Math.random()<0.5?'mini_suit':'mini_red';return visAvoid(function(){return [visKind0()];})[0];}
+function visPair(){if(Math.random()<0.05)return['foreign','foreign'];if(Math.random()<0.07)return['preg',Math.random()<0.6?'male':'female'];   /* a pregnant guest with her husband or a friend */return visAvoid(function(){var q=Math.random();if(q<0.2)return Math.random()<0.5?['mini_w','mini_m']:['male','female'];if(q<0.38)return['univ','univ'];if(q<0.58)return['girl','girl'];if(q<0.72)return['office','office'];if(q<0.735&&moodName==='day')return['grandpa','grandma'];return[visKind0(),visKind0()];});}
 function visTrio(){if(Math.random()<0.05)return['foreign','foreign','foreign'];return visAvoid(function(){var q=Math.random();if(q<0.4)return['girl','girl','girl'];if(q<0.55)return['office','office','office'];return[visKind0(),visKind0(),visKind0()];});}
 function visBig(n){return visAvoid(function(){var k=[],i;if(Math.random()<0.4){var u=['univ','office','girl'][(Math.random()*3)|0];for(i=0;i<n;i++)k.push(u);}else for(i=0;i<n;i++)k.push(visKind0());return k;});}
 /* visit deck: every cycle each kind of visit shows up, never the same special visit twice in a row */
@@ -5579,10 +5579,10 @@ var WXMODES=[['none'],['spring'],['rain','hot'],['autumn'],['winter']];
 var WX={s:0,w:0},WXMODE='none';window.__wxSet=function(s,w){WX.s=s;WX.w=w||0;wxApply();};var WXG={g:0,t0:0,dur:0,next:4,fired:false,dir:1},WXB=1,WXS=1,CARK=1,wxLast=0,wxDt=0.016,wxInited=false;
 var WXJ={t:-9},WXTH={next:9,t0:-9,on:false};window.__wxJump=function(){WXJ.t=(typeof simT!=='undefined'?simT:0);};
 var WXT={
-  spring:{c:'#ffd2e3',a:0.3,b:0.1,cl:1.5,sun:1,amb:1,beam:1,sp:1,flare:0,f:''},
+  spring:{c:'#ffd2e3',a:0.3,b:0.1,cl:1.5,sun:1,amb:1,beam:1,sp:1,flare:0,f:'saturate(1.12)'},
   rain:{c:'#8a96a3',a:0.8,b:0.4,cl:4.0,sun:0.4,amb:1.15,beam:0.1,sp:0,flare:0,f:'saturate(.82)'},
   hot:{c:'#fff1c8',a:0.3,b:0.1,cl:0.55,sun:1.35,amb:1.1,beam:1.5,sp:1.2,flare:0,f:'saturate(1.12)'},
-  autumn:{c:'#f6c58e',a:0.5,b:0.15,cl:1.2,sun:0.92,amb:1,beam:1,sp:1,flare:0,f:''},
+  autumn:{c:'#f6c58e',a:0.5,b:0.15,cl:1.2,sun:0.92,amb:1,beam:1,sp:1,flare:0,f:'saturate(1.12)'},
   winter:{c:'#dce5ee',a:0.58,b:0.22,cl:2.0,sun:0.78,amb:1.15,beam:0.35,sp:0.2,flare:0,f:''}};
 function wxFactors(){var t=WXT[WXMODE];WXB=t?t.beam:1;WXS=t?t.sp:1;}
 function wxSky(){
@@ -6258,7 +6258,7 @@ function sitGo(S,src,V,idx,x,z,ry,sx,sz,zo,kid){
   S.seat=idx;T.occ=S;S.st=0;S.sx=sx||0;S.sz=sz||0;S.mate=null;
   S.wp=(T.out?OWP.map(function(q){return [q[0],q[1]+(zo||0)];}):[]).concat([[T.ax+S.sx,T.az+S.sz]]);
   S.g.position.set(x,0,z);S.g.visible=true;S.g.rotation.y=ry;S.ry=ry;
-  S.v0=visitNo;S.k=1+((Math.random()*5)|0);S.evict=false;S.tt=0;S.t2=0;S.hy=0.98*S.g.scale.x;}
+  S.v0=visitNo;S.reg=!!(V&&(V.kd==='mini_w'||V.kd==='mini_m'));S.k=S.reg?6+((Math.random()*3)|0):1+((Math.random()*5)|0);S.evict=false;S.tt=0;S.t2=0;S.hy=0.98*S.g.scale.x;}
 window.__sitTest=function(idx,kind){ sitInit(); var S=SITP.filter(function(q){return !q.busy;})[0]; if(!S) return 'none'; var T=SITS[idx]; if(T.occ) return 'occ'; sitGo(S,S,mkV(kind||'male'),idx,T.ax,T.az,0); return 'ok'; };
 var SGD={};
 function sitGrp(P){if(P.__fl){var mem=P.__fl.m.map(function(M){return M.P;});return {key:'f'+P.__fl.id,mem:mem,ix:mem.indexOf(P)};}
@@ -6329,7 +6329,7 @@ function sitUpd(s){
     else if(S.st===1){S.tt+=dt*sp/0.8;var k=Math.min(1,S.tt);sitPose(S,k*k*(3-2*k),s);if(S.tt>=1){S.st=2;S.t2=s;}}
     else if(S.st===2){sitPose(S,1,s);
       if(SITS[S.seat].out&&!sitOutOK())S.evict=true;
-      var go=S.mate?(!S.mate.busy||S.mate.st>=3):(night||S.evict||(visitNo-S.v0>=S.k&&s-S.t2>=12)||s-S.t2>170);
+      var go=S.mate?(!S.mate.busy||S.mate.st>=3):(night||S.evict||(visitNo-S.v0>=S.k&&s-S.t2>=(S.reg?70:12))||s-S.t2>(S.reg?280:170));
       if(go){S.st=3;S.tt=1;if(S.cFill)S.cFill.forEach(function(o){o.visible=false;});}}   /* eaten: an empty beige cup from here to the bin */
     else if(S.st===3){S.tt-=dt*sp/0.8;var k2=Math.max(0,S.tt);sitPose(S,k2*k2*(3-2*k2),s);
       if(S.tt<=0){S.st=4;SITS[S.seat].occ=null;S.wp=sitExit(S);S.g.position.y=0;}}
@@ -7336,8 +7336,15 @@ window.__mkV=mkV;window.__applyV=applyV;function mkV(kind){
   else if(kind==='univf'||kind==='suitf'){V=mkV(kind.slice(0,-1));V.hs=rv([1,2,3,5]);V.bt=rv([0,0,1]);}   /* 오기전에: the same student / office looks, a woman */
   else if(kind==='foreign'){var wh=Math.random()<0.5;V.fr=true;V.sc=1.32;V.hs=rv([0,0,4,1,3]);V.bt=1;V.skin=wh?pick(['#f7d9c4','#f3cfb8']):pick(['#6b4429','#5a3820']);V.hair=wh?pick(['#e8c66a','#f0d27a','#dcb04e']):'#141012';V.top=pick(['#4aa3df','#2f2f38','#f08a3c','#e2574c','#ffffff','#7bc67b']);V.bot=pick(['#35405a','#2a2a30','#5a6f93']);V.hat=0;V.bd=Math.random()<0.15?rv([1,2,3]):0;}
   else if(kind==='guest'&&curGuest){V=curGuest;curGuest=null;}
+  else if(kind.indexOf('mini_')===0){   /* 오기전에 단골 네 분: 코랄 원피스 단발 + 노란 BIM 니트 (늘 함께 오는 커플), 파란 정장 빨간 넥타이, 빨간 원피스 긴머리 */
+    var MB={bt:1,acc:0,gl:0,bd:0,hat:0,sg:false,shirt:false,cane:false,sc:1,art:null,hatc:'#2a4b7e',accc:'#f4c542',skin:'#f6d6bb'},MX;
+    if(kind==='mini_w')MX={hs:1,hair:'#17141a',top:'#f0866c',bot:'#f0866c',bt:0};
+    else if(kind==='mini_m'){var BA=new Array(144).fill(0);['22..2.2...2','2.2.2.22.22','22..2.2.2.2','2.2.2.2...2','22..2.2...2'].forEach(function(row,y){for(var x=0;x<row.length;x++)if(row[x]!=='.')BA[(y+3)*12+x]=+row[x];});MX={hs:4,skin:'#f2c9a0',hair:'#141216',top:'#f4c53e',bot:'#5d84bb',bt:1,art:{fr:BA}};}
+    else if(kind==='mini_suit')MX={hs:4,skin:'#f2c9a0',hair:'#141216',top:'#2f5cb0',bot:'#2f5cb0',bt:1,shirt:true,shc:'#f6f6f2',acc:2,accc:'#d52b35'};
+    else MX={hs:2,hair:'#17141a',top:'#c8202f',bot:'#c8202f',bt:0};
+    V=Object.assign(MB,MX);}
   V.kd=kind;return V;}
-function look(P,kind){var V0=mkV(kind);applyV(P,V0);P.got=false;P.cool=false;var nt=moodName==='dusk'||moodName==='night',pp=PKG.n<=1?(nt?0.7:0.1):(nt?0.2:0.04);P.pack=(V0.preg?Math.random()<0.5:(!V0.fr&&kind!=='guest'&&Math.random()<pp));flwSet(P);}
+function look(P,kind){var V0=mkV(kind);applyV(P,V0);P.got=false;P.cool=false;var nt=moodName==='dusk'||moodName==='night',pp=PKG.n<=1?(nt?0.7:0.1):(nt?0.2:0.04);P.pack=(kind==='mini_w'||kind==='mini_m')?false:(V0.preg?Math.random()<0.5:(!V0.fr&&kind!=='guest'&&Math.random()<pp));flwSet(P);}
 function flwSet(P){P.flw=Math.random()<0.07;P.flwOn=false;if(!P.bq)return;P.bq.visible=P.flw;if(P.fe)P.fe.visible=false;if(!P.flw)return;
   var uni=Math.random()<0.45,c0=FLW_COLS[(Math.random()*FLW_COLS.length)|0];P.bqm.forEach(function(mt){mt.color.set(uni?c0:FLW_COLS[(Math.random()*FLW_COLS.length)|0]);});}
 /* ===== 손님 넣기: 손님 만들기에서 만든 코드를 붙여넣으면, 정한 시간 뒤 다음 방문에 찾아와요 ===== */
@@ -7496,6 +7503,9 @@ var FLOW=(function(){
     if(cat==='kids'){ ks.push(Math.random()<0.65?'female':'male'); if(n>=4) ks.push(Math.random()<0.5?'male':'female'); while(ks.length<Math.min(n,4)) ks.push('kid'); return ks; }
     if(cat==='preg'){ return n===1?['preg']:['preg',Math.random()<0.6?'male':'female']; }
     if(cat==='old'){ return n===1?[Math.random()<0.5?'grandpa':'grandma']:['grandpa','grandma']; }
+    var miniIn=function(k){var i;for(i=0;i<people.length;i++){var Q=people[i];if(Q.g.visible&&Q.lastV&&Q.lastV.kd===k)return true;}if(window.__SITP)for(i=0;i<window.__SITP.length;i++){var S=window.__SITP[i];if(S.busy&&S.lastV&&S.lastV.kd===k)return true;}return false;};   /* the same regular never twice at once */
+    if(n===2&&Math.random()<0.5&&!miniIn('mini_w')) return ['mini_w','mini_m'];   /* 오기전에: 일반인 커플 자리의 절반은 단골 커플 */
+    if(n===1&&Math.random()<0.5){ var mk=Math.random()<0.5?'mini_suit':'mini_red'; if(miniIn(mk)) mk=mk==='mini_suit'?'mini_red':'mini_suit'; if(!miniIn(mk)) return [mk]; }   /* 혼자 오는 일반 손님의 절반은 단골 두 분 */
     var gen=function(){ var q=Math.random(); return q<0.34?'female':q<0.6?'male':q<0.75?'solo':q<0.85?'hat':q<0.92?'beard':'foreign'; }; for(i=0;i<n;i++) ks.push(gen()); return ks; }
   function freePeople(){var out=[];for(var i=0;i<people.length;i++){var P=people[i];if(!P.__fl&&!P.g.visible)out.push(P);}return out;}
   /* how full the room is: members inside or committed to go in, kids weigh more */
@@ -7622,7 +7632,7 @@ var FLOW=(function(){
     window.__flowDbg={groups:F.groups.length,load:load,next:+(F.nextAt-s).toFixed(1),serving:!!F.serving,rate:seasonRate(),free:freePeople().length,pass:F.pass.length,swept:F.swept||0}; }
   function trySit(G){ /* whole team or nobody; a random yes when the seats are there. Returns true when they sat. */
     if(typeof sitTake!=='function'||F.tour)return false;   /* on a first-person visit the seats are left for me */ var freeSeats=SITS.filter(function(S){return !S.occ&&!S.rsv&&!S.out;}).length,need=G.m.length;if(freeSeats<need)return false;
-    var m=(typeof WXMODE!=='undefined')?WXMODE:'none',p=m==='winter'?0.65:m==='hot'?0.6:0.5;if(Math.random()>p)return false;
+    var reg=G.m.some(function(M){return M.P.lastV&&(M.P.lastV.kd==='mini_w'||M.P.lastV.kd==='mini_m');});var m=(typeof WXMODE!=='undefined')?WXMODE:'none',p=reg?1:m==='winter'?0.65:m==='hot'?0.6:0.5;if(Math.random()>p)return false;
     window.__sitP=1;var sat=[];G.m.forEach(function(M){var P=M.P;P.lastV=P.lastV||{};P.__sitKey='f'+G.id;if(sitTake(P,P.g.position.x,P.g.position.z,1))sat.push(M);});window.__sitP=undefined;
     if(sat.length===G.m.length){G.sat=true;G.m.slice().forEach(function(M){release(M);});return true;} else {sat.forEach(function(M){release(M);});return false;} }
   /* a team of three or more with their ice cream: out of the door and round to the lawn on the left, a loose circle there for a while */
