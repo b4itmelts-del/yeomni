@@ -6184,17 +6184,22 @@ window.__SITP=SITP;function sitInit(){if(SITP.length)return;for(var i=0;i<SITS.l
   function build(){ var NK=window.NOK; if(!NK||!NK.scene) throw 0; var g=new THREE.Group(); NK.scene.add(g); g.position.set(9.55,0.15,-4.3); g.rotation.y=-Math.PI/2; g.scale.setScalar((NK.DS||0.477)*0.82);   /* straight in the diorama (not this page's world, which gets stretched every frame); the grass stands ~0.1 tall, the blanket lies on top */
     var mat=new THREE.Group(); mat.position.y=-0.04; g.add(mat); var MC=[new THREE.MeshLambertMaterial({color:'#fbf6ee'}),new THREE.MeshLambertMaterial({color:'#ef9a9c'}),new THREE.MeshLambertMaterial({color:'#d8444a'})], tg=new THREE.BoxGeometry(0.65,0.12,0.65);
     for(var ix=0;ix<8;ix++)for(var iz=0;iz<7;iz++){ var a=ix%2, b=iz%2, t=new THREE.Mesh(tg,MC[a&&b?2:(a||b)?1:0]); t.position.set(-1.9+0.325+ix*0.65,0,-2.275+0.325+iz*0.65); mat.add(t); }   /* a red gingham picnic blanket */
-    var bk=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.24,0.42,8),new THREE.MeshLambertMaterial({color:'#c99a5a'})); bk.position.set(-1.2,0.26,-1.6); g.add(bk);   /* a little basket */
-    var ppl=[['mini_w',0.8,'#f2a6b8','#fdf3e1'],['mini_m',-0.8,'#7a4a2a','#f6c928']].map(function(d,i){ var P=mkPerson(); P.g.parent&&P.g.parent.remove(P.g); g.add(P.g); applyV(P,mkV(d[0])); P.cA.color.set(d[2]); P.cB.color.set(d[3]);
+    var bk=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.24,0.42,8),new THREE.MeshLambertMaterial({color:'#c99a5a'})); bk.position.set(2.75,0.26,1.55); g.add(bk);   /* a little basket */
+    var ppl=[['mini_w',1.25,'#f2a6b8','#fdf3e1'],['mini_m',-0.25,'#7a4a2a','#f6c928']].map(function(d,i){ var P=mkPerson(); P.g.parent&&P.g.parent.remove(P.g); g.add(P.g); applyV(P,mkV(d[0])); P.cA.color.set(d[2]); P.cB.color.set(d[3]);
       P.cup.visible=true; if(P.cFill) P.cFill.forEach(function(o){ o.visible=true; }); P.bub.visible=false; if(P.nm) P.nm.visible=false; if(P.fw) P.fw.forEach(function(f){ f.visible=false; }); if(P.bq) P.bq.visible=false; if(P.umb) P.umb.visible=false;
-      var sc=P.g.scale.x; P.g.position.set(-0.6,0.02-0.98*sc,d[1]); P.g.rotation.y=Math.PI/2+(i?0.28:-0.28); P.si=i*2.3; return P; });
-    PK={g:g,P:ppl,mat:mat}; window.__pk=PK; g.visible=false; }
+      var sc=P.g.scale.x; P.g.position.set(d[1],0.02-0.98*sc,1.0); P.g.rotation.y=Math.PI+(i?-0.25:0.25); P.si=i*2.3;   /* both looking out right, over the edge, leaning a little toward each other */
+      P.g.traverse(function(o){ if(o.isMesh) o.castShadow=false; });   /* no self-shadow speckle on the little boxes */
+      return P; });
+    mat.traverse(function(o){ if(o.isMesh) o.castShadow=false; }); bk.castShadow=false;
+    var HT=[]; for(var j=0;j<5;j++){ var hs=new THREE.Sprite(new THREE.SpriteMaterial({map:heartTex(),transparent:true,depthWrite:false})); hs.renderOrder=15; hs.userData.__glow=1; g.add(hs); HT.push(hs); }   /* little hearts popping up over their heads */
+    PK={g:g,P:ppl,mat:mat,HT:HT}; window.__pk=PK; g.visible=false; }
   function meshes(){ var L=[]; if(PK&&PK.g.visible) PK.g.traverse(function(m){ if(m.isMesh) L.push(m); }); return L; }
   (function lp(){ requestAnimationFrame(lp); var on=(typeof WXMODE!=='undefined')&&(WXMODE==='spring'||WXMODE==='autumn')&&typeof moodName!=='undefined'&&moodName==='day'&&!window.PRE;
     window.__picnicOn=on; if(!on){ if(PK) PK.g.visible=false; return; } if(!PK){ try{ build(); }catch(e){ return; } } PK.g.visible=true;
     var t=performance.now()/1000; PK.P.forEach(function(P,i){ P.g.visible=true; var e=Math.max(0,Math.sin(t*0.8+P.si*2.1)), w=Math.sin(t*0.5+P.si);
       P.lL.rotation.x=-1.5+Math.sin(t*1.1+P.si)*0.04; P.lR.rotation.x=-1.45-Math.sin(t*1.1+P.si)*0.04; P.aL.rotation.x=-0.25; P.aR.rotation.x=-1.3-0.3*e; P.cup.rotation.x=-P.aR.rotation.x;
-      P.body.position.y=0; P.hd.rotation.x=0.18*e; P.hd.rotation.y=(i?-1:1)*(0.25+0.25*Math.max(0,w)); });   /* a spoonful now and then, and a look at each other */ })();
+      P.body.position.y=0; P.hd.rotation.x=0.18*e; P.hd.rotation.y=(i?-1:1)*(0.25+0.25*Math.max(0,w)); });
+    PK.HT.forEach(function(h,j){ var k=(t*0.42+j/5)%1; h.position.set(0.5+Math.sin(k*5+j*1.7)*0.45,3.1+k*2.4,0.9+Math.cos(j*2.1)*0.3); h.material.opacity=Math.sin(k*Math.PI); var z=0.55+0.35*Math.min(1,k*3); h.scale.set(z,z,1); });   /* a spoonful now and then, and a look at each other */ })();
   (function reg(){ if(!window.__objView){ setTimeout(reg,800); return; } __objView.add(meshes,{src:'obj/couple.webp',title:'썸 타는 중입니다,,',note:'너무 쳐다보지 말아주세요,,'}); })();
 })();
 function sitAny(){return SITP.some(function(S){return S.busy;});}
