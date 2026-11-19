@@ -4616,7 +4616,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
    if(t<5){ const u=ease(t/5); const p=A0.clone().lerp(land,u); p.y+=Math.sin(u*Math.PI)*1.2*(1-u); sleigh.position.copy(p); face(sleigh,land.x-A0.x,land.z-A0.z); }
    else if(t<=14.3){ sleigh.position.copy(land); face(sleigh,0,1); }   /* parked along the lower roof, reindeer toward the front, clear of the high part */
    else { const u=ease((t-14.3)/4.7); const p=land.clone().lerp(A1,u); p.y+=u*u*2; sleigh.position.copy(p); face(sleigh,A1.x-land.x,A1.z-land.z); }
-   sleigh.updateMatrixWorld(true);
+   sleigh.updateMatrixWorld(true); if(fly&&sleigh.position.distanceTo(land)>4.5) sleigh.visible=false;   /* 가기전에: no dark silhouette crossing the night sky — the sleigh only shows near the roof */
    const sitP=V(-0.05,0.45,0), inS=t<5||t>=14.3;
    if(inS){ if(santa.parent!==sleigh){ sleigh.add(santa); } santa.scale.setScalar(1); santa.position.copy(sitP); santa.rotation.set(0,0,0); santa.visible=true; sack.visible=t<5;
     if(t<5&&sack.parent!==sleigh){ sleigh.add(sack); } if(t<5){ sack.position.set(-0.32,0.5,0); sack.rotation.set(0,0,0); sack.scale.setScalar(1.25); } return; }
