@@ -6204,6 +6204,105 @@ window.__SITP=SITP;function sitInit(){if(SITP.length)return;for(var i=0;i<SITS.l
     PK.HT.forEach(function(h,j){ var k=(t*0.42+j/5)%1; h.position.set(0.5+Math.sin(k*5+j*1.7)*0.45,3.1+k*2.4,0.9+Math.cos(j*2.1)*0.3); h.material.opacity=Math.sin(k*Math.PI); var z=0.55+0.35*Math.min(1,k*3); h.scale.set(z,z,1); });   /* a spoonful now and then, and a look at each other */ })();
   (function reg(){ if(!window.__objView){ setTimeout(reg,800); return; } __objView.add(meshes,{glow:glows,src:'obj/couple.webp',title:'썸 타는 중입니다,,',note:'너무 쳐다보지 말아주세요,,'}); })();
 })();
+/* 가기전에: 봄·가을 낮 — 가게 왼쪽 숲 잔디(커플 반대편)에서 2층 창 사진 속 네 친구가 논다.
+   백이·석이(샴 쌍둥이)는 느긋하게 걷다 앉고 식빵 굽고 오래 잔다. 백미(비숑)·복순이는 넓게 뛰어다니고 서로 쫓고, 앉았다가 엎드려 쉰다. */
+(function(){
+  var PETS=null, R0={x0:-9.8,x1:-4.2,z0:-4.0,z1:4.4}, SC=0.66;
+  var mats={}; function mm(c){ return mats[c]||(mats[c]=new THREE.MeshLambertMaterial({color:c})); }
+  function bx(p,w,h,d,c,x,y,z,rx,ry,rz){ var o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mm(c)); o.position.set(x,y,z); if(rx)o.rotation.x=rx; if(ry)o.rotation.y=ry; if(rz)o.rotation.z=rz; p.add(o); return o; }
+  function grp(p,x,y,z,rx,ry,rz){ var g=new THREE.Group(); g.position.set(x,y,z); if(rx)g.rotation.x=rx; if(ry)g.rotation.y=ry; if(rz)g.rotation.z=rz; p.add(g); return g; }
+  function ear(p,c,inner,x,y,z,tz,sz){ sz=sz||1; var g=grp(p,x,y,z,0,0,tz); var e=new THREE.Mesh(new THREE.ConeGeometry(0.095*sz,0.2*sz,4),mm(c)); e.rotation.y=Math.PI/4; e.scale.z=0.55; g.add(e);
+    if(inner){ var n=new THREE.Mesh(new THREE.ConeGeometry(0.05*sz,0.12*sz,4),mm(inner)); n.rotation.y=Math.PI/4; n.scale.z=0.3; n.position.set(0,-0.03*sz,0.03*sz); g.add(n); } return g; }
+  /* ---- 샴 ---- */
+  function catHead(p,P,x,y,z,ry){ var h=grp(p,x,y,z,0,ry||0); h.scale.setScalar(0.88);
+    bx(h,0.4,0.3,0.32,P.m0,0,0,0); bx(h,0.41,0.18,0.27,P.m1,0,-0.05,0.01); bx(h,0.36,0.27,0.03,P.m1,0,-0.01,0.155); bx(h,0.28,0.22,0.03,P.m2,0,-0.03,0.165); bx(h,0.18,0.17,0.03,P.m3,0,-0.05,0.175);
+    bx(h,0.08,0.12,0.03,P.nose,0,0,0.183); bx(h,0.04,0.03,0.02,'#0e0c0e',0,-0.08,0.195);
+    [-1,1].forEach(function(s){ bx(h,0.075,0.05,0.02,P.eye,0.085*s,0.03,0.18); bx(h,0.025,0.04,0.02,'#14161c',0.085*s,0.03,0.187);
+      var eg=ear(h,P.m2,'#8a7273',0.12*s,0.24,-0.03,-0.2*s), tip=new THREE.Mesh(new THREE.ConeGeometry(0.05,0.1,4),mm(P.m3)); tip.rotation.y=Math.PI/4; tip.scale.z=0.55; tip.position.y=0.05; eg.add(tip); }); return h; }
+  function leg(g,P,x,y,z,hh){ bx(g,0.09,hh*0.45,0.09,P.m1,x,y+hh*0.27,z); bx(g,0.092,hh*0.58,0.092,P.leg,x,y-hh*0.2,z); }
+  function catSit(p,P){ var g=grp(p,0,0,0); bx(g,0.42,0.3,0.46,P.body2,0,0.15,-0.06); bx(g,0.32,0.34,0.28,P.body,0,0.42,0.04); bx(g,0.18,0.16,0.04,'#ffffff',0,0.4,0.18);
+    [-1,1].forEach(function(s){ leg(g,P,0.08*s,0.16,0.15,0.32); bx(g,0.1,0.05,0.12,P.leg,0.08*s,0.025,0.17); bx(g,0.1,0.13,0.18,P.m2,0.17*s,0.065,-0.08); });
+    var t=grp(g,0.14,0.04,-0.12,0,-0.25); bx(t,0.09,0.08,0.22,P.m1,0,0,0); var t2=grp(t,0,0,0.11); bx(t2,0.09,0.08,0.3,P.leg,0,0,0.15); g.userData.tail=t2;
+    g.userData.head=catHead(g,P,0,0.74,0.07); return g; }
+  function catLoaf(p,P){ var g=grp(p,0,0,0); bx(g,0.38,0.3,0.62,P.body,0,0.15,-0.04); bx(g,0.36,0.04,0.56,P.body2,0,0.31,-0.08);
+    [-1,1].forEach(function(s){ bx(g,0.1,0.06,0.1,P.leg,0.09*s,0.03,0.29); }); bx(g,0.09,0.08,0.22,P.m1,0.21,0.04,-0.14,0,0.15); bx(g,0.09,0.08,0.26,P.leg,0.24,0.04,0.1,0,0.15);
+    g.userData.head=catHead(g,P,0,0.4,0.24,0.25); return g; }
+  function catWalk(p,P){ var g=grp(p,0,0,0); var b=grp(g,0,0,0); bx(b,0.32,0.28,0.66,P.body,0,0.42,0); bx(b,0.3,0.04,0.6,P.body2,0,0.57,-0.03); var L=[];
+    [[-0.09,0.2],[0.09,-0.2],[-0.09,-0.22],[0.09,0.22]].forEach(function(q){ var l=grp(g,q[0],0.32,q[1]); bx(l,0.085,0.14,0.085,P.m1,0,-0.06,0); bx(l,0.087,0.2,0.087,P.leg,0,-0.22,0); L.push(l); });
+    var t=grp(b,0,0.5,-0.32,-0.5); bx(t,0.08,0.34,0.08,P.m2,0,0.16,0); var t2=grp(t,0,0.32,0,-0.6); bx(t2,0.08,0.22,0.08,P.leg,0,0.1,0);
+    catHead(b,P,0,0.66,0.38); g.userData.legs=L; g.userData.body=b; g.userData.tail=t; return g; }
+  /* ---- 백미 (비숑) ---- */
+  var BW='#fbfaf6',BS='#e9e6df',BK='#141214';
+  function puff(p,w,h,d,x,y,z){ bx(p,w,h,d,BW,x,y,z); bx(p,w*0.8,h*1.12,d*0.8,BW,x,y,z); bx(p,w*1.1,h*0.75,d*0.85,BS,x,y-h*0.06,z); }
+  function biHead(p,x,y,z,ry){ var h=grp(p,x,y,z,0,ry||0); puff(h,0.5,0.44,0.44,0,0,0);
+    [-1,1].forEach(function(s){ puff(h,0.14,0.28,0.2,0.27*s,-0.06,0); bx(h,0.06,0.06,0.02,BK,0.09*s,0.04,0.235); });
+    bx(h,0.2,0.14,0.12,BW,0,-0.08,0.24); bx(h,0.09,0.06,0.04,BK,0,-0.04,0.305); bx(h,0.06,0.025,0.02,'#c55a5a',0,-0.12,0.302); return h; }
+  function biSit(p){ var g=grp(p,0,0,0); puff(g,0.5,0.34,0.5,0,0.17,-0.06); puff(g,0.42,0.4,0.34,0,0.46,0.06); [-1,1].forEach(function(s){ puff(g,0.13,0.34,0.13,0.11*s,0.17,0.2); });
+    var t=grp(g,0,0.32,-0.36); puff(t,0.16,0.16,0.16,0,0,0); g.userData.tail=t; g.userData.head=biHead(g,0,0.84,0.1); return g; }
+  function biLie(p){ var g=grp(p,0,0,0); puff(g,0.48,0.28,0.78,0,0.14,-0.05); [-1,1].forEach(function(s){ puff(g,0.13,0.1,0.3,0.12*s,0.05,0.42); }); puff(g,0.16,0.16,0.16,0.08,0.3,-0.48); g.userData.head=biHead(g,0,0.38,0.42,0.15); return g; }
+  function biRun(p){ var g=grp(p,0,0,0), b=grp(g,0,0,0), L=[]; puff(b,0.44,0.36,0.76,0,0.5,0);
+    [[-1,0.24],[1,0.24],[-1,-0.24],[1,-0.24]].forEach(function(q){ var l=grp(g,0.12*q[0],0.34,q[1]); puff(l,0.13,0.34,0.13,0,-0.17,0); L.push(l); });
+    var t=grp(b,0,0.78,-0.36); puff(t,0.2,0.2,0.2,0,0,0); biHead(b,0,0.86,0.42); g.userData.legs=L; g.userData.body=b; g.userData.tail=t; return g; }
+  /* ---- 복순이 ---- */
+  var DW='#f8f6f1',DB='#8a4426',DB2='#a8613a',DF='#d9b08a',DK='#161315';
+  function fl(p,w,h,d,x,y,z,c){ bx(p,w,h,d,c||DW,x,y,z); bx(p,w*0.82,h*1.1,d*0.82,c||DW,x,y,z); }
+  function boHead(p,x,y,z,ry){ var h=grp(p,x,y,z,0,ry||0); fl(h,0.4,0.34,0.34,0,0,0);
+    bx(h,0.05,0.28,0.3,DB,-0.21,0.03,-0.02); bx(h,0.05,0.2,0.28,DB,0.21,0.07,-0.03); bx(h,0.14,0.08,0.3,DB,-0.14,0.15,-0.02); bx(h,0.12,0.06,0.3,DB,0.14,0.16,-0.02); bx(h,0.1,0.1,0.03,DB,-0.1,0.04,0.17);
+    [-1,1].forEach(function(s){ ear(h,DB,DB2,0.14*s,0.27,-0.04,-0.3*s,1.5); bx(h,0.05,0.05,0.02,DK,0.09*s,0.04,0.185); bx(h,0.015,0.015,0.01,'#ffffff',0.09*s+0.01,0.055,0.196); });
+    [[0,0.1],[0.04,0.13],[-0.03,0.12],[0.03,0.08]].forEach(function(q){ bx(h,0.02,0.02,0.01,DF,q[0],q[1],0.175); });
+    bx(h,0.18,0.12,0.13,DW,0,-0.1,0.2); bx(h,0.08,0.06,0.04,DK,0,-0.06,0.28); bx(h,0.05,0.02,0.02,'#5a3a36',0,-0.15,0.27); return h; }
+  function boTail(g,x,y,z,rx,rx2){ var t=grp(g,x,y,z,rx); fl(t,0.14,0.26,0.14,0,0.12,0); bx(t,0.17,0.13,0.17,DB2,0,0.05,0); var t2=grp(t,0,0.24,0,rx2); fl(t2,0.16,0.18,0.16,0,0.06,0); return t; }
+  function ruff(g,y,z){ fl(g,0.36,0.22,0.22,0,y,z); bx(g,0.06,0.07,0.02,'#b8875a',0.02,y-0.1,z+0.12); }
+  function spots(g,y,z){ [[0.08,0.06],[-0.07,-0.06],[0.02,-0.16],[-0.1,0.12]].forEach(function(q){ bx(g,0.05,0.012,0.05,DF,q[0],y,z+q[1]); }); }
+  function boSit(p){ var g=grp(p,0,0,0); fl(g,0.4,0.28,0.44,0,0.14,-0.06); fl(g,0.3,0.36,0.26,0,0.42,0.04);
+    [-1,1].forEach(function(s){ bx(g,0.08,0.34,0.08,DW,0.08*s,0.17,0.14); fl(g,0.1,0.12,0.16,0.16*s,0.06,-0.08); }); g.userData.tail=boTail(g,0,0.28,-0.3,-1.6,-1.2); ruff(g,0.52,0.1); g.userData.head=boHead(g,0,0.8,0.08); return g; }
+  function boLie(p){ var g=grp(p,0,0,0); fl(g,0.36,0.24,0.66,0,0.12,-0.04); spots(g,0.255,-0.08); [-1,1].forEach(function(s){ bx(g,0.08,0.07,0.26,DW,0.1*s,0.035,0.36); }); boTail(g,0.12,0.18,-0.36,-1.9,-1.2); g.userData.head=boHead(g,0,0.34,0.36,-0.2); return g; }
+  function boRun(p){ var g=grp(p,0,0,0), b=grp(g,0,0,0), L=[]; fl(b,0.3,0.26,0.62,0,0.44,0); spots(b,0.585,-0.04);
+    [[-1,0.2],[1,0.2],[-1,-0.22],[1,-0.22]].forEach(function(q){ var l=grp(g,0.09*q[0],0.32,q[1]); bx(l,0.08,0.32,0.08,DW,0,-0.16,0); L.push(l); });
+    var t=boTail(b,0,0.56,-0.26,-0.25,1.4); ruff(b,0.56,0.3); boHead(b,0,0.78,0.4); g.userData.legs=L; g.userData.body=b; g.userData.tail=t; return g; }
+  var CA={body:'#f2efe9',body2:'#e3ddd3',leg:'#3a3030',m0:'#a99c94',m1:'#86766f',m2:'#5e504c',m3:'#403634',nose:'#4f3f3a',eye:'#9cc8ec'};   // 백이
+  var CB={body:'#f1eee9',body2:'#e0dbd2',leg:'#232023',m0:'#8e8788',m1:'#686164',m2:'#433e42',m3:'#29252a',nose:'#161317',eye:'#a7d0f0'};   // 석이
+  var blobM=null; function blob(g,r){ if(!blobM){ var c=document.createElement('canvas'); c.width=c.height=32; var x=c.getContext('2d'), gr=x.createRadialGradient(16,16,1,16,16,15); gr.addColorStop(0,'rgba(20,24,12,0.42)'); gr.addColorStop(1,'rgba(20,24,12,0)'); x.fillStyle=gr; x.fillRect(0,0,32,32); blobM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}); }
+    var b=new THREE.Mesh(new THREE.PlaneGeometry(r,r*1.4),blobM); b.rotation.x=-Math.PI/2; b.position.y=0.02; b.renderOrder=-1; g.add(b); }
+  function mk(name,kind,P){ var g=new THREE.Group(), A={name:name,kind:kind,g:g,poses:{}};
+    if(kind==='cat'){ A.poses.sit=catSit(g,P); A.poses.lie=catLoaf(g,P); A.poses.move=catWalk(g,P); }
+    else if(name==='백미'){ A.poses.sit=biSit(g); A.poses.lie=biLie(g); A.poses.move=biRun(g); }
+    else { A.poses.sit=boSit(g); A.poses.lie=boLie(g); A.poses.move=boRun(g); }
+    blob(g,0.75); g.scale.setScalar(SC); g.traverse(function(o){ if(o.isMesh){ o.castShadow=false; o.receiveShadow=true; } }); return A; }
+  function trees(){ var T=[], b=new THREE.Box3(); try{ TREES.g.children.forEach(function(t){ b.setFromObject(t); var r=b.isEmpty()?0.6:Math.max(0.6,Math.min(1.9,Math.max(b.max.x-b.min.x,b.max.z-b.min.z)*0.42)); if((t.userData.kind||'')!=='bush'&&(b.max.y-b.min.y)>1.6) r=0.6; T.push([t.position.x,t.position.z,r]); }); }catch(e){} return T; }   /* bushes are wide and low: keep clear of all of one; trees only of the trunk */
+  function freeSpot(TR){ for(var k=0;k<30;k++){ var x=R0.x0+Math.random()*(R0.x1-R0.x0), z=R0.z0+Math.random()*(R0.z1-R0.z0), ok=true; for(var i=0;i<TR.length;i++) if(Math.hypot(x-TR[i][0],z-TR[i][1])<TR[i][2]+0.2){ ok=false; break; } if(ok) return [x,z]; } return [(R0.x0+R0.x1)/2,(R0.z0+R0.z1)/2]; }
+  function setPose(A,p){ if(A.pose===p) return; A.pose=p; for(var k in A.poses) A.poses[k].visible=(k===p); }
+  function next(A,TR){ var dog=A.kind==='dog', r=Math.random();
+    if(A.st==='move'){ /* after a run: sit, or lie down (cats loaf / nap long) */ if(dog){ if(r<0.55){ A.st='sit'; A.t=2.5+Math.random()*4; } else { A.st='lie'; A.t=5+Math.random()*8; } } else { if(r<0.4){ A.st='sit'; A.t=4+Math.random()*6; } else { A.st='lie'; A.t=10+Math.random()*18; } } }
+    else { A.st='move'; var tgt;
+      if(dog&&Math.random()<0.45){ var o=PETS.A.filter(function(q){ return q!==A&&q.kind==='dog'; })[0]; if(o){ tgt=[o.g.position.x+(Math.random()-0.5)*1.4,o.g.position.z+(Math.random()-0.5)*1.4]; if(o.st!=='move'){ o.st='move'; o.tgt=freeSpot(TR); o.spd=1.5+Math.random()*0.5; setPose(o,'move'); } } }   /* tag: run at the other one, who runs off */
+      A.tgt=tgt?[Math.min(R0.x1,Math.max(R0.x0,tgt[0])),Math.min(R0.z1,Math.max(R0.z0,tgt[1]))]:freeSpot(TR);
+      A.spd=dog?(1.2+Math.random()*0.7):(Math.random()<0.2?1.1:0.42); }
+    setPose(A,A.st); }
+  function build(){ var NK=window.NOK; if(!NK||!NK.scene) throw 0; var root=new THREE.Group(); NK.scene.add(root); var TR=trees();
+    PETS={root:root,A:[mk('백이','cat',CA),mk('석이','cat',CB),mk('백미','dog'),mk('복순이','dog')]};
+    PETS.A.forEach(function(A,i){ root.add(A.g); var p=freeSpot(TR); A.g.position.set(p[0],0.03,p[1]); A.ry=Math.random()*6.28; A.g.rotation.y=A.ry; A.st=i<2?'lie':'sit'; A.t=2+Math.random()*6; A.ph=Math.random()*6; setPose(A,A.st); });
+    window.__pets=PETS; }
+  var last=0;
+  (function lp(now){ requestAnimationFrame(lp); var dt=Math.min(0.1,((now||0)-last)/1000||0.016); last=now||0;
+    var on=(typeof WXMODE!=='undefined')&&(WXMODE==='spring'||WXMODE==='autumn')&&typeof moodName!=='undefined'&&moodName==='day'&&!window.PRE;
+    if(!on){ if(PETS) PETS.root.visible=false; return; } if(!PETS){ try{ build(); }catch(e){ return; } } PETS.root.visible=true;
+    var TR=PETS.TR||(PETS.TR=trees()), t=(now||0)/1000;
+    PETS.A.forEach(function(A){ var g=A.g, P=A.poses[A.pose], u=P.userData;
+      if(A.st==='move'){ var dx=A.tgt[0]-g.position.x, dz=A.tgt[1]-g.position.z, d=Math.hypot(dx,dz);
+        /* keep a little apart from the others and round the tree trunks */
+        PETS.A.forEach(function(B){ if(B===A) return; var ex=g.position.x-B.g.position.x, ez=g.position.z-B.g.position.z, e=Math.hypot(ex,ez); if(e<0.38&&e>1e-4){ g.position.x+=ex/e*(0.38-e)*0.5; g.position.z+=ez/e*(0.38-e)*0.5; } });
+        TR.forEach(function(q){ var ex=g.position.x-q[0], ez=g.position.z-q[1], e=Math.hypot(ex,ez), rr=q[2]; if(e<rr&&e>1e-4){ g.position.x+=ex/e*(rr-e); g.position.z+=ez/e*(rr-e); } });
+        if(d<0.08){ next(A,TR); } else { var st=Math.min(d,A.spd*dt); g.position.x+=dx/d*st; g.position.z+=dz/d*st; var ty=Math.atan2(dx,dz), df=((ty-A.ry+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI; A.ry+=df*Math.min(1,dt*8); g.rotation.y=A.ry;
+          var f=A.spd*(A.kind==='dog'?9:11), sw=A.spd>1?0.75:0.45; A.ph+=dt*f; if(u.legs) u.legs.forEach(function(l,i){ l.rotation.x=Math.sin(A.ph+(i===0||i===3?0:Math.PI))*sw; });
+          if(u.body) u.body.position.y=Math.abs(Math.sin(A.ph))*(A.spd>1?0.07:0.025); if(u.tail) u.tail.rotation.z=Math.sin(A.ph*1.5)*0.25; } }
+      else { A.t-=dt; if(A.t<=0) next(A,TR);
+        if(u.tail) u.tail.rotation.z=Math.sin(t*(A.kind==='dog'?6:1.6)+A.ph)*(A.kind==='dog'?0.35:0.2);   /* dogs wag, cats swish slowly */
+        if(u.head) u.head.rotation.y=Math.sin(t*0.4+A.ph)*0.35*(A.st==='lie'&&A.kind==='cat'?0.2:1);
+        if(A.st==='lie'&&A.kind==='cat'){ P.scale.y=1+Math.sin(t*1.4+A.ph)*0.02; } }   /* breathing while asleep */ });
+  })();
+})();
+
 function sitAny(){return SITP.some(function(S){return S.busy;});}
 function sitDoor(){return SITP.some(function(S){var p=S.g.position;return S.busy&&(S.st===0||S.st===4)&&p.x>4.8&&p.x<8.9&&p.z>-0.8&&p.z<3.3;});}
 function sitOutOK(){var m=typeof WXMODE!=='undefined'?WXMODE:'none';return m==='none'||m==='spring'||m==='autumn';}
