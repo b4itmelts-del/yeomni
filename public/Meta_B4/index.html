@@ -4005,7 +4005,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
 })();
 /* 오기전에 spring: white and pale-pink petals lie all over the lawn. Gusts lift a few and carry them off; people walking through
    kick them aside; guests come in with a petal or two stuck on their hair and shoulders */
-(function(){ const N=640, PET=['#fdf6f8','#fbe8ee','#f8d3df','#f5c4d3','#ffffff','#f2b5c8'], AUT=['#f5d23a','#e8bb2a','#f0a030','#e0843c','#d8402a','#c4572e','#b8321e','#f3c52f'];   /* autumn: the same ground layer as fallen leaves, on the road and pavers too */
+(function(){ const N=1100, PET=['#fdf6f8','#fbe8ee','#f8d3df','#f5c4d3','#ffffff','#f2b5c8'], AUT=['#f5d23a','#e8bb2a','#f0a030','#e0843c','#d8402a','#c4572e','#b8321e','#f3c52f'];   /* autumn: the same ground layer as fallen leaves, on the road and pavers too */
  let curSe=-1, roofB=null, roofT=3;
  const geo=new T3.BoxGeometry(1,0.18,1), IM=new T3.InstancedMesh(geo,new T3.MeshLambertMaterial({color:'#ffffff'}),N); IM.frustumCulled=false; IM.castShadow=false; IM.receiveShadow=false; IM.visible=false; IM.userData.noZ=true; scene.add(IM);
  const A=[]; let ready=false, tries=0; const M4=new T3.Matrix4(), Q=new T3.Quaternion(), E=new T3.Euler(), SC=new V3(), C=new T3.Color(), ray=new T3.Raycaster(), dn=new V3(0,-1,0), o=new V3(), wp=new V3();
@@ -4018,7 +4018,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
   for(let k=0;k<N*6&&A.length<N;k++){ const x=PL.x0+0.3+Math.random()*(PL.x1-PL.x0-0.6), z=PL.z0+0.3+Math.random()*(PL.z1-PL.z0-0.6); if(inShop(x,z,0.05)) continue; o.set(x,6,z); ray.set(o,dn); const h=ray.intersectObjects(hits,false)[0]; if(!h||h.point.y>0.08) continue; const d=h.object.userData.dio; if(d==='c0') continue; const hard=bad.has(h.object)||d==='c8'||d==='c10';
    A.push({hard,x,z,y:h.point.y,g:h.point.y,s:0.08+Math.random()*0.07,ry:Math.random()*6.28,tx:(Math.random()-0.5)*0.5,tz:(Math.random()-0.5)*0.5,fly:0,vx:0,vy:0,vz:0,ph:Math.random()*6.28}); }
   IM.count=A.length; if(IM.instanceColor) IM.instanceColor.needsUpdate=true; ready=true; return true; }
- function put(i,p){ E.set(p.tx+(p.fly?Math.sin(p.ph)*0.8:0),p.ry,p.tz+(p.fly?Math.cos(p.ph*1.3)*0.8:0)); Q.setFromEuler(E); const sz=(p.hard&&S.season===1&&!p.fly)?0.0001:p.s; SC.set(sz,sz,sz*0.8); o.set(p.x,p.y+0.025,p.z); M4.compose(o,Q,SC); IM.setMatrixAt(i,M4); }
+ function put(i,p){ E.set(p.tx+(p.fly?Math.sin(p.ph)*0.8:0),p.ry,p.tz+(p.fly?Math.cos(p.ph*1.3)*0.8:0)); Q.setFromEuler(E); const sz=p.s; SC.set(sz,sz,sz*0.8); o.set(p.x,p.y+0.025,p.z); M4.compose(o,Q,SC); IM.setMatrixAt(i,M4); }
  let gust=0, gustT=3;
  const stuck=new Set();
  function stick(P){ if(P.__pet) return; P.__pet=[]; const hd=P.hd||P.body; if(!hd) return; P.g.updateMatrixWorld(true); const b=new T3.Box3().setFromObject(hd); if(b.isEmpty()) return; const n=Math.random()<0.22?1:0; const ws=new V3(); hd.getWorldScale(ws);
@@ -4037,9 +4037,8 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
   const ppl=[]; (window.__people||[]).concat(window.__SITP||[]).forEach(P=>{ if(!P||!P.g||!P.g.visible) return; P.g.getWorldPosition(wp); ppl.push([wp.x,wp.z]); if(S.season===1&&!P.__pet&&P.hd) stick(P); });
   let ch=false;
   for(let i=0;i<A.length;i++){ const p=A[i];
-   if(p.hard&&S.season===1&&!p.fly) continue;
    if(!p.fly){ if(gust>0.6&&Math.random()<dt*0.6*gust){ p.fly=1; p.kick=0; p.vx=W.x*(0.8+Math.random()*0.8); p.vz=W.z*(0.8+Math.random()*0.8)+(Math.random()-0.5)*0.4; p.vy=0.6+Math.random()*0.6; }
-    else for(let k=0;k<ppl.length;k++){ const dx=p.x-ppl[k][0], dz=p.z-ppl[k][1], d=Math.hypot(dx,dz); if(d<0.38){ p.fly=1; p.kick=1; const u=d>1e-3?1/d:1; p.vx=dx*u*1.1; p.vz=dz*u*1.1; p.vy=0.35+Math.random()*0.25; break; } }
+    else for(let k=0;k<ppl.length;k++){ const dx=p.x-ppl[k][0], dz=p.z-ppl[k][1], d=Math.hypot(dx,dz); if(d<0.42){ p.fly=1; p.kick=1; const u=d>1e-3?1/d:1, sp=S.season===1?1.5:1.1; p.vx=dx*u*sp; p.vz=dz*u*sp; p.vy=S.season===1?0.55+Math.random()*0.45:0.35+Math.random()*0.25; break; } }
     if(!p.fly) continue; }
    ch=true; p.ph+=dt*7; if(p.hi){ p.vy=Math.max(-0.95,p.vy-dt*0.9); } else { p.vy-=dt*(p.vy>0?1.6:0.55); p.vx*=1-dt*0.6; p.vz*=1-dt*0.6; } p.x+=p.vx*dt+Math.sin(p.ph)*dt*0.15; p.z+=p.vz*dt; p.y+=p.vy*dt; { const PL=window.PLINTH; if(PL&&p.z>PL.z1-0.05&&p.g>-1){ p.g=-6; p.hi=1; p.vz=Math.max(p.vz,0.35); } }   /* over the front edge (past the road): keeps falling into the air */
    if(p.y<=p.g&&p.vy<0){ if(p.g<-1){ const PL=window.PLINTH; p.x=PL.x0+0.4+Math.random()*(PL.x1-PL.x0-0.8); p.z=PL.z0+0.3+Math.random()*1.5; p.y=p.g=0.03; p.fly=0; p.hi=0; put(i,p); continue; }   /* fell off the front: back at the far end */
@@ -6179,6 +6178,25 @@ var SITS=[
  SITP=[],sitS=0,sitLast=-99,sitZ=-1,sitZT=-99,SEXIT=[[3.0,1.4],[6.0,1.4],[7.7,1.4],[8.5,5.2],[8.8,7.6],[8.8,20.5]],
  OEXIT=[[9.25,-1.2],[8.95,3.0],[8.6,5.2],[8.8,7.6],[8.8,20.5]],OWP=[[2.6,-1.6],[6.0,1.4],[8.3,1.4]],FPAIR=[[0,1],[1,2],[2,3],[6,7]];
 window.__SITP=SITP;function sitInit(){if(SITP.length)return;for(var i=0;i<SITS.length;i++){var S=mkPerson();S.si=i;S.busy=false;S.g.visible=false;SITP.push(S);}}
+/* 가기전에: 봄·가을 낮 — 가게 뒤 오른쪽 큰 나무 옆 잔디에 돗자리 펴고 데이트하는 단골 커플 (노란 BIM 니트 + 코랄 원피스).
+   손님은 못 가는 곳, 둘이 앉아 계속 아이스크림을 먹음. 누르면 실제 피규어 사진. 이때는 가게에 같은 커플이 오지 않음 */
+(function(){ var PK=null, CX=-6.3, CZ=-19.3;   /* (local) world ≈ x 9.2, z -3.0 — right of the big zelkova */
+  function build(){ var NK=window.NOK; if(!NK||!NK.scene) throw 0; var g=new THREE.Group(); NK.scene.add(g); g.position.set(9.55,0.15,-4.3); g.rotation.y=-Math.PI/2; g.scale.setScalar((NK.DS||0.477)*0.82);   /* straight in the diorama (not this page's world, which gets stretched every frame); the grass stands ~0.1 tall, the blanket lies on top */
+    var mat=new THREE.Group(); mat.position.y=-0.04; g.add(mat); var MC=[new THREE.MeshLambertMaterial({color:'#fbf6ee'}),new THREE.MeshLambertMaterial({color:'#ef9a9c'}),new THREE.MeshLambertMaterial({color:'#d8444a'})], tg=new THREE.BoxGeometry(0.65,0.12,0.65);
+    for(var ix=0;ix<8;ix++)for(var iz=0;iz<7;iz++){ var a=ix%2, b=iz%2, t=new THREE.Mesh(tg,MC[a&&b?2:(a||b)?1:0]); t.position.set(-1.9+0.325+ix*0.65,0,-2.275+0.325+iz*0.65); mat.add(t); }   /* a red gingham picnic blanket */
+    var bk=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.24,0.42,8),new THREE.MeshLambertMaterial({color:'#c99a5a'})); bk.position.set(-1.2,0.26,-1.6); g.add(bk);   /* a little basket */
+    var ppl=[['mini_w',0.8,'#f2a6b8','#fdf3e1'],['mini_m',-0.8,'#7a4a2a','#f6c928']].map(function(d,i){ var P=mkPerson(); P.g.parent&&P.g.parent.remove(P.g); g.add(P.g); applyV(P,mkV(d[0])); P.cA.color.set(d[2]); P.cB.color.set(d[3]);
+      P.cup.visible=true; if(P.cFill) P.cFill.forEach(function(o){ o.visible=true; }); P.bub.visible=false; if(P.nm) P.nm.visible=false; if(P.fw) P.fw.forEach(function(f){ f.visible=false; }); if(P.bq) P.bq.visible=false; if(P.umb) P.umb.visible=false;
+      var sc=P.g.scale.x; P.g.position.set(-0.6,0.02-0.98*sc,d[1]); P.g.rotation.y=Math.PI/2+(i?0.28:-0.28); P.si=i*2.3; return P; });
+    PK={g:g,P:ppl,mat:mat}; window.__pk=PK; g.visible=false; }
+  function meshes(){ var L=[]; if(PK&&PK.g.visible) PK.g.traverse(function(m){ if(m.isMesh) L.push(m); }); return L; }
+  (function lp(){ requestAnimationFrame(lp); var on=(typeof WXMODE!=='undefined')&&(WXMODE==='spring'||WXMODE==='autumn')&&typeof moodName!=='undefined'&&moodName==='day'&&!window.PRE;
+    window.__picnicOn=on; if(!on){ if(PK) PK.g.visible=false; return; } if(!PK){ try{ build(); }catch(e){ return; } } PK.g.visible=true;
+    var t=performance.now()/1000; PK.P.forEach(function(P,i){ P.g.visible=true; var e=Math.max(0,Math.sin(t*0.8+P.si*2.1)), w=Math.sin(t*0.5+P.si);
+      P.lL.rotation.x=-1.5+Math.sin(t*1.1+P.si)*0.04; P.lR.rotation.x=-1.45-Math.sin(t*1.1+P.si)*0.04; P.aL.rotation.x=-0.25; P.aR.rotation.x=-1.3-0.3*e; P.cup.rotation.x=-P.aR.rotation.x;
+      P.body.position.y=0; P.hd.rotation.x=0.18*e; P.hd.rotation.y=(i?-1:1)*(0.25+0.25*Math.max(0,w)); });   /* a spoonful now and then, and a look at each other */ })();
+  (function reg(){ if(!window.__objView){ setTimeout(reg,800); return; } __objView.add(meshes,{src:'obj/couple.webp',title:'썸 타는 중입니다,,',note:'너무 쳐다보지 말아주세요,,'}); })();
+})();
 function sitAny(){return SITP.some(function(S){return S.busy;});}
 function sitDoor(){return SITP.some(function(S){var p=S.g.position;return S.busy&&(S.st===0||S.st===4)&&p.x>4.8&&p.x<8.9&&p.z>-0.8&&p.z<3.3;});}
 function sitOutOK(){var m=typeof WXMODE!=='undefined'?WXMODE:'none';return m==='none'||m==='spring'||m==='autumn';}
@@ -7354,7 +7372,7 @@ window.__mkV=mkV;window.__applyV=applyV;function mkV(kind){
     else if(SK==='hs'){ var boy2=Math.random()<0.4; V.hs=boy2?rv([0,0,4]):rv([1,3,5,2]); V.bt=boy2?1:0; V.top='#85888d'; V.slv='#f4f6f7'; V.shirt=true; V.shc='#f4f6f7'; V.acc=2; V.accc='#b3243a'; V.bot=boy2?'#2f3136':'#3a3c42'; }   /* the other high schools: grey vest, white shirt, red tie, charcoal check */
     else if(SK==='seoulg'){ V.hs=rv([1,3,2,5]); V.bt=0; V.top='#1c2440'; V.shirt=true; V.shc='#8a8d92'; V.acc=1; V.accc='#c23a4a'; V.bot='#1c2440'; }
     else if(SK==='design'){ var boy=Math.random()<0.45; V.hs=boy?rv([0,0,4]):rv([1,3,5]); V.bt=boy?1:0; V.top='#6e7074'; V.shirt=true; V.shc='#55585d'; V.acc=2; V.accc='#7a1f2c'; V.bot=boy?'#2a2c30':'#16181d'; }
-    else { V.hs=rv([0,1,3]); V.bt=Math.random()<0.3?0:1; V.top='#6b1b28'; V.sg=true; V.bot=pick(['#3b4f6e','#2f3d55','#1b1f24']); }
+    else { V.hs=rv([0,0,4]); V.bt=1; V.top='#6b1b28'; V.sg=true;   /* 서강대 남학생: 짧은 머리, 바지 (치마·여자 머리는 univf만) */ V.bot=pick(['#3b4f6e','#2f3d55','#1b1f24']); }
     V.skin=pick(cSk); }
   else if(kind==='univ_old'){V.top='#6d1f2f';V.bot=pick(['#3a4a6a','#2a2a30','#4a4a52']);V.hs=rv([0,1,3]);V.hair=pick(['#1c1c24','#3b2a22','#8a5a2b']);V.sg=true;}
   else if(kind==='univf'||kind==='suitf'){V=mkV(kind.slice(0,-1));V.hs=rv([1,2,3,5]);V.bt=rv([0,0,1]);}   /* 오기전에: the same student / office looks, a woman */
@@ -7527,7 +7545,7 @@ var FLOW=(function(){
     if(cat==='kids'){ ks.push(Math.random()<0.65?'female':'male'); if(n>=4) ks.push(Math.random()<0.5?'male':'female'); while(ks.length<Math.min(n,4)) ks.push('kid'); return ks; }
     if(cat==='preg'){ return n===1?['preg']:['preg',Math.random()<0.6?'male':'female']; }
     if(cat==='old'){ return n===1?[Math.random()<0.5?'grandpa':'grandma']:['grandpa','grandma']; }
-    var miniIn=window.__miniIn=function(k){var i;for(i=0;i<people.length;i++){var Q=people[i];if(Q.g.visible&&Q.lastV&&Q.lastV.kd===k)return true;}if(window.__SITP)for(i=0;i<window.__SITP.length;i++){var S=window.__SITP[i];if(S.busy&&S.lastV&&S.lastV.kd===k)return true;}return false;};   /* the same regular never twice at once */
+    var miniIn=window.__miniIn=function(k){var i;if(window.__picnicOn&&(k==='mini_w'||k==='mini_m'))return true;for(i=0;i<people.length;i++){var Q=people[i];if(Q.g.visible&&Q.lastV&&Q.lastV.kd===k)return true;}if(window.__SITP)for(i=0;i<window.__SITP.length;i++){var S=window.__SITP[i];if(S.busy&&S.lastV&&S.lastV.kd===k)return true;}return false;};   /* the same regular never twice at once */
     if(n===2&&Math.random()<0.5&&!miniIn('mini_w')&&!miniIn('mini_m')) return ['mini_w','mini_m'];   /* 오기전에: 일반인 커플 자리의 절반은 단골 커플 */
     if(n===1&&Math.random()<0.5){ var mk=Math.random()<0.5?'mini_suit':'mini_red'; if(miniIn(mk)) mk=mk==='mini_suit'?'mini_red':'mini_suit'; if(!miniIn(mk)) return [mk]; }   /* 혼자 오는 일반 손님의 절반은 단골 두 분 */
     var gen=function(){ var q=Math.random(); return q<0.34?'female':q<0.6?'male':q<0.75?'solo':q<0.85?'hat':q<0.92?'beard':'foreign'; }; for(i=0;i<n;i++) ks.push(gen()); return ks; }
@@ -9212,7 +9230,7 @@ window.__ph='sys';/* ---- 근무체험: 손님이 주문할 때마다 대화 자
     var SN={w:'#ffffff',s:'#dbe9f7'},SNW=[mp(['w'],SN),mp(['w'],SN),mp(['.w.','www','.w.'],SN),mp(['w.w','.w.','w.w'],SN),mp(['ss','ss'],SN)];
     var L=[],last=0,init={};
     function mode(){try{var v=WX.s;if(v===1&&WX.w===0)return 'sp';if(v===3&&WX.w===0)return 'au';if(v===4)return 'sn';}catch(e){}return '';}
-    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:22,set:SP,sc:[3,4],big:0.1,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0}};
+    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:22,set:SP,sc:[2,3],big:0.04,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0}};
     function spw(m,ini){var c=CFG[m],sc=Math.random()<0.4?c.sc[1]:c.sc[0];if(Math.random()<c.big)sc+=1;var st=c.set[(Math.random()*c.set.length)|0];
       return {s:st,sc:sc,x:Math.random()*W,y:ini?Math.random()*H:-30-Math.random()*H*0.3,vy:(c.vy[0]+Math.random()*(c.vy[1]-c.vy[0]))*(sc>=3?1.15:1),sw:c.sw[0]+Math.random()*(c.sw[1]-c.sw[0]),sf:0.6+Math.random()*0.9,ph:Math.random()*6.28,fl:1.2+Math.random()*1.6,fp:Math.random()*6.28,fk:c.fl};}
     function frame(t){requestAnimationFrame(frame);if(document.hidden){last=t;return;}var dt=Math.min(0.05,(t-last)/1000||0.016);last=t;
