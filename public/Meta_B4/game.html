@@ -2541,7 +2541,7 @@ function updLighting(dt){
  const roomOn = outProgress<0.9 && !(S.lightsBack>0&&S.simT-S.lightsBack<1.8) && !(S.blackout>0)?1:0; shopLight=lerp(shopLight,roomOn,1-Math.exp(-dt*6)); roomLight.intensity=shopLight*(0.12+0.45*night)*LG.room; jarL.forEach(L=>L.intensity=shopLight*(0.5+0.55*night)*LG.jar); COVE.forEach(c=>{ const wf=[WFADE.value.x,WFADE.value.y,WFADE.value.z,WFADE.value.w][c.wall]; c.m.uniforms.uI.value=shopLight*(0.13+0.17*night)*LG.room*(1-wf); c.o.visible=wf<0.98; }); washL.forEach((L,i)=>L.intensity=shopLight*(0.22+0.4*night)*LG.room*(i===1?0.4:1));
  { const gold=clamp(1-Math.abs(h-(st.set-0.35))/1.2,0,1)+0.45*clamp(1-Math.abs(h-(st.rise+0.4))/1.0,0,1); const wn=night, wg=Math.min(1,gold)*(1-night), wd=(1-night)*(1-Math.min(1,gold)); blendPalette(wd,wg,wn); }
  // upstairs lights: a tenant's windows go dark one at a time through the evening (by phase), all back on before opening
- { const hr=h; const late=hr>=21?clamp((hr-21)/3.5,0,1):hr<5?1:hr<6.5?1-clamp((hr-5)/1.5,0,1):0; WINS.forEach(W=>{ const on=night>0.3&&late<W.ph&&!(S.__clo>0.5)?1:0;   /* after closing the upstairs goes dark too */ W.k=lerp(W.k==null?on:W.k,on,1-Math.exp(-dt*3)); }); }
+ { const hr=h; const late=hr>=21?clamp((hr-21)/3.5,0,1):hr<5?1:hr<6.5?1-clamp((hr-5)/1.5,0,1):0; WINS.forEach(W=>{ const on=night>0.3&&((late<W.ph&&!(S.__clo>0.5))||(window.__s2F&&performance.now()<window.__s2F))?1:0;   /* after closing the upstairs goes dark too */ W.k=lerp(W.k==null?on:W.k,on,1-Math.exp(-dt*3)); }); }
  pipe.mat.uniforms.pxGlow.value=night*0.9; if(pipe.mat2) pipe.mat2.uniforms.pxGlow.value=night*0.9;
  AMB.upd(dt,night,wet);
  jarGlow(shopLight); kLight.intensity=shopLight*(0.6+0.5*night)*LG.room; if(window.KLIGHT) KLIGHT.intensity=shopLight*(1.5+0.4*night)*LG.room; if(window.KSPOT) KSPOT.forEach(L=>L.intensity=shopLight*2.3*LG.room); if(window.BOOKL) BOOKL.intensity=shopLight*(3.8+0.4*night)*LG.room; if(window.CORKL) CORKL.intensity=shopLight*(2.6+0.3*night)*LG.room; if(window.PENDL){ PENDL.intensity=shopLight*(0.8+0.3*night)*LG.room; PENDM.forEach(m=>m.emissive.copy(m.userData.em).multiplyScalar(shopLight)); }
@@ -4642,8 +4642,8 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
    const ground=GFADE.value<0.5, up=FADE.u.value<0.5; G.visible=on; if(!on){ cyc=-1; wasOn=false; return; } if(!wasOn){ wasOn=true; if(cyc<0) nextS=Math.min(nextS,now+4000); }   /* Santa comes round a few seconds after winter starts */
    snow.visible=ground; if(roofS) roofS.visible=up; if(chim) chim.visible=up; if(ground) liveMarks(dt); lightsTick();
    if(chim){ const M=chim.userData.mouth; smoke.forEach(m=>{ m.userData.t=(m.userData.t+dt/4.2)%1; const u=m.userData.t, sz=0.14+u*0.42; m.scale.set(sz,sz*0.85,sz); m.position.set(M.x+u*0.9+Math.sin(u*9+m.id)*0.08,M.y+0.05+u*2.0,M.z-u*0.3); m.material.opacity=up?(u<0.12?u/0.12:1)*(1-u)*0.75:0; m.visible=up; }); }
-   if(sleigh){ if(cyc<0&&now>=nextS){ if(up&&!document.hidden){ cyc=0; said=false; } else nextS=now+3000; }   /* only when the roof is in view, so he isn't missed */
-    if(cyc>=0){ cyc+=dt; if(!said&&cyc>4.6){ said=true; if(window.__logoSay) window.__logoSay('🎅 산타 할아버지가 오셨어요,,',3000); } if(cyc>T_END){ cyc=-1; sleigh.visible=false; santa.visible=false; nextS=now+25000+Math.random()*20000; } else { santaAt(cyc,dt); if(!up){ sleigh.visible=false; santa.visible=false; } } } else { sleigh.visible=false; santa.visible=false; } } };
+   if(sleigh){ if(cyc<0&&now>=nextS){ if(up&&!document.hidden&&(S.night||0)>0.4){   /* 가기전에: Santa only comes in the evening and at night */ cyc=0; said=false; } else nextS=now+3000; }   /* only when the roof is in view, so he isn't missed */
+    if(cyc>=0){ const cp=cyc; cyc+=dt; if(cp<12&&cyc>=12&&(S.__clo||0)>0.5) window.__s2F=now+3200;   /* after closing: as he comes back up the chimney the 2nd floor lights up for a moment */ if(!said&&cyc>4.6){ said=true; if(window.__logoSay) window.__logoSay('🎅 산타 할아버지가 오셨어요,,',3000); } if(cyc>T_END){ cyc=-1; sleigh.visible=false; santa.visible=false; nextS=now+25000+Math.random()*20000; } else { santaAt(cyc,dt); if(!up){ sleigh.visible=false; santa.visible=false; } } } else { sleigh.visible=false; santa.visible=false; } } };
  })();
  /* 오기전에 at night: fireflies under the globe street lamp (a small white moon up in the sky once the shop is closed);
     while the shop is lit: little mirror-ball specks flowing along the inside walls, white ↔ rainbow */
@@ -8941,7 +8941,7 @@ T.me.visible=!!window.__tp3&&VB.g.visible;if(T.me.visible)T.me.position.set(VB.g
   var img=document.createElement('img');img.src=c.toDataURL();img.style.cssText='display:block;width:100%;height:100%;image-rendering:pixelated';
   var d=document.createElement('div');d.style.cssText='position:fixed;left:0;top:0;z-index:3;pointer-events:none;display:none;will-change:transform;opacity:.93';d.appendChild(img);document.body.appendChild(d);
   var run=0,next=performance.now()+6000,t0=0,DUR=15000;
-  function ok(){return WXMODE==='winter'&&moodName==='night'&&!window.PRE&&!FPV;}
+  function ok(){return false;}   /* 가기전에: the black silhouette across the moon is gone */
   function frame(){if(!run)return;var u=(performance.now()-t0)/DUR;if(u>=1||!ok()){run=0;d.style.display='none';next=performance.now()+25000+Math.random()*20000;return;}
     var vw=innerWidth,vh=innerHeight,w=Math.max(110,Math.min(180,vw*0.34)),h=w*H/W;d.style.width=w+'px';d.style.height=h+'px';
     var xc=vw*(1.12-1.42*u),moonY=vh*0.16,yc=moonY+(xc-vw*0.1)*0.05+Math.sin(u*14)*vh*0.006;
