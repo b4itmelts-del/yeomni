@@ -2575,8 +2575,8 @@ function updWeather(dt){ S.rainAmt=lerp(S.rainAmt,S.rain?1:0,1-Math.exp(-dt*1.5)
   for(let i=0;i<RN;i++){ const d=rainDrops[i]; d.y-=dt*9; if(d.y<0.05) rainSpawn(d,false); const o=i*6;
    if(i<n){ rainPos[o]=d.x; rainPos[o+1]=d.y; rainPos[o+2]=d.z; rainPos[o+3]=d.x+0.03; rainPos[o+4]=d.y+0.28; rainPos[o+5]=d.z+0.01; } else rainPos.fill(0,o,o+6); }
   rainGeo.attributes.position.needsUpdate=true; }
- snowPts.visible=S.season===5; snowGeo.setDrawRange(0,140);
- if(snowPts.visible){ const PL=window.PLINTH, zE=PL?PL.z1:7.5; for(let i=0;i<RN;i++){ const d=rainDrops[i]; d.ph+=dt; const fall=S.simT*0.6, u=((d.y-fall)%9+9)%9; const z=d.z+(9-u)*0.42; const past=z>zE; const y=past?u-5:u; snowPos[i*3]=d.x+Math.sin(d.ph*1.3)*0.15; snowPos[i*3+1]=y; snowPos[i*3+2]=z; } snowGeo.attributes.position.needsUpdate=true; } }   /* 오기전에: snow drifts from the back of the lot to the front and keeps falling past the kerb */
+ snowPts.visible=S.season===5; const snN=(S.night||0)>0.5; snowGeo.setDrawRange(0,snN?RN:140); snowPts.material.size=snN?2.6:1.5;   /* 가기전에: at night the snow comes down bigger and heavier */
+ if(snowPts.visible){ const PL=window.PLINTH, zE=PL?PL.z1:7.5; for(let i=0;i<RN;i++){ const d=rainDrops[i]; d.ph+=dt; const fall=S.simT*(snN?0.95:0.6), u=((d.y-fall)%9+9)%9; const z=d.z+(9-u)*0.42; const past=z>zE; const y=past?u-5:u; snowPos[i*3]=d.x+Math.sin(d.ph*1.3)*(snN?0.3:0.15); snowPos[i*3+1]=y; snowPos[i*3+2]=z; } snowGeo.attributes.position.needsUpdate=true; } }   /* 오기전에: snow drifts from the back of the lot to the front and keeps falling past the kerb */
 
 /* ================= camera ================= */
 let player=null, viewMode='out';
@@ -4610,13 +4610,13 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
   /* one visit, t seconds in: 0–5 fly in (from behind the shop) · 5–6.3 out of the sleigh to the chimney · 6.3–7 up onto the rim ·
      7–9.6 squeezing in — the sack is far too big, so he wriggles and shoves and goes down in jerks · 9.6–10 pop, gone ·
      10–12 inside · 12–13 back up, no sack · 13–14.3 back to the sleigh · 14.3–19 off over the front of the shop */
-  const T_END=19.2;
+  const T_END=24.5;
   function santaAt(t,dt){ const M=chim.userData.mouth, land=V(M.x-1.05,top+0.02,M.z+0.8), A0=V(land.x-1.5,top+10,M.z-16), A1=V(land.x+2.5,top+12,M.z+24);
    sleigh.visible=true; const fly=t<5||t>14.3; deer.forEach((d,i)=>d.legs.forEach((lg,k)=>{ lg.rotation.z=fly?Math.sin(t*14+k*1.6+i)*0.7:0; }));
    if(t<5){ const u=ease(t/5); const p=A0.clone().lerp(land,u); p.y+=Math.sin(u*Math.PI)*1.2*(1-u); sleigh.position.copy(p); face(sleigh,land.x-A0.x,land.z-A0.z); }
    else if(t<=14.3){ sleigh.position.copy(land); face(sleigh,0,1); }   /* parked along the lower roof, reindeer toward the front, clear of the high part */
-   else { const u=ease((t-14.3)/4.7); const p=land.clone().lerp(A1,u); p.y+=u*u*2; sleigh.position.copy(p); face(sleigh,A1.x-land.x,A1.z-land.z); }
-   sleigh.updateMatrixWorld(true); if(fly&&sleigh.position.distanceTo(land)>4.5) sleigh.visible=false;   /* 가기전에: no dark silhouette crossing the night sky — the sleigh only shows near the roof */
+   else { /* 가기전에: off again — up over the shop, a wide U-turn in the sky above it, then away into the night, shrinking out of sight */ const dep=q=>{ const u=Math.min(1,q/9.8), a=ease(Math.min(1,u/0.8))*Math.PI*2, r=2.4*Math.min(1,u*4), e=Math.max(0,u-0.8), y=top+0.02+1.9*ease(Math.min(1,u*2.5))+e*4; return V(land.x+Math.sin(a)*r-e*13,y,land.z+(1-Math.cos(a))*r*0.9-e*6); };   const q=t-14.3, p=dep(q), n=dep(q+0.05); sleigh.position.copy(p); face(sleigh,n.x-p.x,n.z-p.z); const fo=Math.max(0,(q-7.6)/2.2); sleigh.scale.setScalar(SS*Math.max(0.001,1-ease(fo))); }
+   sleigh.updateMatrixWorld(true); if(t<5&&sleigh.position.distanceTo(land)>4.5) sleigh.visible=false; if(t<=14.3) sleigh.scale.setScalar(SS);   /* 가기전에: no dark silhouette crossing the night sky — the sleigh only shows near the roof */
    const sitP=V(-0.05,0.45,0), inS=t<5||t>=14.3;
    if(inS){ if(santa.parent!==sleigh){ sleigh.add(santa); } santa.scale.setScalar(1); santa.position.copy(sitP); santa.rotation.set(0,0,0); santa.visible=true; sack.visible=t<5;
     if(t<5&&sack.parent!==sleigh){ sleigh.add(sack); } if(t<5){ sack.position.set(-0.32,0.5,0); sack.rotation.set(0,0,0); sack.scale.setScalar(1.25); } return; }
@@ -9389,8 +9389,8 @@ window.__ph='sys';/* ---- 근무체험: 손님이 주문할 때마다 대화 자
     var PC={p:'#ffc7da',q:'#ff9fbf',w:'#fff0f5'},SP=[mp(['pp.pp','ppppp','pqppq','.pqp.','..p..'],PC),mp(['pp.pp','pwppp','ppppp','.ppq.','..p..'],PC),mp(['.pp.','pppp','pqpp','.pp.'],PC)];
     var SN={w:'#ffffff',s:'#dbe9f7'},SNW=[mp(['w'],SN),mp(['w'],SN),mp(['.w.','www','.w.'],SN),mp(['w.w','.w.','w.w'],SN),mp(['ss','ss'],SN)];
     var L=[],last=0,init={};
-    function mode(){try{var v=WX.s;if(v===1&&WX.w===0)return 'sp';if(v===3&&WX.w===0)return 'au';if(v===4)return 'sn';}catch(e){}return '';}
-    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:13,set:SP,sc:[1,2],big:0,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0}};
+    function mode(){try{var v=WX.s;if(v===1&&WX.w===0)return 'sp';if(v===3&&WX.w===0)return 'au';if(v===4)return (window.NOK&&NOK.S&&NOK.S.night>0.5)?'snN':'sn';}catch(e){}return '';}
+    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:13,set:SP,sc:[1,2],big:0,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0},snN:{n:95,set:SNW,sc:[3,5],big:0.22,vy:[55,120],sw:[14,40],fl:0}};
     function spw(m,ini){var c=CFG[m],sc=Math.random()<0.4?c.sc[1]:c.sc[0];if(Math.random()<c.big)sc+=1;var st=c.set[(Math.random()*c.set.length)|0];
       return {s:st,sc:sc,x:Math.random()*W,y:ini?Math.random()*H:-30-Math.random()*H*0.3,vy:(c.vy[0]+Math.random()*(c.vy[1]-c.vy[0]))*(sc>=3?1.15:1),sw:c.sw[0]+Math.random()*(c.sw[1]-c.sw[0]),sf:0.6+Math.random()*0.9,ph:Math.random()*6.28,fl:1.2+Math.random()*1.6,fp:Math.random()*6.28,fk:c.fl};}
     function frame(t){requestAnimationFrame(frame);if(document.hidden){last=t;return;}var dt=Math.min(0.05,(t-last)/1000||0.016);last=t;
