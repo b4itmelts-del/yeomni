@@ -7491,8 +7491,8 @@ var FLOW=(function(){
      At night (the evening opening): office workers and ordinary guests */
   function kHour(){ var d=(window.NOK&&NOK.S&&!NOK.S.live)?new Date(NOK.S.simMs):new Date();   /* 오기전에: 시간을 바꿨으면 그 시각 기준 */ return (d.getUTCHours()+9+d.getUTCMinutes()/60)%24; }
   function teamKinds(n){ var h=kHour(), W, i, ks=[];
-    if(evening()) W={office:46,general:42,univ:6,preg:2,old:1,sungsim:0,hs:0,kids:1};
-    else { W={sungsim:24,univ:26,general:24,office:7,hs:9,kids:4,preg:3,old:3};
+    if(evening()) W={office:35,general:50,univ:10,preg:0,old:0,sungsim:5,hs:0,kids:0};
+    else { W={sungsim:20,univ:26,general:24,office:11,hs:9,kids:4,preg:3,old:3};
       if(h>=12&&h<14){ W.office=44; W.sungsim=10; W.hs=4; } if(h>=15){ W.kids=22; } if(h<8.5||h>=22){ W.sungsim=2; W.hs=1; W.kids=1; } }
     if(n<2){ W.kids=0; } if(n>2){ W.preg=0; W.old=0; }
     var tot=0,k; for(k in W) tot+=W[k]; var r=Math.random()*tot, cat='general'; for(k in W){ r-=W[k]; if(r<0){ cat=k; break; } }
