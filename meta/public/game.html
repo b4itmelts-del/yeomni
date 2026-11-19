@@ -2505,13 +2505,13 @@ function updLighting(dt){
 { const U=pipe.mat.uniforms; U.gTime.value=(U.gTime.value+dt)%1000.0; { const hs=S.season===3?1:0; U.gRays.value=lerp(U.gRays.value,0.5+0.7*hs*(1-night),0.05); U.gBloom.value=lerp(U.gBloom.value,0.5+0.35*hs*(1-night),0.05); }   /* 오기전에: blazing summer — strong light and sun shafts (no lens flare) */ const gold=clamp(1-Math.abs(sunI-0.95)/0.5,0,1)*(1-night)*(h>14.5||h<9?1:0.25); U.gNight.value=lerp(U.gNight.value,night,0.1); U.gGold.value=lerp(U.gGold.value,gold,0.1);
    const c_=activeCam(); if(night>0.6){ /* night: the glow comes from the shop front */ _gv.set(0,FLOOR*TUNE.h+1.6,BZ1*TUNE.d+0.3).project(c_); U.gSun.value.set((_gv.x+1)/2,(_gv.y+1)/2); U.gSunOn.value=lerp(U.gSunOn.value,c_===fpCam?0:0.7,0.1); }
    else { /* daytime: the sun arcs over the top of the screen, left in the morning and right in the evening; rays are strongest when it is low (morning / golden hour) */
-     const day_=h>st.rise&&h<st.set, f_=day_?(h-st.rise)/(st.set-st.rise):0.5; const sxs=lerp(-0.15,1.15,f_), sys=0.9+0.35*Math.sin(f_*Math.PI);
+     const day_=h>st.rise&&h<st.set, f_=day_?(h-st.rise)/(st.set-st.rise):0.5; const sxs=lerp(1.15,-0.15,f_), sys=0.9+0.35*Math.sin(f_*Math.PI);
      const low=1-Math.sin(f_*Math.PI); const strength=day_?(0.35+0.65*low)*(1-wet)*(c_===fpCam?0.6:1):0;
      U.gSun.value.set(sxs,sys); U.gSunOn.value=lerp(U.gSunOn.value,strength,0.08); } }
  const day=h>st.rise&&h<st.set; const f=day?(h-st.rise)/(st.set-st.rise):0; const stepF=day?(Math.floor(f*4)+0.5)/4:0;   // four daytime blocks; the lamp 'moves' between them over ~20 game-minutes
  const blend=day?clamp(((f*4)%1-0.42)/0.16,0,1):0; const fS=day?lerp((Math.floor(f*4)+0.5)/4,(Math.min(3,Math.floor(f*4)+1)+0.5)/4,blend):0;
  const az=day?lerp(-1.3,1.3,fS):0.6; const el=day?Math.max(0.3,Math.sin(fS*Math.PI)):0.9;
- sun.position.set(Math.sin(az)*11.5,2.2+el*10.5,4.5+Math.cos(az)*6.5);   /* 가기전에: a wide arc — morning from the left front, noon from above, afternoon from the right (it used to stay at the right front all day, so the shadows hardly moved) */
+ sun.position.set(-Math.sin(az)*11.5,2.2+el*10.5,4.5+Math.cos(az)*6.5);   /* 가기전에: a wide arc — morning from the right front (shadows fall to the left), noon from above, afternoon from the left (shadows swing round to the right) (it used to stay at the right front all day, so the shadows hardly moved) */
  if(!LG.auto){ const A=LG.az*Math.PI/180, E=LG.el*Math.PI/180, R=Math.hypot(sun.position.x,sun.position.y,sun.position.z); sun.position.set(Math.sin(A)*Math.cos(E)*R,Math.sin(E)*R,Math.cos(A)*Math.cos(E)*R); }
  else { const p=sun.position; S.sunAz=Math.round(Math.atan2(p.x,p.z)*180/Math.PI); S.sunEl=Math.round(Math.atan2(p.y,Math.hypot(p.x,p.z))*180/Math.PI); }   // low, from the right-front diagonal: in through the door and the side window
  const ph=shopPhase(), hc=closeH(d);
