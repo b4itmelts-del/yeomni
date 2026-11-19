@@ -4936,11 +4936,12 @@ function pxVan(){var im=document.getElementById('splashLg');if(!im||done)return;
     if(t<1)requestAnimationFrame(fr);else{try{g.clearRect(0,0,W,H);}catch(e){}}})();
   }catch(e){sp.classList.add('van');}}
 var good=0,lastT=0;(function fm(t){if(done)return;if(lastT){if(t-lastT>45)good=0;else good++;}lastT=t;requestAnimationFrame(fm);})(0);
+/* 오기전에: the logo shows straight away and stays while the shop loads behind it; once the page is in and drawing smoothly
+   (or after 9 s at most) the logo slowly melts away, then the background fades */
+var shownAt=0,vanned=false;
 (function poll(){if(done)return;var e=Date.now()-t0;
-  if(!shown&&((ready&&e>=800&&good>=45)||e>14000)){shown=true;sp.classList.add('lgo');
-    requestAnimationFrame(function(){requestAnimationFrame(function(){sp.classList.add('show');});});
-    setTimeout(function(){if(!done)sp.classList.add('van');},2600);   /* 오기전에: the logo lingers, then slowly melts away; only after that does the background fade */
-    setTimeout(finish,5300);}
+  if(!shown){shown=true;shownAt=Date.now();sp.classList.add('lgo');requestAnimationFrame(function(){requestAnimationFrame(function(){sp.classList.add('show');});});}
+  if(!vanned&&Date.now()-shownAt>=2200&&((ready&&good>=20)||e>9000)){vanned=true;sp.classList.add('van');setTimeout(finish,2700);}
   setTimeout(poll,120);})();})();
 </script>
 
