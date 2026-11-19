@@ -6192,15 +6192,17 @@ window.__SITP=SITP;function sitInit(){if(SITP.length)return;for(var i=0;i<SITS.l
       return P; });
     mat.traverse(function(o){ if(o.isMesh) o.castShadow=false; }); bk.castShadow=false;
     var HT=[]; for(var j=0;j<5;j++){ var hs=new THREE.Sprite(new THREE.SpriteMaterial({map:heartTex(),transparent:true,depthWrite:false})); hs.renderOrder=15; hs.userData.__glow=1; g.add(hs); HT.push(hs); }   /* little hearts popping up over their heads */
-    PK={g:g,P:ppl,mat:mat,HT:HT}; window.__pk=PK; g.visible=false; }
-  function meshes(){ var L=[]; if(PK&&PK.g.visible) PK.g.traverse(function(m){ if(m.isMesh) L.push(m); }); return L; }
+    var ZM=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}), hit=new THREE.Mesh(new THREE.BoxGeometry(5.2,4.2,4.55),ZM); hit.position.set(0.7,2.0,0); hit.userData.__zone=1; hit.renderOrder=39; g.add(hit);
+    var gl=new THREE.Mesh(new THREE.BoxGeometry(5.2,0.02,4.55),ZM); gl.position.set(0.7,0.04,0); gl.userData.__zone=1; g.add(gl);   /* tap anywhere on the pair; the highlight is just the blanket's outline, so it never covers them */
+    PK={g:g,P:ppl,mat:mat,HT:HT,hit:hit,gl:gl}; window.__pk=PK; g.visible=false; }
+  function meshes(){ return (PK&&PK.g.visible)?[PK.hit]:[]; } function glows(){ return (PK&&PK.g.visible)?[PK.gl]:[]; }
   (function lp(){ requestAnimationFrame(lp); var on=(typeof WXMODE!=='undefined')&&(WXMODE==='spring'||WXMODE==='autumn')&&typeof moodName!=='undefined'&&moodName==='day'&&!window.PRE;
     window.__picnicOn=on; if(!on){ if(PK) PK.g.visible=false; return; } if(!PK){ try{ build(); }catch(e){ return; } } PK.g.visible=true;
     var t=performance.now()/1000; PK.P.forEach(function(P,i){ P.g.visible=true; var e=Math.max(0,Math.sin(t*0.8+P.si*2.1)), w=Math.sin(t*0.5+P.si);
       P.lL.rotation.x=-1.5+Math.sin(t*1.1+P.si)*0.04; P.lR.rotation.x=-1.45-Math.sin(t*1.1+P.si)*0.04; P.aL.rotation.x=-0.25; P.aR.rotation.x=-1.3-0.3*e; P.cup.rotation.x=-P.aR.rotation.x;
       P.body.position.y=0; P.hd.rotation.x=0.18*e; P.hd.rotation.y=(i?-1:1)*(0.25+0.25*Math.max(0,w)); });
     PK.HT.forEach(function(h,j){ var k=(t*0.42+j/5)%1; h.position.set(0.5+Math.sin(k*5+j*1.7)*0.45,3.1+k*2.4,0.9+Math.cos(j*2.1)*0.3); h.material.opacity=Math.sin(k*Math.PI); var z=0.55+0.35*Math.min(1,k*3); h.scale.set(z,z,1); });   /* a spoonful now and then, and a look at each other */ })();
-  (function reg(){ if(!window.__objView){ setTimeout(reg,800); return; } __objView.add(meshes,{src:'obj/couple.webp',title:'썸 타는 중입니다,,',note:'너무 쳐다보지 말아주세요,,'}); })();
+  (function reg(){ if(!window.__objView){ setTimeout(reg,800); return; } __objView.add(meshes,{glow:glows,src:'obj/couple.webp',title:'썸 타는 중입니다,,',note:'너무 쳐다보지 말아주세요,,'}); })();
 })();
 function sitAny(){return SITP.some(function(S){return S.busy;});}
 function sitDoor(){return SITP.some(function(S){var p=S.g.position;return S.busy&&(S.st===0||S.st===4)&&p.x>4.8&&p.x<8.9&&p.z>-0.8&&p.z<3.3;});}
