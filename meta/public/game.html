@@ -4005,7 +4005,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
 })();
 /* 오기전에 spring: white and pale-pink petals lie all over the lawn. Gusts lift a few and carry them off; people walking through
    kick them aside; guests come in with a petal or two stuck on their hair and shoulders */
-(function(){ const N=1100, PET=['#fdf6f8','#fbe8ee','#f8d3df','#f5c4d3','#ffffff','#f2b5c8'], AUT=['#f5d23a','#e8bb2a','#f0a030','#e0843c','#d8402a','#c4572e','#b8321e','#f3c52f'];   /* autumn: the same ground layer as fallen leaves, on the road and pavers too */
+(function(){ const N=1900, PET=['#fdf6f8','#fbe8ee','#f8d3df','#f5c4d3','#ffffff','#f2b5c8'], AUT=['#f5d23a','#e8bb2a','#f0a030','#e0843c','#d8402a','#c4572e','#b8321e','#f3c52f'];   /* autumn: the same ground layer as fallen leaves, on the road and pavers too */
  let curSe=-1, roofB=null, roofT=3;
  const geo=new T3.BoxGeometry(1,0.18,1), IM=new T3.InstancedMesh(geo,new T3.MeshLambertMaterial({color:'#ffffff'}),N); IM.frustumCulled=false; IM.castShadow=false; IM.receiveShadow=false; IM.visible=false; IM.userData.noZ=true; scene.add(IM);
  const A=[]; let ready=false, tries=0; const M4=new T3.Matrix4(), Q=new T3.Quaternion(), E=new T3.Euler(), SC=new V3(), C=new T3.Color(), ray=new T3.Raycaster(), dn=new V3(0,-1,0), o=new V3(), wp=new V3();
@@ -4018,7 +4018,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
   for(let k=0;k<N*6&&A.length<N;k++){ const x=PL.x0+0.3+Math.random()*(PL.x1-PL.x0-0.6), z=PL.z0+0.3+Math.random()*(PL.z1-PL.z0-0.6); if(inShop(x,z,0.05)) continue; o.set(x,6,z); ray.set(o,dn); const h=ray.intersectObjects(hits,false)[0]; if(!h||h.point.y>0.08) continue; const d=h.object.userData.dio; if(d==='c0') continue; const hard=bad.has(h.object)||d==='c8'||d==='c10';
    A.push({hard,x,z,y:h.point.y,g:h.point.y,s:0.08+Math.random()*0.07,ry:Math.random()*6.28,tx:(Math.random()-0.5)*0.5,tz:(Math.random()-0.5)*0.5,fly:0,vx:0,vy:0,vz:0,ph:Math.random()*6.28}); }
   IM.count=A.length; if(IM.instanceColor) IM.instanceColor.needsUpdate=true; ready=true; return true; }
- function put(i,p){ E.set(p.tx+(p.fly?Math.sin(p.ph)*0.8:0),p.ry,p.tz+(p.fly?Math.cos(p.ph*1.3)*0.8:0)); Q.setFromEuler(E); const sz=p.s; SC.set(sz,sz,sz*0.8); o.set(p.x,p.y+0.025,p.z); M4.compose(o,Q,SC); IM.setMatrixAt(i,M4); }
+ function put(i,p){ E.set(p.tx+(p.fly?Math.sin(p.ph)*0.8:0),p.ry,p.tz+(p.fly?Math.cos(p.ph*1.3)*0.8:0)); Q.setFromEuler(E); const sz=(S.season!==1&&i>=1100)?0.0001:p.s;   /* autumn keeps its old count; spring uses them all */ SC.set(sz,sz,sz*0.8); o.set(p.x,p.y+0.025,p.z); M4.compose(o,Q,SC); IM.setMatrixAt(i,M4); }
  let gust=0, gustT=3;
  const stuck=new Set();
  function stick(P){ if(P.__pet) return; P.__pet=[]; const hd=P.hd||P.body; if(!hd) return; P.g.updateMatrixWorld(true); const b=new T3.Box3().setFromObject(hd); if(b.isEmpty()) return; const n=Math.random()<0.22?1:0; const ws=new V3(); hd.getWorldScale(ws);
@@ -4031,13 +4031,13 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
   /* autumn: now and then a leaf comes off the roof and sails down onto the road / pavement */
   if(S.season===4||S.season===1){ if(!roofB){ roofB=new T3.Box3(); const q=new T3.Box3(); dioGroup('roof').traverse(m=>{ if(m.isMesh&&m.userData.dio){ q.setFromObject(m); if(!q.isEmpty()&&q.max.y>6&&q.max.y<9&&(q.max.x-q.min.x)*(q.max.z-q.min.z)>4) roofB.union(q); } }); }
    roofT-=dt; if(roofT<=0&&!roofB.isEmpty()&&FADE.u.value<0.5){ roofT=2.5+Math.random()*4; const k=(Math.random()*A.length)|0, p=A[k]; if(!p.fly){ p.x=roofB.min.x+Math.random()*(roofB.max.x-roofB.min.x); p.z=roofB.max.z-Math.random()*1.5; p.y=roofB.max.y+0.05; p.fly=1; p.kick=0; p.hi=1; p.vx=(Math.random()-0.5)*0.6; p.vz=1.1+Math.random()*0.7; p.vy=0.4; const R=window.PLINTH; p.g=0; } } }
-  dt=Math.min(0.1,dt||0.016); gustT-=dt; if(gustT<=0){ gustT=4+Math.random()*7; gust=1; } gust=Math.max(0,gust-dt*0.5);
+  dt=Math.min(0.1,dt||0.016); gustT-=dt; if(gustT<=0){ gustT=S.season===1?2.5+Math.random()*4:4+Math.random()*7; gust=1; } gust=Math.max(0,gust-dt*0.5);
   const W=new V3(0.12,0,1.0);   /* 오기전에: the wind blows from behind the shop to the front */
   /* people: kick petals aside, and pick some up (only guests that are out and about) */
   const ppl=[]; (window.__people||[]).concat(window.__SITP||[]).forEach(P=>{ if(!P||!P.g||!P.g.visible) return; P.g.getWorldPosition(wp); ppl.push([wp.x,wp.z]); if(S.season===1&&!P.__pet&&P.hd) stick(P); });
   let ch=false;
   for(let i=0;i<A.length;i++){ const p=A[i];
-   if(!p.fly){ if(gust>0.6&&Math.random()<dt*0.6*gust){ p.fly=1; p.kick=0; p.vx=W.x*(0.8+Math.random()*0.8); p.vz=W.z*(0.8+Math.random()*0.8)+(Math.random()-0.5)*0.4; p.vy=0.6+Math.random()*0.6; }
+   if(S.season!==1&&i>=1100) continue; if(!p.fly){ if(gust>0.6&&Math.random()<dt*(S.season===1?1.8:0.6)*gust){ p.fly=1; p.kick=0; p.vx=W.x*(0.8+Math.random()*0.8); p.vz=W.z*(0.8+Math.random()*0.8)+(Math.random()-0.5)*0.4; p.vy=0.6+Math.random()*0.6; }
     else for(let k=0;k<ppl.length;k++){ const dx=p.x-ppl[k][0], dz=p.z-ppl[k][1], d=Math.hypot(dx,dz); if(d<0.42){ p.fly=1; p.kick=1; const u=d>1e-3?1/d:1, sp=S.season===1?1.5:1.1; p.vx=dx*u*sp; p.vz=dz*u*sp; p.vy=S.season===1?0.55+Math.random()*0.45:0.35+Math.random()*0.25; break; } }
     if(!p.fly) continue; }
    ch=true; p.ph+=dt*7; if(p.hi){ p.vy=Math.max(-0.95,p.vy-dt*0.9); } else { p.vy-=dt*(p.vy>0?1.6:0.55); p.vx*=1-dt*0.6; p.vz*=1-dt*0.6; } p.x+=p.vx*dt+Math.sin(p.ph)*dt*0.15; p.z+=p.vz*dt; p.y+=p.vy*dt; { const PL=window.PLINTH; if(PL&&p.z>PL.z1-0.05&&p.g>-1){ p.g=-6; p.hi=1; p.vz=Math.max(p.vz,0.35); } }   /* over the front edge (past the road): keeps falling into the air */
@@ -4404,7 +4404,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
   scene.traverse(m=>{ if(!m.isMesh||!m.material||!m.material.color) return; if(m.material.color.getHexString()!=='fff8e8') return; bb.setFromObject(m); bb.getCenter(c); if(c.z<-2.8&&c.y>3.2&&Math.abs(c.x)<1.5){ m.visible=false; NOK_hide++; } }); }
  let NOK_hide=0; setTimeout(f,1600); })();
 /* ===== trees shed with the wind: autumn leaves, winter snow (spring petals off the cherries); they flutter down, rest on the grass a moment, then go ===== */
-(function(){ const N=180, geo=new T3.BoxGeometry(1,0.25,1), mt=new T3.MeshLambertMaterial({vertexColors:false}); const IM=new T3.InstancedMesh(geo,mt,N); IM.instanceMatrix.setUsage(T3.DynamicDrawUsage); IM.frustumCulled=false; IM.userData.noFX=true; const WGp=new T3.Group(); WGp.matrixAutoUpdate=false; WGp.userData.noFX=true; scene.add(WGp); WGp.add(IM);   /* in true world metres (the scene itself is scaled) */
+(function(){ const N=420, geo=new T3.BoxGeometry(1,0.25,1), mt=new T3.MeshLambertMaterial({vertexColors:false}); const IM=new T3.InstancedMesh(geo,mt,N); IM.instanceMatrix.setUsage(T3.DynamicDrawUsage); IM.frustumCulled=false; IM.userData.noFX=true; const WGp=new T3.Group(); WGp.matrixAutoUpdate=false; WGp.userData.noFX=true; scene.add(WGp); WGp.add(IM);   /* in true world metres (the scene itself is scaled) */
  window.__shedP=null; const P=[], M4=new T3.Matrix4(), Q=new T3.Quaternion(), E=new T3.Euler(), Sv=new V3(), Pv=new V3(), C=new T3.Color(); for(let i=0;i<N;i++){ P.push({on:0}); IM.setColorAt(i,C.set('#ffffff')); M4.makeScale(0,0,0); IM.setMatrixAt(i,M4); }
  const PAL={4:['#d8402a','#e86a32','#f5d23a','#e8bb2a','#c4572e','#e0843c'],5:['#f4f6f7','#ffffff','#e6eef4'],1:['#f7c2d2','#f29db0','#ffe3ec']};
  window.__shedP=P; let boxes=[], seen=-1, acc=0, lt=performance.now(); const bb=new T3.Box3();
@@ -4412,7 +4412,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
  window.__shedTick=function(){ const now=performance.now(), dt=Math.min(0.1,(now-lt)/1000)*(S.speed||1); lt=now; if(!window.TREES) return; const se=S.season;
   scene.updateMatrixWorld(); WGp.matrix.copy(scene.matrixWorld).invert(); WGp.matrixWorldNeedsUpdate=true; if(seen!==TREES.g.children.length+'|'+se) scan();
   const pal=PAL[se]; const wind=0.6+0.6*Math.max(0,Math.sin(now/1000*0.5))+0.4*Math.sin(now/1000*1.7);
-  if(pal&&boxes.length){ acc+=dt*(se===5?9:6)*wind; while(acc>1){ acc-=1; const t=boxes[(Math.random()*boxes.length)|0]; if(se===1&&t.k!=='cherry') continue;
+  if(pal&&boxes.length){ acc+=dt*(se===5?9:se===1?20:6)*wind; while(acc>1){ acc-=1; const t=boxes[(Math.random()*boxes.length)|0]; if(se===1&&(t.k==='pine'||t.k==='bush')) continue;   /* 가기전에: spring — every blossoming tree sheds, lots of petals */
     const i=P.findIndex(p=>!p.on); if(i<0) break; const p=P[i], b=t.b; p.on=1; p.st=0; p.t=0; p.x=b.min.x+Math.random()*(b.max.x-b.min.x); p.z=b.min.z+Math.random()*(b.max.z-b.min.z); p.y=b.min.y+(b.max.y-b.min.y)*(0.45+Math.random()*0.5);
     p.gy=t.gy+0.015; p.vy=-(se===5?0.35:0.55)-Math.random()*0.3; p.ph=Math.random()*6.28; p.sw=0.35+Math.random()*0.4; p.s=se===5?0.05+Math.random()*0.03:se===1?0.035+Math.random()*0.02:0.07+Math.random()*0.04; p.rx=Math.random()*6; p.ry=Math.random()*6;
     IM.setColorAt(i,C.set(pal[(Math.random()*pal.length)|0])); if(IM.instanceColor) IM.instanceColor.needsUpdate=true; } }
@@ -9368,7 +9368,7 @@ window.__ph='sys';/* ---- 근무체험: 손님이 주문할 때마다 대화 자
     var SN={w:'#ffffff',s:'#dbe9f7'},SNW=[mp(['w'],SN),mp(['w'],SN),mp(['.w.','www','.w.'],SN),mp(['w.w','.w.','w.w'],SN),mp(['ss','ss'],SN)];
     var L=[],last=0,init={};
     function mode(){try{var v=WX.s;if(v===1&&WX.w===0)return 'sp';if(v===3&&WX.w===0)return 'au';if(v===4)return 'sn';}catch(e){}return '';}
-    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:26,set:SP,sc:[1,2],big:0,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0}};
+    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:13,set:SP,sc:[1,2],big:0,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0}};
     function spw(m,ini){var c=CFG[m],sc=Math.random()<0.4?c.sc[1]:c.sc[0];if(Math.random()<c.big)sc+=1;var st=c.set[(Math.random()*c.set.length)|0];
       return {s:st,sc:sc,x:Math.random()*W,y:ini?Math.random()*H:-30-Math.random()*H*0.3,vy:(c.vy[0]+Math.random()*(c.vy[1]-c.vy[0]))*(sc>=3?1.15:1),sw:c.sw[0]+Math.random()*(c.sw[1]-c.sw[0]),sf:0.6+Math.random()*0.9,ph:Math.random()*6.28,fl:1.2+Math.random()*1.6,fp:Math.random()*6.28,fk:c.fl};}
     function frame(t){requestAnimationFrame(frame);if(document.hidden){last=t;return;}var dt=Math.min(0.05,(t-last)/1000||0.016);last=t;
@@ -9675,7 +9675,7 @@ window.__ph='rt';
   (function tick(){ requestAnimationFrame(tick); if(!window.NOK) return; var now=performance.now(), B=busy();
     var on=nDown>0||now-tWheel<350; if(wasOn&&!on) tEnd=now; wasOn=on; var te=(now-tEnd)/1000;
     /* while the visitor turns / zooms the view, the tappable things' outlines glow; on letting go they fade in half a second */
-    if(on&&!B&&!window.__hintsOn&&!document.getElementById('objPop')){ if(glowT<0||!iGlow){ glow(); } iGlow=true; } else if(iGlow&&(te>0.5||B)){ iGlow=false; clearGlow(); }
+    if(on&&!B&&!window.__hintsOn&&!document.getElementById('objPop')){ if(glowT<0||!iGlow){ glow(); } iGlow=true; } else if(iGlow&&(!on||B)){ iGlow=false; clearGlow(); }   /* 가기전에: gone the moment the finger lifts */
     if(glowT>=0){ var u=(now-glowT)/8000; if((u>=1&&!iGlow)||B){ clearGlow(); } else { /* two glows of 4 s each */ var k=(u*2)%1, a=Math.sin(k*Math.PI); if(iGlow) a=on?(0.75+0.25*Math.sin(now/1000*Math.PI*2*0.8)):Math.max(0,1-te/0.5); if(GL.wm) GL.wm.opacity=0.58*a; if(GL.em) GL.em.opacity=0.95*a; if(GL.emF) GL.emF.opacity=0.7*a; var _S=new THREE.Matrix4(); GL.forEach(function(g){ var sm_=g.userData.src; if(!sm_||!g.isLineSegments) return; sm_.updateMatrixWorld(); var k=g.userData.k, c=g.userData.ce; _S.makeScale(k,k,k).setPosition(c.x*(1-k),c.y*(1-k),c.z*(1-k)); g.matrix.multiplyMatrices(sm_.matrixWorld,_S); g.matrixWorldNeedsUpdate=true;
           var hid=false, v=sm_; while(v){ if(!v.visible) hid=true; v=v.parent; } g.material=(hid||faded(g.userData.it))?GL.emF:GL.em; }); if(GL.hm) GL.hm.forEach(function(h){ h.opacity=1.0*a; });  } }
     var aC=0, aR=0;
