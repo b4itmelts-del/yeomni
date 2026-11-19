@@ -46,7 +46,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--px);overflow:hidde
 .tag.emo{background:transparent;box-shadow:none;font-size:16px;padding:0}
 .tag.me{background:var(--acc);color:var(--navy)}
 /* splash */
-#n_splash{position:fixed;inset:0;z-index:40;background:#f4f0e6;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center;transition:opacity .9s}#n_splash p{margin:0;padding:0 24px;font:600 14px/1.6 -apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#285686;text-align:center;transition:opacity .6s}#n_splash.night p{color:#e9e4f2}#n_splash.out p{opacity:0}
+#n_splash{position:fixed;inset:0;z-index:40;background:#f4f0e6;display:flex;align-items:center;justify-content:center;transition:opacity .9s}#n_splash p{position:absolute;left:0;right:0;bottom:calc(9vh + 59px + env(safe-area-inset-bottom,0px));margin:0;padding:0 24px;font:600 14px/1.6 -apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#285686;text-align:center;transition:opacity .6s}#n_splash.night p{color:#e9e4f2}#n_splash.out p{opacity:0}
 #n_splash.night{background:#10153c}
 #n_splash img{width:min(62vw,420px);height:auto;image-rendering:auto;transition:opacity .6s}
 #n_splash.night img{filter:brightness(0) invert(.95)}
