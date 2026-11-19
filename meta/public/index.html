@@ -7120,21 +7120,6 @@ window.__pickStaff=function(k){ if(k==null) return; if(ROSTER.hall===k){ try{ wi
 window.__roster=function(){ return ROSTER; };
 function staffShift(){ if(ROSTER.hall!=null){ dressStaff(ROSTER.hall,hoodieOf(ROSTER.hall)); var kk=ROSTER.kit!=null?ROSTER.kit:(ROSTER.hall+1)%STAFF4.length; setTimeout(function(){ try{ dressKitchen(kk); }catch(e){} staffEmo(); },0); staffEmo(); return; } var d=new Date(), day=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5), ev=(typeof moodName!=='undefined'&&(moodName==='dusk'||moodName==='night'))?1:0; var i=(day*2+ev)%STAFF4.length, hi=hoodieOf(i); dressStaff(i,hi); setTimeout(function(){ try{ dressKitchen((i+1)%STAFF4.length); }catch(e){} staffEmo(); },0); staffEmo(); }
 staffShift(); window.__staffShift=staffShift; window.__dressStaff=dressStaff; window.__stfG=stf;
-/* 오기전에: the hall staff doesn't just blink in and out when the hours change — she pops in with a little sparkle (and shrinks away
-   the same way), about 0.8 s; while that plays, the time buttons are ignored */
-(function(){ var real=stf.visible, tgt=real, A=null, base=null, stT=null;
-  function star(){ if(stT) return stT; var c=document.createElement('canvas'); c.width=c.height=16; var g=c.getContext('2d'); g.fillStyle='#fff6c8'; g.fillRect(7,1,2,14); g.fillRect(1,7,14,2); g.fillStyle='#ffffff'; g.fillRect(6,6,4,4); stT=new THREE.CanvasTexture(c); stT.magFilter=THREE.NearestFilter; return stT; }
-  function sparkle(){ try{ var sc=stf.parent; while(sc&&sc.parent) sc=sc.parent; var bb=new THREE.Box3().setFromObject(stf), c=bb.getCenter(new THREE.Vector3()), h=Math.max(0.6,bb.max.y-bb.min.y), L=[];
-      for(var i=0;i<9;i++){ var m=new THREE.Sprite(new THREE.SpriteMaterial({map:star(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})); m.material.name='keepAdd'; var a=i/9*6.283+Math.random()*0.5, r=0.35+Math.random()*0.35; m.userData={a:a,r:r,y:bb.min.y+h*(0.2+Math.random()*0.8),d:Math.random()*0.25,c:c}; m.scale.set(0.001,0.001,1); sc.add(m); L.push(m); }
-      var t0=performance.now(); (function f(){ var t=(performance.now()-t0)/1000, alive=false; L.forEach(function(m){ var u=(t-m.userData.d)/0.75; if(u<0){ alive=true; return; } if(u>=1){ if(m.parent) m.parent.remove(m); return; } alive=true; var k=Math.sin(Math.PI*u), D=m.userData; m.position.set(D.c.x+Math.cos(D.a+u*1.5)*D.r*(0.6+0.6*u), D.y+u*0.35, D.c.z+Math.sin(D.a+u*1.5)*D.r*(0.6+0.6*u)); var z=0.22*k; m.scale.set(z,z,1); m.material.opacity=k; }); if(alive) requestAnimationFrame(f); })(); }catch(e){} }
-  function fpv(){ try{ return !!(window.AUTO&&AUTO.fpv&&AUTO.fpv()); }catch(e){ return false; } }
-  function run(show){ if(base==null) base=stf.scale.x; if(A) cancelAnimationFrame(A.raf); var from=real?(stf.scale.x/base):0; real=true; window.__stfBusy=true; sparkle(); var t0=performance.now(), D=show?0.8:0.6;
-    (function f(){ var u=Math.min(1,(performance.now()-t0)/1000/D), k;
-      if(show){ k=u<1?1-Math.pow(1-u,3)*Math.cos(u*8)*1:1; k=from+(1-from)*Math.max(0,Math.min(1.12,k)); } else { k=from*(1-u*u*(3-2*u)); }
-      stf.scale.setScalar(base*Math.max(0.0001,k)); if(u<1){ A={raf:requestAnimationFrame(f)}; } else { A=null; stf.scale.setScalar(base); if(!show) real=false; setTimeout(function(){ window.__stfBusy=false; },120); } })(); }
-  Object.defineProperty(stf,'visible',{configurable:true,get:function(){ return real; },set:function(v){ v=!!v; if(v===tgt) return; tgt=v;
-    if(fpv()||!window.__splashDone){ if(A){ cancelAnimationFrame(A.raf); A=null; } if(base!=null) stf.scale.setScalar(base); real=v; window.__stfBusy=false; return; } run(v); }});
-  setTimeout(function(){ window.__splashDone=true; },4000); })();
 (function(){var em=new THREE.MeshBasicMaterial({color:0x000000});window.__stfEm=em;ps(13,11,1,2,6.2,0.6,31,em,stfP,true);ps(18,11,1,2,6.2,0.6,31,em,stfP,true);})();ps(15,14,2,1,6.2,0.6,31,'#d9707a',stfP,true);
 var sArm=[-1,1].map(function(sd){var g=new THREE.Group();g.position.set(sd*7.5*PU,11*PU,0);stfP.add(g);
   ps(14.5,20,3,8,0,4,20,'#8d9299',g);ps(14.5,27,3,1,0,4.2,20,'#6f747b',g,true);ps(14.5,28,3,3,0,4,20,'#f2c9a0',g);return g;});
@@ -9837,7 +9822,7 @@ window.__ph='rt';
   setInterval(function(){ try{ if(WX.s===2){ var w=sumW(); if(WX.w!==w){ WX.w=w; try{ wxSave(); }catch(e){} wxApply(); } } }catch(e){} },500);
   window.AUTO_UI={
     tour:function(){ clk('#gtour'); }, work:function(){ clk('#gwork'); },
-    time:function(k){ if(window.__stfBusy) return; window.__stmClk=1; PRE=false; clk('#t-'+k); window.__stmClk=0; },
+    time:function(k){ window.__stmClk=1; PRE=false; clk('#t-'+k); window.__stmClk=0; },
     season:function(s){ WX.s=s; WX.w=(s===2)?sumW():0; try{ wxSave(); }catch(e){} wxApply(); },
     seasonIdx:function(){ return WX.s; }, mood:function(){ return moodName; },
     speed:function(){ clk('#sspd'); var v=+(document.getElementById('sspd').getAttribute('data-v')||1); if(window.NOK) window.NOK.S.speed=v; },
