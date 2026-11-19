@@ -7501,7 +7501,7 @@ var FLOW=(function(){
         huddle:[[0.15,1.75],[0.1,2.6]],
         queue:[], doorIn:[toRaw(-0.22,4.8),toRaw(-0.22,3.4)], doorOut:[toRaw(-0.6,3.4),toRaw(-0.6,4.8)], doorOutW:[[-0.6,3.4],[-0.6,4.8]],   /* 오기전에: in and out both through the leaf that opens (the other one stays shut) */
         spawn:[9.9,-20.5], pave:toRaw(0.9,5.3), exitPave:toRaw(-0.9,5.3), exitEnd:[8.8,20.5] };
-    for(var k=0;k<8;k++) T.queue.push(P(k<4?0.75+k*0.9:5.15+(k-4)*0.9,5.5,0));   /* the line leaves a gap round the street lamp */ T.roadX=toRaw(0,6.15)[0]; T.roadX2=toRaw(0,6.7)[0]; T.roadX3=toRaw(0,7.2)[0]; T.paveX=toRaw(0,5.55)[0]; T.edgeX=toRaw(0,5.65)[0]; F.T=T; }
+    for(var k=0;k<8;k++) T.queue.push(P(k<4?0.75+k*0.62:4.95+(k-4)*0.62,5.5,0));   /* 가기전에: 줄 간격 촘촘하게 (둘씩 선 줄이 앞뒤로 벌어지지 않게) */   /* the line leaves a gap round the street lamp */ T.roadX=toRaw(0,6.15)[0]; T.roadX2=toRaw(0,6.7)[0]; T.roadX3=toRaw(0,7.2)[0]; T.paveX=toRaw(0,5.55)[0]; T.edgeX=toRaw(0,5.65)[0]; F.T=T; }
   var GSP=4.0, CAP_STAND=6, KID_W=1.5;
   function dist(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1]);}
   function take(list,P,near){var best=null,bd=1e9;list.forEach(function(s){if(s.by)return;var d=near?dist(s.p,near):0;if(d<bd){bd=d;best=s;}});if(best){best.by=P;}return best;}
