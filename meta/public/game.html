@@ -2563,7 +2563,7 @@ function updLighting(dt){
  glassMat.emissive.set('#fff2b8').multiplyScalar(shopLight*night*0.55);
  { const wint=S.season===5, bk=S.__boK||0; upGlass.emissive.set('#ffb070').multiplyScalar(Math.max(night,wint?0.85:0)*0.5*(1-bk)); upGlass.color.set((night>0.4||wint)?'#ffd9a8':'#b3cdf2'); if(bk>0.01) upGlass.color.lerp(_c1.set('#2a2e38'),bk); }   /* 오기전에: lit at night, all day in winter; dark in a blackout */
  signMat.color.setScalar(lerp(0.6,1,Math.max(shopLight,1-night)));
- lamp.intensity=night*1.1*(1-(S.__boK||0)); if(GLOBE){ const gl=night*(1-(S.__clo||0))*(1-(S.__boK||0));   /* 오기전에: off once the shop is closed */ GLOBE.m.material.emissive.setRGB(1.0*gl,0.82*gl,0.5*gl); GLOBE.halo.material.opacity=gl*0.8*(1-WFADE.value.x); GLOBE.m.visible=WFADE.value.x<0.5; } if(HOOD) HOOD.material.color.copy(_c1.set('#6a5a4c').lerp(_c2.set('#ffb060'),clamp(night*shopLight*1.3,0,1))); lampBulb.material.color.set('#ffe07a'); lampBulb.material.opacity=night>0.4?0.85:0;
+ lamp.intensity=night*1.1*(1-(S.__boK||0))*(1-(S.__clo||0));   /* 가기전에: the globe's light on the wall goes out after closing */ if(GLOBE){ const gl=night*(1-(S.__clo||0))*(1-(S.__boK||0));   /* 오기전에: off once the shop is closed */ GLOBE.m.material.emissive.setRGB(1.0*gl,0.82*gl,0.5*gl); GLOBE.halo.material.opacity=gl*0.8*(1-WFADE.value.x); GLOBE.m.visible=WFADE.value.x<0.5; } if(HOOD) HOOD.material.color.copy(_c1.set('#6a5a4c').lerp(_c2.set('#ffb060'),clamp(night*shopLight*1.3,0,1))); lampBulb.material.color.set('#ffe07a'); lampBulb.material.opacity=night>0.4?0.85:0;
  lampDoor.intensity=night*shopLight*0.8; doorSpot.intensity=night*shopLight*3.2; doorWash.material.uniforms.uI.value=night*shopLight*0.34; lampGlow.material.color.set(night>0.4&&shopLight>0.5?'#ffe07a':'#616a73');
  const op=ph!=='closed'; if(S.openSign!==op){ S.openSign=op; redraw(openTex); }
  roadMat.color.set('#2c3238').lerp(_c1.set('#1b1f24'),wet); terMat.color.set('#aab2ba').lerp(_c1.set('#848d96'),wet*0.8); pathMat.color.set('#e3cf9e').lerp(_c1.set('#c99a36'),wet*0.5);
@@ -3681,7 +3681,7 @@ const AMB=(()=>{ const K=KIT(scene); const w=TUNE.w, d=TUNE.d;
   const pool=new T3.Mesh(new T3.PlaneGeometry(1.5,1.1),PXL.mat('#5a4214',0)); pool.rotation.x=-Math.PI/2; pool.position.set(DX,LY,LZ); pool.renderOrder=3; pool.frustumCulled=false; g.add(pool);
   const cone=new T3.Mesh(new T3.CylinderGeometry(0.08,0.62,DY-0.07-LY,12,1,true),PXL.mat('#5a4214',4)); { const uv=cone.geometry.attributes.uv; for(let i=0;i<uv.count;i++) uv.setY(i,1-uv.getY(i)); }
   cone.position.set(DX,(DY-0.07+LY)/2,(DZ-0.1+LZ)/2); cone.rotation.x=0.12; cone.renderOrder=5; cone.frustumCulled=false; g.add(cone);
-  return { upd(on){ const up=FADE.u.value<0.5&&GFADE.value<0.5; g.visible=up; lt.intensity=up?on*1.1:0; lens.material.color.set(on>0.4?'#ffe9b0':'#6a6a60'); pool.material.uniforms.uI.value=on*0.4; cone.material.uniforms.uI.value=on*0.2; pool.material.uniforms.uGF.value=cone.material.uniforms.uGF.value=GFADE.value; } }; })();
+  return { upd(on){ on*=1-(S.__clo||0); const up=FADE.u.value<0.5&&GFADE.value<0.5; g.visible=up; lt.intensity=up?on*1.1:0; lens.material.color.set(on>0.4?'#ffe9b0':'#6a6a60'); pool.material.uniforms.uI.value=on*0.4; cone.material.uniforms.uI.value=on*0.2; pool.material.uniforms.uGF.value=cone.material.uniforms.uGF.value=GFADE.value; } }; })();
  let flick=0, nF=2+Math.random()*6;
  return { upd(dt,night,wet){ WIND.t.value+=dt*(0.8+0.4*wet); WIND.s.value=lerp(WIND.s.value,(wet>0.3?1.1:0.8)+0.3*Math.sin(S.simT*0.07),1-Math.exp(-dt*0.5));
    if(window.GRASS_T){ GRASS_T.offset.x=Math.sin(S.simT*0.11)*0.004*WIND.s.value; GRASS_T.offset.y=S.simT*0.0008; }
@@ -4407,7 +4407,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
    if(p.z<-2.6&&white(o.color)){ mult(o,0); kill.push(p); }                       /* kitchen white lamps: off */
    else if(p.z>-2.6&&p.z<4.2&&p.y<3.4&&Math.abs(p.x)<3.4){ mult(o,o.color.getHexString()==='ffa552'?0.3:0.55); } });   /* the shop's lamps: softer */
   /* the kitchen keeps a dim warm glow so it isn't black */
-  const kw=new T3.PointLight('#ffcf9a',0.5,6,1.4); kw.position.set(0,2.4,-3.8); scene.add(kw);
+  const kw=new T3.PointLight('#ffcf9a',0.5,6,1.4); kw.position.set(0,2.4,-3.8); scene.add(kw); (function kl(){ requestAnimationFrame(kl); kw.intensity=0.5*(1-(S.__clo||0)); })();   /* 가기전에: off after closing */
   /* the white lamp bodies in the kitchen go too */
   const bb=new T3.Box3(), c=new V3(); scene.traverse(m=>{ if(!m.isMesh||!m.visible) return; bb.setFromObject(m); bb.getCenter(c); const sz=bb.getSize(new V3()); if(sz.x>0.6||sz.z>0.6) return; if(kill.some(q=>q.distanceTo(c)<0.35)) m.visible=false; });
   /* wall washes: one per wall, set back from it and aimed at it a little below the ceiling */
@@ -10290,7 +10290,7 @@ window.__autoQ=loop;
 /* 가기전에: after closing, the glow in the side window goes out too (only the street lamp stays on) */
 (function(){ var L=null;
  (function lp(){ requestAnimationFrame(lp); if(!window.NOK||!NOK.scene) return; if(!L){ L=[]; var B=new THREE.Box3(), c=new THREE.Vector3(); NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||m.material.type!=='MeshBasicMaterial') return; B.setFromObject(m); if(B.isEmpty()) return; B.getCenter(c); if((Math.abs(c.x-2.34)<0.06&&Math.abs(c.y-1.62)<0.1&&Math.abs(c.z-2.54)<0.2)||(Math.abs(c.x-2.81)<0.05&&Math.abs(c.y-1.37)<0.05&&Math.abs(c.z-4.11)<0.05)) L.push(m); });   /* + the dinosaur light box's glow layer */ if(!L.length){ L=null; return; } }
-  var off=((NOK.S&&NOK.S.__clo)||0)>0.5; for(var i=0;i<L.length;i++){ if(off) L[i].visible=false; else if(L[i].userData.__offd) L[i].visible=true; L[i].userData.__offd=off; } })();
+  var off=((NOK.S&&NOK.S.__clo)||0)>0.5; for(var i=0;i<L.length;i++){ var m=L[i]; if(m.material.map&&!m.material.transparent){ /* the dinosaur sign's printed face: unlit, so only dimmed (hiding it made the sign vanish) */ if(!m.userData.__own){ m.material=m.material.clone(); m.userData.__own=1; } m.material.color.setHex(off?0x565a80:0xffffff); continue; } if(off) m.visible=false; else if(m.userData.__offd) m.visible=true; m.userData.__offd=off; } })();
 })();
 </script>
 </body></html>
