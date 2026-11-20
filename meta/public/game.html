@@ -9790,6 +9790,10 @@ window.__ph='rt';
     var kB=box({x:[0.05,0.45],y:[1.3,1.7],z:[-0.75,-0.3]}); V.add(zoneZ(-0.37,0.13,0.355,1.345,1.67),{lines:1,glow:function(){ return kB(); },src:'obj/kiosk2.webp',title:'키오스크 아닙니다,,',note:'주문은 직원에게 직접,, 부탁드립니다,,(스몰토크 가능,,)',wall:-1});
     /* right of the 인지적 오류 sheets: the long article, the framed drawing and the gift card */
     V.add(box({x:[2.15,2.33],y:[2.0,3.2],z:[2.05,2.97]}),{src:'obj/article.webp',title:'요모조모,,',note:'',wall:0});
+    /* 가기전에: the menu box outside by the door, the house-shaped sign at the foot of the stairs, the Instagram flip counter over the door inside */
+    V.add(box({x:[1.6,2.14],y:[1.5,2.22],z:[3.9,4.1]}),{src:'obj/menubox.webp',title:'오늘의 메뉴,,',note:'소진 시,, 다른 메뉴로 바뀔 수 있습니다,,'});
+    V.add(zoneZ(0.37,3.38,3.93,0.15,1.95),{lines:1,src:'obj/reels.webp',title:'한국 릴스 중독 방지 위원회,,',note:'부산 지부,, 입니다,,'});
+    V.add(zoneZ(3.45,-0.56,0.56,3.0,3.34),{lines:1,src:'obj/insta.webp',title:'실시간 팔로워 수,,',note:'한 분 한 분,, 다 세고 있습니다,,'});
     /* under the counter: the pile of school plushies on the brown Marshall speaker (photo) */
     (function(){ var OLD=['f4f1ea','d9a75a','1f2a4a','f2c72a','7a3a2a'], SPK=[]; NOK.scene.updateMatrixWorld(true); NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||Array.isArray(m.material)||!m.material.color) return; var b=new THREE.Box3().setFromObject(m); if(b.isEmpty()) return; var c=b.getCenter(new THREE.Vector3()); if(c.x<1.6||c.x>2.0||c.z<0.45||c.z>0.85||c.y>0.6) return; var h=m.material.color.getHexString();
         if(OLD.indexOf(h)>=0&&c.y>0.2) m.layers.set(5); else if(h==='7a5034'||h==='2a2622'||h==='c9a24a'){ SPK.push(m); if(h==='7a5034'){ m.material=m.material.clone(); m.material.color.set('#9a5c32'); } if(h==='2a2622'){ m.material=m.material.clone(); m.material.color.set('#d6c8a6'); } } });
