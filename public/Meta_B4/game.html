@@ -9791,7 +9791,7 @@ window.__ph='rt';
     /* right of the 인지적 오류 sheets: the long article, the framed drawing and the gift card */
     V.add(box({x:[2.15,2.33],y:[2.0,3.2],z:[2.05,2.97]}),{src:'obj/article.webp',title:'요모조모,,',note:'',wall:0});
     /* 가기전에: the menu box outside by the door, the house-shaped sign at the foot of the stairs, the Instagram flip counter over the door inside */
-    V.add(box({x:[1.6,2.14],y:[1.5,2.22],z:[3.9,4.1]}),{src:'obj/menubox.webp',title:'오늘의 메뉴,,',note:'소진 시,, 다른 메뉴로 바뀔 수 있습니다,,'});
+    V.add((function(){ var m=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.6,0.1),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false})); m.position.set(1.87,1.86,3.99); m.renderOrder=39; m.userData.__zone=1; NOK.scene.add(m); return m; })(),{lines:1,src:'obj/menubox.webp',title:'오늘의 메뉴,,',note:'소진 시,, 다른 메뉴로 바뀔 수 있습니다,,'});
     V.add(zoneZ(0.37,3.38,3.93,0.15,1.95),{lines:1,src:'obj/reels.webp',title:'한국 릴스 중독 방지 위원회,,',note:'부산 지부,, 입니다,,'});
     V.add(zoneZ(3.45,-0.56,0.56,3.0,3.34),{lines:1,src:'obj/insta.webp',title:'실시간 팔로워 수,,',note:'한 분 한 분,, 다 세고 있습니다,,'});
     /* under the counter: the pile of school plushies on the brown Marshall speaker (photo) */
