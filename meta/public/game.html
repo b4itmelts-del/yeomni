@@ -2514,7 +2514,7 @@ function updLighting(dt){
  const top=mixHex(a[1],b[1],t), bot=mixHex(a[2],b[2],t), sunC=mixHex(a[3],b[3],t); let sunI=lerp(a[4],b[4],t); const ambC=mixHex(a[5],b[5],t); let ambI=lerp(a[6],b[6],t);
  const wet=S.rainAmt; top.lerp(_c1.set('#848d96'),wet*0.5); bot.lerp(_c1.set('#aab2ba'),wet*0.5); sunI*=1-wet*0.6; ambI*=1-wet*0.15;
  if(S.season===3) sunI*=1.45;
- if(S.season===5){ ambI*=1.1; top.lerp(_c1.set('#b3cdf2'),0.2); bot.lerp(_c1.set('#f4f6f7'),0.25); }
+ if(S.season===5){ const nf=clamp(1-sunI/0.9,0,1)*(0.75+0.25*((S.__clo||0)>0.5?1:0)); ambI*=1.1-0.4*nf; top.lerp(_c1.set('#b3cdf2'),0.2*(1-0.9*nf)); bot.lerp(_c1.set('#f4f6f7'),0.25*(1-0.9*nf)); sunI*=1-0.4*nf; top.lerp(_c1.set('#0b1233'),0.4*nf); bot.lerp(_c1.set('#1a2352'),0.4*nf); const cw=S.__clo||0; if(cw>0){ sunI*=1-0.45*cw; ambI*=1-0.3*cw; ambC.lerp(_c1.set('#2c3266'),0.4*cw); sunC.lerp(_c1.set('#5c6aa8'),0.4*cw); } }   /* after closing the snowy night goes darker than the evening */   /* 가기전에: the winter night no longer brightens toward white — darker, so the aurora shows */
  if(false&&S.season===2&&wet>0.6){ lightN-=dt; if(lightN<=0){ lightN=7+Math.random()*14; S.flash=1; if(Math.random()<0.22){ S.blackout=3; const g=agents.find(x=>x.kind==='guest'); if(g) say(g,'앗,,',2); } } }
  S.flash=Math.max(0,S.flash-dt*5); top.lerp(_c1.set('#ffffff'),S.flash*0.8); bot.lerp(_c1.set('#ffffff'),S.flash*0.8); ambI+=S.flash*1.2;
  ambI+=0.22*(1-clamp(1-sunI/0.9,0,1)); ambI+=0.3*clamp(1-Math.abs(h-(st.rise+0.8))/1.4,0,1); sunI+=0.25*clamp(1-Math.abs(h-(st.rise+0.6))/1.0,0,1);   /* 가기전에: a brighter early morning */
