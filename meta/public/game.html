@@ -8011,7 +8011,7 @@ function custUpdate(s){
   window.__aN=(window.__aN||0)+1;   /* (diagnostics: the game loop got this far) */
   var nEmp=!sitAny()&&!people.some(function(p0){return p0.g.visible&&!(p0.__fl&&p0.__fl.pass);})&&!KW.some(function(k0){return k0.on&&k0.g.visible;})&&!(RUSH.on&&s<RUSH.t0+RUSH.T);
   if(moodName==='night'){var nd=Math.min(0.2,Math.max(0,s-(window.__nL||s)));window.__nL=s;window.__nE=nEmp?(window.__nE||0)+nd:0;}
-  if(CLOSED()&&nEmp){try{ if(FLOW.on){ var fdt0=Math.min(0.5,Math.max(0,s-(window.__fPrev==null?s:window.__fPrev)));window.__fPrev=s;FLOW.tick(s,fdt0); } }catch(e){}   /* 오기전에: the street stays alive while the shop is closed */ if(window.__nHold){setMood('night',true);}CARD.on=false;RUSH.on=false;cleanStop();for(var z=0;z<18;z++){ if(!(people[z].__fl&&people[z].__fl.pass)) people[z].g.visible=false; }   /* passers-by keep walking past the closed shop */stfBub.visible=false;SPH=-1;stfP.rotation.x=0;stfP.rotation.z=0;stfP.position.y=0.98;sArm[0].rotation.x=sArm[1].rotation.x=0;doorUpd(0);return;}
+  if(CLOSED()&&(nEmp||(window.__nHold&&s-(window.__nT0||s)>40))){try{   /* 가기전에: closing-up never hangs on a guest who will not leave — after a while the lights go out anyway */ if(FLOW.on){ var fdt0=Math.min(0.5,Math.max(0,s-(window.__fPrev==null?s:window.__fPrev)));window.__fPrev=s;FLOW.tick(s,fdt0); } }catch(e){}   /* 오기전에: the street stays alive while the shop is closed */ if(window.__nHold){setMood('night',true);}CARD.on=false;RUSH.on=false;cleanStop();for(var z=0;z<18;z++){ if(!(people[z].__fl&&people[z].__fl.pass)) people[z].g.visible=false; }   /* passers-by keep walking past the closed shop */stfBub.visible=false;SPH=-1;stfP.rotation.x=0;stfP.rotation.z=0;stfP.position.y=0.98;sArm[0].rotation.x=sArm[1].rotation.x=0;doorUpd(0);return;}
   if(forcePend&&!people.some(function(p0){return p0.g.visible;})){forcePend=false;cleanStop();vEnd=0;}
   if(CLOSED()){ /* 오기전에: closed (night / before opening): whoever is still about simply fades away — no sprinting out */
     if(people.some(function(p0){return p0.g.visible&&!(p0.__fl&&p0.__fl.pass);})||SITP.some(function(S){return S.busy;})){ try{ people.forEach(function(Q){if(Q.__fl&&Q.__fl.pass)return;Q.g.visible=false;Q.dlg=false;Q.ordF=false;if(Q.bub)Q.bub.visible=false;}); RUSH.on=false;RUSH.coex=false;vQ=false;vN=0;vEnd=s+1.5;kidReset();
@@ -9841,7 +9841,7 @@ window.__ph='rt';
       for(var s4=0;s4<4;s4++){ var z=Z0+0.18+s4*(Z1-Z0-0.36)/3; bxm(0.05,0.07,0.05,0xd9d2c2,X+0.3,3.1,z); var hd=bxm(0.1,0.12,0.1,0xcfc6b2,X+0.25,3.0,z); hd.rotation.z=0.55; bxm(0.06,0.03,0.06,0xfff3d6,X+0.22,2.94,z);
         var gl=pl(0.75,0.9,gm,X+0.03,2.6,z); gl.renderOrder=45; }
       G.traverse(function(o){ if(o.isMesh) o.castShadow=false; });
-      (function lp(){ requestAnimationFrame(lp); G.visible=!(NOK.WFADE&&NOK.WFADE.value.x>0.4); })();
+      (function lp(){ requestAnimationFrame(lp); G.visible=!(NOK.WFADE&&NOK.WFADE.value.x>0.4); gm.opacity=0.55*(1-((NOK.S&&NOK.S.__clo)||0)); })();   /* 가기전에: the board spots go out after closing */
  })();
     /* paper bits pinned on the side wall (the 인지적 오류 sheets, the article, the frame...) were drawn without the wall's fade: they go with that wall now */
     (function(){ var L=[]; NOK.scene.updateMatrixWorld(true); NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||m.userData.__zone||m.userData.__glow) return; var a=m.geometry&&m.geometry.attributes; if(!a||a.aW) return; var b=new THREE.Box3().setFromObject(m); if(b.isEmpty()) return; var c=b.getCenter(new THREE.Vector3()); if(c.x>1.85&&c.x<2.45&&c.z>-0.5&&c.z<3.3&&c.y>1.3&&c.y<3.4) L.push(m); });
@@ -10284,6 +10284,13 @@ window.__autoQ=loop;
   M=new THREE.Mesh(new THREE.PlaneGeometry(4.9,8.8),mat); M.rotation.x=-Math.PI/2; M.position.set(0,0.016,-0.5); M.renderOrder=3; M.frustumCulled=false; NOK.scene.add(M); }
  (function lp(){ requestAnimationFrame(lp); if(!M){ build(); if(!M) return; } var s=NOK.sun; V.copy(s.position).sub(s.target.position).normalize(); M.material.uniforms.uD.value.copy(V);
   M.material.uniforms.uI.value=0.55*Math.min(1.3,s.intensity)*(1-(NOK.S.night||0)); M.visible=V.z>0.06&&M.material.uniforms.uI.value>0.01; })();
+})();
+</script>
+<script>
+/* 가기전에: after closing, the glow in the side window goes out too (only the street lamp stays on) */
+(function(){ var L=null;
+ (function lp(){ requestAnimationFrame(lp); if(!window.NOK||!NOK.scene) return; if(!L){ L=[]; var B=new THREE.Box3(), c=new THREE.Vector3(); NOK.scene.traverse(function(m){ if(!m.isMesh||!m.material||m.material.type!=='MeshBasicMaterial') return; B.setFromObject(m); if(B.isEmpty()) return; B.getCenter(c); if((Math.abs(c.x-2.34)<0.06&&Math.abs(c.y-1.62)<0.1&&Math.abs(c.z-2.54)<0.2)||(Math.abs(c.x-2.81)<0.05&&Math.abs(c.y-1.37)<0.05&&Math.abs(c.z-4.11)<0.05)) L.push(m); });   /* + the dinosaur light box's glow layer */ if(!L.length){ L=null; return; } }
+  var off=((NOK.S&&NOK.S.__clo)||0)>0.5; for(var i=0;i<L.length;i++){ if(off) L[i].visible=false; else if(L[i].userData.__offd) L[i].visible=true; L[i].userData.__offd=off; } })();
 })();
 </script>
 </body></html>
