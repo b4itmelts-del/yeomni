@@ -9393,17 +9393,17 @@ window.__ph='sys';/* ---- 근무체험: 손님이 주문할 때마다 대화 자
     var SN={w:'#ffffff',s:'#dbe9f7'},SNW=[mp(['w'],SN),mp(['w'],SN),mp(['.w.','www','.w.'],SN),mp(['w.w','.w.','w.w'],SN),mp(['ss','ss'],SN)];
     var L=[],last=0,init={};
     function mode(){try{var v=WX.s;if(v===1&&WX.w===0)return 'sp';if(v===3&&WX.w===0)return 'au';if(v===4)return (window.NOK&&NOK.S&&NOK.S.night>0.5)?'snN':'sn';}catch(e){}return '';}
-    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:13,set:SP,sc:[1,2],big:0,vy:[22,48],sw:[20,50],fl:1},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0},snN:{n:95,set:SNW,sc:[3,5],big:0.22,vy:[55,120],sw:[14,40],fl:0}};
+    var CFG={au:{n:15,set:AU,sc:[2,3],big:0.15,vy:[26,60],sw:[14,40],fl:1},sp:{n:13,set:SP,sc:[1,2],big:0,vy:[18,52],sw:[34,84],fl:1,k:0.85,vx:16},sn:{n:48,set:SNW,sc:[2,4],big:0.12,vy:[34,76],sw:[6,22],fl:0},snN:{n:95,set:SNW,sc:[3,5],big:0.22,vy:[55,120],sw:[14,40],fl:0}};
     function spw(m,ini){var c=CFG[m],sc=Math.random()<0.4?c.sc[1]:c.sc[0];if(Math.random()<c.big)sc+=1;var st=c.set[(Math.random()*c.set.length)|0];
-      return {s:st,sc:sc,x:Math.random()*W,y:ini?Math.random()*H:-30-Math.random()*H*0.3,vy:(c.vy[0]+Math.random()*(c.vy[1]-c.vy[0]))*(sc>=3?1.15:1),sw:c.sw[0]+Math.random()*(c.sw[1]-c.sw[0]),sf:0.6+Math.random()*0.9,ph:Math.random()*6.28,fl:1.2+Math.random()*1.6,fp:Math.random()*6.28,fk:c.fl};}
+      return {s:st,sc:sc,x:Math.random()*W,y:ini?Math.random()*H:-30-Math.random()*H*(c.vx?0.6:0.3),vy:(c.vy[0]+Math.random()*(c.vy[1]-c.vy[0]))*(sc>=3?1.15:1),sw:c.sw[0]+Math.random()*(c.sw[1]-c.sw[0]),sf:0.6+Math.random()*0.9,ph:Math.random()*6.28,fl:1.2+Math.random()*1.6,fp:Math.random()*6.28,fk:c.fl,k:c.k||1,vx:c.vx?(Math.random()*2-1)*c.vx:0};}
     function frame(t){requestAnimationFrame(frame);if(document.hidden){last=t;return;}var dt=Math.min(0.05,(t-last)/1000||0.016);last=t;
       var m=mode(),cnt=0;for(var q=0;q<L.length;q++)if(L[q].m===m)cnt++;
       if(m){var c=CFG[m];if(!init[m]){init[m]=1;for(var z=0;z<Math.round(c.n/2);z++){var p0=spw(m,true);p0.m=m;L.push(p0);}}
         if(cnt<c.n&&Math.random()<dt*2.4){var p1=spw(m,false);p1.m=m;L.push(p1);}}
       g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;
-      for(var i=L.length-1;i>=0;i--){var p=L[i];p.y+=p.vy*dt*(p.m!==m?4:1);p.ph+=p.sf*dt;p.fp+=p.fl*dt;var x=p.x+Math.sin(p.ph)*p.sw;
+      for(var i=L.length-1;i>=0;i--){var p=L[i];p.y+=p.vy*dt*(p.m!==m?4:1);p.ph+=p.sf*dt;p.fp+=p.fl*dt;if(p.vx){p.x+=p.vx*dt;if(p.x<-40)p.x+=W+80;else if(p.x>W+40)p.x-=W+80;}var x=p.x+Math.sin(p.ph)*p.sw;
         if(p.y>H+30||(p.m!==m&&p.y>H)){L.splice(i,1);continue;}
-        var fw=p.fk?Math.max(0.28,Math.abs(Math.cos(p.fp))):1,w=Math.max(1,Math.round(p.s.width*p.sc*fw)),h=p.s.height*p.sc;
+        var fw=p.fk?Math.max(0.28,Math.abs(Math.cos(p.fp))):1,w=Math.max(1,Math.round(p.s.width*p.sc*p.k*fw)),h=Math.max(1,Math.round(p.s.height*p.sc*p.k));
         g.globalAlpha=p.m==='sn'?0.92:(p.sc>=4?0.95:0.88);g.drawImage(p.s,Math.round(x-w/2),Math.round(p.y),w,h);}
       g.globalAlpha=1;}
     requestAnimationFrame(frame);
