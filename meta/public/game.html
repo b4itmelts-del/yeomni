@@ -3149,7 +3149,7 @@ function stagePick(cx,cy){ const r=mainCanvas.getBoundingClientRect(); ndc.set((
   say(ag,ag.kind==='staff'?ag.task:(ag.order&&ag.order.no?`${ag.task||'기다리는 중,,'}`:(ag.look.name?`${ag.look.name}입니다,,`:'고민 중이에요,,')),3,ag.kind==='staff'?'st':''); } }
 let dimT=0; function dim(){ document.body.classList.add('dim'); clearTimeout(dimT); dimT=setTimeout(()=>document.body.classList.remove('dim'),800); }
 /* ---- camera input: 1 finger orbit, 2 fingers pinch-zoom + pan + twist-rotate, wheel zoom, right/shift-drag pan ---- */
-function panBy(dx,dy){ const k=2*cam.top/Math.max(1,mainRect.h), a=S.camAng, se=1/Math.max(0.3,Math.sin(S.elev||0.62)); S.panX=clamp(S.panX-(dx*Math.cos(a)+dy*Math.sin(a)*se)*k,-26,26); S.panZ=clamp(S.panZ-(-dx*Math.sin(a)+dy*Math.cos(a)*se)*k,-26,26); }   /* 가기전에: the building can be pushed further off-centre (well down the screen) than before */
+function panBy(dx,dy){ const k=2*cam.top/Math.max(1,mainRect.h), a=S.camAng, se=1/Math.max(0.3,Math.sin(S.elev||0.62)); S.panX=clamp(S.panX-(dx*Math.cos(a)+dy*Math.sin(a)*se)*k,-12,12); S.panZ=clamp(S.panZ-(-dx*Math.sin(a)+dy*Math.cos(a)*se)*k,-12,12); }
 function camInit(){ S.fitT=0; if(S.yawT==null){ S.yawT=S.camAng; S.pitchT=0.5; S._ls=S.camStep; } }
 stage.addEventListener('contextmenu',e=>e.preventDefault());
 stage.addEventListener('pointerdown',e=>{ camInit(); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); try{ stage.setPointerCapture(e.pointerId); }catch(x){}
