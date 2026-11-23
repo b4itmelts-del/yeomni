@@ -3542,13 +3542,13 @@ const CEIL=(()=>{ const g=new T3.Group(); g.userData.noZ=true; g.visible=false; 
 (function(){ const ZB=-4.98, YT=7.56, YB=-0.5, zTop=3.94-0.55, zBot=3.94-1.75;
  /* painted straight onto the existing outer faces (no extra plane): a shader test on world position/normal swaps the cream for the front brick */
  let src=null; dioGroup('wallC').children.forEach(m=>{ if(!src&&m.isMesh&&m.material.map&&m.material.color&&m.material.color.getHexString()==='d0d0d0') src=m.material; });
- if(!src) return; const U={uBrk:{value:src.map},uBrkC:{value:src.color.clone()}};
+ if(!src) return; const U={uBrk:{value:src.map},uBrkC:{value:src.color.clone()}};   /* 가기전에: the brick is sampled with its own repeat wrapping (no fract()): at every tile seam fract() made the mip level jump, which drew thin bright diagonal lines across the wall that flashed as the shop turned */
  const cache=new Map(), bb=new T3.Box3();
  const paint=m0=>{ if(cache.has(m0)) return cache.get(m0); const m=m0.clone(), ob=m0.onBeforeCompile;
   m.onBeforeCompile=(sh,r)=>{ if(ob) ob.call(m0,sh,r); sh.uniforms.uBrk=U.uBrk; sh.uniforms.uBrkC=U.uBrkC;
    sh.vertexShader='varying vec3 vLW; varying vec3 vLN;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vLW=(modelMatrix*vec4(transformed,1.0)).xyz; vLN=normalize(mat3(modelMatrix)*objectNormal);');
    sh.fragmentShader='uniform sampler2D uBrk; uniform vec3 uBrkC; varying vec3 vLW; varying vec3 vLN;\n'+sh.fragmentShader
-    .replace('#include <map_fragment>','#include <map_fragment>\n float lwP=step(vLN.x,-0.5)*step(vLW.x,-2.44)*step('+ZB.toFixed(3)+',vLW.z)*step(vLW.z,'+zBot.toFixed(3)+'+('+(zTop-zBot).toFixed(4)+')*vLW.y/'+YT.toFixed(2)+')*step('+YB.toFixed(2)+',vLW.y)*step(vLW.y,'+YT.toFixed(2)+'); vec3 lwB=texture2D(uBrk,fract(vec2(-vLW.z*2.46,vLW.y*2.62))).rgb*uBrkC; diffuseColor.rgb=mix(diffuseColor.rgb,lwB,lwP);')
+    .replace('#include <map_fragment>','#include <map_fragment>\n float lwP=step(vLN.x,-0.5)*step(vLW.x,-2.44)*step('+ZB.toFixed(3)+',vLW.z)*step(vLW.z,'+zBot.toFixed(3)+'+('+(zTop-zBot).toFixed(4)+')*vLW.y/'+YT.toFixed(2)+')*step('+YB.toFixed(2)+',vLW.y)*step(vLW.y,'+YT.toFixed(2)+'); vec3 lwB=texture2D(uBrk,vec2(-vLW.z*2.46,vLW.y*2.62)).rgb*uBrkC; diffuseColor.rgb=mix(diffuseColor.rgb,lwB,lwP);')
     .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance=mix(totalEmissiveRadiance,lwB*0.55,lwP);'); };
   m.customProgramCacheKey=()=>'lwpaint'+m0.uuid; cache.set(m0,m); return m; };
  let n=0; ['wallD','roof','static'].forEach(t=>{ (dioGroups[t]?dioGroups[t].children:[]).forEach(o=>{ if(!o.isMesh||!o.material||Array.isArray(o.material)||!o.material.color||o.material.transparent) return;
