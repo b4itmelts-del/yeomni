@@ -558,10 +558,10 @@ function groundY(x,z){ return FY; }
 /* ---- sky: light gradient + soft pixel clouds, painted per time of day ---- */
 const skyC=document.createElement('canvas'); skyC.width=160; skyC.height=100; const skyG=skyC.getContext('2d');
 const skyTex=new T3.CanvasTexture(skyC); skyTex.magFilter=T3.NearestFilter; skyTex.minFilter=T3.LinearFilter; scene.background=skyTex;
-const clouds=[...Array(6)].map((_,i)=>({x:Math.random()*200-20,y:3+Math.random()*36,w:26+Math.random()*30,h:6+Math.random()*5,v:0.6+Math.random()*0.8}));
+const clouds=[...Array(6)].map((_,i)=>({x:Math.random()*200-20,y:3+Math.random()*36,ys:4+((i*5)%6)*15+Math.random()*10,w:26+Math.random()*30,h:6+Math.random()*5,v:0.6+Math.random()*0.8}));
 let skyT=0;
 if(window.__cuV==null) window.__cuV=4;   /* 가기전에: the summer sea background is on */
-let skyQ=-9, skyCC=null, mets=[], mT=4, auT=0, auY=24, cuT=0, seaBolt=null, seaBT=3, cloudB=null, cbT=2, dtM=0.25;
+let skyQ=-9, skyH=12, skyCC=null, mets=[], mT=4, auT=0, auY=24, cuT=0, seaBolt=null, seaBT=3, cloudB=null, cbT=2, dtM=0.25;
 function paintSky(top,bot,night,rainy,dt){ skyT-=dt; clouds.forEach(c=>{ c.x+=c.v*dt*2; if(c.x>190) c.x=-60; }); if(skyT>0) return; dtM=(mets.length||seaBolt||cloudB)?0.06:(window.__cuV===4&&(S.season===2||S.season===3))?0.16:(S.season===5&&night>0.5)?0.22:0.25;   /* the aurora sways slowly — about 4-5 redraws a second is enough */ skyT=dtM;
  const Hh=100, W=Math.max(46,Math.min(260,Math.round(Hh*innerWidth/Math.max(1,innerHeight)))); if(skyC.width!==W){ skyC.width=W; skyTex.dispose(); }   /* 가기전에: the sky canvas takes the screen's shape, so the moon and clouds are not stretched on a tall phone */
  const g=skyG; const gr=g.createLinearGradient(0,0,0,Hh); gr.addColorStop(0,'#'+top.getHexString()); gr.addColorStop(1,'#'+bot.getHexString()); g.fillStyle=gr; g.fillRect(0,0,W,Hh);
@@ -616,7 +616,8 @@ function paintSky(top,bot,night,rainy,dt){ skyT-=dt; clouds.forEach(c=>{ c.x+=c.
   else if(V_===1){ const span=W+60; for(let i=0;i<6;i++){ const sz=5+rnd(i,23)*4; puff(wrap(i*span/6+12+cuT*0.3,span)-30,31+rnd(i,27)*3,sz,i*5+40,0.8); } for(let i=0;i<5;i++){ const sz=9+rnd(i,3)*8; puff(wrap(i*span/5+rnd(i,5)*8+cuT*0.5,span)-30,36+rnd(i,7)*3,sz,i*3+1,1); } }
   else if(V_===2){ const span=W+80; for(let i=0;i<3;i++){ const sz=10+rnd(i,31)*6; puff(wrap(i*span/3+rnd(i,33)*14+cuT*(0.5+0.2*i),span)-40,16+i*8+rnd(i,35)*4,sz,i*7+60,1); } }
   else { const span=W+60; for(let i=0;i<9;i++){ const sz=3+rnd(i,41)*3; puff(wrap(i*span/9+rnd(i,43)*7+cuT*0.25,span)-30,7+rnd(i,45)*26,sz,i*11+80,0.7); } for(let i=0;i<6;i++){ const sz=6+rnd(i,51)*6; puff(wrap(i*span/6+rnd(i,53)*8+cuT*0.6,span)-30,13+rnd(i,55)*22,sz,i*13+120,1); } } }
- if(night>0.5&&!rainy&&!(window.__cuV===4&&(S.season===2||S.season===3))){ g.fillStyle='rgba(255,255,255,0.85)'; for(let i=0;i<Math.round(36*W/160)+10;i++){ const fr=v=>v-Math.floor(v), sx=fr(Math.sin(i*12.99+1.3)*43758.5)*W, sy=fr(Math.sin(i*78.23+4.1)*24634.6)*((window.__cuV===4&&(S.season===2||S.season===3))?34:60); if((i*7)%5) g.fillRect(sx|0,sy|0,1,1); }   /* scattered (on a narrow sky the old pattern lined up into two white streaks) */
+ if((S.season===2||S.season===3)&&!rainy&&night<0.3&&skyH<12.4){ /* 여름 아침: a big rainbow, a half ring standing on the horizon; it fades as the shop opens */ const al=0.45*Math.min(1,(12.4-skyH)/0.6), cx=W*0.62, cy=38, R=Math.min(W*0.6,44), t=1.5, RB=['235,70,70','245,150,50','250,220,70','90,200,110','70,140,235','150,100,220']; for(let y=Math.floor(cy-R-1);y<=cy;y++) for(let x=Math.floor(cx-R-1);x<=cx;x++){ const k=Math.floor((R-Math.hypot(x+0.5-cx,y+0.5-cy))/t); if(k<0||k>5) continue; g.fillStyle='rgba('+RB[k]+','+(al*Math.min(1,(cy-y+1)/6)*Math.min(1,(cx-x)/(R*0.45))).toFixed(2)+')';   /* only the left half of the ring, melting away toward its top */ g.fillRect(x,y,1,1); } }
+ if(night>0.5&&!rainy&&!(window.__cuV===4&&(S.season===2||S.season===3))){ g.fillStyle='rgba(255,255,255,0.85)'; for(let i=0;i<Math.round(36*W/160)+10;i++){ const fr=v=>v-Math.floor(v), sx=fr(Math.sin(i*12.99+1.3)*43758.5)*W, sy=fr(Math.sin(i*78.23+4.1)*24634.6)*((window.__cuV===4&&(S.season===2||S.season===3))?34:(S.season===1||S.season===4)?98:60); if((i*7)%5) g.fillRect(sx|0,sy|0,1,1); }   /* scattered (on a narrow sky the old pattern lined up into two white streaks) */
   const closed=(S.__clo||0)>0.5, winter=S.season===5;
   if(winter&&closed){ /* 겨울 밤: the aurora — curtains whose rays run off toward a far vanishing point high above, so they seem to recede into the sky; green at the hem, pink on one side, violet where they fade; swaying softly */
    auT+=dtM; const VX=W*0.58, VY=-55;
@@ -627,12 +628,29 @@ function paintSky(top,bot,night,rainy,dt){ skyT-=dt; clouds.forEach(c=>{ c.x+=c.
      for(let k=-2;k<len;k++){ const f=k<0?1+k/3:1-k/len, a=A*fl*Math.pow(Math.max(0,f),1.2)*(k<1?1.5:1); if(a<0.02){ if(k<0) continue; break; } const u=Math.max(0,k)/len;
       const r=(80+175*pk*(u>0.1&&u<0.6?1:0.3))*(1-u)+150*u, gg=(255-150*pk*(u>0.1?1:0))*(1-u)+90*u, bb=(160+40*pk)*(1-u)+220*u;
       g.fillStyle='rgba('+(r|0)+','+(gg|0)+','+(bb|0)+','+Math.min(0.85,a).toFixed(2)+')'; g.fillRect((x+ux*k)|0,(hem+uy*k)|0,1,1); } } }); }
-  else { const lots=closed, sa=lots&&(S.season===1||S.season===4), spr=lots&&S.season===1; mT-=dtM; if(mT<=0&&mets.length<(spr?18:sa?10:lots?4:1)){ mets.push({x:W*(0.15+Math.random()*0.85),y:2+Math.random()*26,t:0,v:0.7+Math.random()*0.6}); mT=spr?0.06+Math.random()*0.24:sa?0.15+Math.random()*0.55:lots?0.4+Math.random()*1.4:5+Math.random()*10; }   /* spring / autumn nights: two-three times as many */
-   for(let n=mets.length-1;n>=0;n--){ const m=mets[n]; m.t+=dtM; const L=m.t/0.9, a=Math.max(0,1-L); if(L>=1){ mets.splice(n,1); continue; } const hx=m.x-m.t*36*m.v, hy=m.y+m.t*20*m.v; for(let q=0;q<6;q++){ g.fillStyle='rgba(255,255,255,'+(a*(1-q/6)).toFixed(2)+')'; g.fillRect((hx+q*1.8)|0,(hy-q)|0,1,1); } } }   /* shooting stars: now and then in the evening, lots of them after closing */
+  else { const lots=closed, sa=lots&&(S.season===1||S.season===4), spr=lots&&S.season===1; const s1=S.season===1, s4=S.season===4, gap=spr?0.06+Math.random()*0.24:sa?0.15+Math.random()*0.55:lots?0.4+Math.random()*1.4:s1?0.3+Math.random()*0.9:s4?0.6+Math.random()*1.6:2+Math.random()*4; mT=Math.min(mT,gap+1)-dtM;   /* never left waiting on a long gap drawn in a quieter hour */ if(mT<=0&&mets.length<(spr?18:sa?10:lots?4:s1?7:s4?4:2)){ const big=lots&&!mets.some(m=>m.big)&&Math.random()<(spr?0.012:sa?0.03:0.1); mets.push(big?{x:W*(-0.15+Math.random()*0.3),y:Math.random()*6,t:0,v:0.5+Math.random()*0.12,big:1,fr:[[0.22+Math.random()*0.08,-2.2,4.5],[0.38+Math.random()*0.08,2.4,2.2],[0.54+Math.random()*0.08,-1.2,5.5]]}:{x:W*(-0.55+Math.random()*1.1),y:Math.random()*(s1?86:34),t:0,v:0.7+Math.random()*0.6,pk:Math.random()<(lots?0.25:0.1),wh:!lots}); mT=gap; }   /* spring: over the whole height of the sky; before closing mostly white, pink only now and then */   /* after closing, now and then a big comet among the others */   /* spring / autumn nights: two-three times as many */
+   for(let n=mets.length-1;n>=0;n--){ const m=mets[n]; m.t+=dtM; const life=m.big?5.6:1.7, L=m.t/life, a=Math.min(1,Math.max(0,1-L)*2.2); if(L>=1){ mets.splice(n,1); continue; }
+    if(m.big){ /* the big comet: a long slow arc across the sky, white at the head, its tail running from ice blue to rose; it crosses from left to right on its own, and breaks up as it goes */
+     const kk=0.62, ez=t=>1-Math.exp(-kk*Math.max(0,t)), pos=t=>[m.x+W*0.85*ez(t), m.y+22*ez(t)+3*Math.sin(ez(t)*2.6)], sz=t=>1-0.8*ez(t)/ez(life), sc=sz(m.t), N=64;   /* it comes in close and flies away from us into the sky: fast and big at first, then slower and smaller as it goes far */
+     { const Hd=pos(m.t), rg=3+8*sc, gl=g.createRadialGradient(Hd[0],Hd[1],0,Hd[0],Hd[1],rg); gl.addColorStop(0,'rgba(200,230,255,'+(0.6*a).toFixed(2)+')'); gl.addColorStop(1,'rgba(200,230,255,0)'); g.fillStyle=gl; g.fillRect(Hd[0]-rg,Hd[1]-rg,rg*2,rg*2); g.fillStyle='rgba(120,150,255,'+(0.07*a*sc*Math.min(1,m.t*2)).toFixed(3)+')'; g.fillRect(0,0,W,Hh); }
+     for(let q=0;q<N;q++){ const tt=m.t-q*0.035; if(tt<0) break; const P=pos(tt), u=q/N, th=sz(tt), al=a*Math.pow(1-u,1.3)*Math.min(1,m.t*3), w=th>0.75?(q<4?4:q<26?3:2):th>0.5?(q<3?3:q<22?2:1):th>0.3?(q<8?2:1):1; g.fillStyle='rgba('+Math.round(255-135*Math.min(1,u*3)+150*Math.max(0,u-0.35))+','+Math.round(255-55*Math.min(1,u*3)-70*Math.max(0,u-0.35))+','+Math.round(255-40*Math.max(0,u-0.35))+','+al.toFixed(2)+')'; g.fillRect(P[0]|0,P[1]|0,w,Math.max(1,w-1)); if(q>6&&th>0.35&&((q*7+((m.t*9)|0))%5)===0){ g.fillStyle='rgba(255,255,255,'+(al*0.8).toFixed(2)+')'; g.fillRect((P[0]+(((q*13)%5)-2)*th)|0,(P[1]+(((q*7)%5)-1)*th)|0,1,1); } }
+     m.fr.forEach((F,fi)=>{ if(L<=F[0]) return; const t0=F[0]*life, e=m.t-t0, NF=26-fi*5, k0=sz(t0); for(let q=0;q<NF;q++){ const ee=e-q*0.045; if(ee<0) break; const P=pos(t0+ee*0.88); g.fillStyle=q<2?'rgba(255,255,255,'+a.toFixed(2)+')':fi===1?'rgba('+(170-q*3)+','+(220-q*2)+',255,'+(a*Math.pow(1-q/NF,1.2)).toFixed(2)+')':'rgba(255,'+(185-q*4)+','+(215-q*2)+','+(a*Math.pow(1-q/NF,1.2)).toFixed(2)+')'; g.fillRect((P[0]+ee*F[1]*k0)|0,(P[1]+(ee*F[2]+ee*ee*1.4)*k0)|0,(q<3&&k0>0.5)?2:1,1); } });   /* pieces break away one after another, rose, blue, rose — smaller the farther it has gone */
+     continue; }
+    const hx=m.x+m.t*36*m.v, hy=m.y+m.t*17*m.v, NQ=14; for(let q=0;q<NQ;q++){ const u=q/NQ, f=a*Math.pow(1-u,1.4); g.fillStyle=q<2?'rgba(255,255,255,'+f.toFixed(2)+')':m.pk?'rgba(255,'+(190-60*u|0)+','+(215-20*u|0)+','+f.toFixed(2)+')':m.wh?'rgba(255,255,255,'+(f*0.9).toFixed(2)+')':'rgba('+(190-90*u|0)+','+(225-45*u|0)+',255,'+f.toFixed(2)+')'; g.fillRect((hx-q*1.7)|0,(hy-q*0.8)|0,1,1); } } }   /* a long comet tail, white at the head and running to blue (now and then pink), crossing the sky sideways and far */   /* shooting stars: now and then in the evening, lots of them after closing */
   const mx=Math.min(26,W*0.24); if(true){ g.fillStyle='rgba(235,242,255,0.18)'; g.beginPath(); g.arc(mx,16,5.5,0,7); g.fill(); g.fillStyle='#f4f7ff'; g.beginPath(); g.arc(mx,16,3.6,0,7); g.fill(); g.fillStyle='#dfe6f3'; g.fillRect(mx-2|0,15,1,1); g.fillRect(mx+1|0,17,2,1); }   /* 밤 (closed): a white moon */
   else { g.fillStyle='#fff2b8'; g.beginPath(); g.arc(mx,16,3.5,0,7); g.fill(); } }
  const cc=rainy?'rgba(210,216,221,0.75)':skyCC?skyCC:night>0.5?'rgba(120,140,190,0.35)':'rgba(255,255,255,0.7)';
- g.fillStyle=cc; const ck=Math.min(1,W/160), ci=Math.max(1,Math.round(3*ck)); clouds.forEach(c=>{ if(window.__cuV===4&&(S.season===2||S.season===3)) return; const x=c.x*ck|0,y=c.y|0,w=Math.max(9,c.w*ck)|0,h=Math.max(4,c.h*Math.max(0.7,ck))|0; g.fillRect(x+ci,y,w-ci*2,h); g.fillRect(x,y+2,w,h-3); g.fillRect(x+w*0.25|0,y-3,w*0.4|0,4); });
+ if(S.season===1||S.season===4){ /* 가기전에: spring / autumn clouds — spring: big heaped cumulus filling the sky from top to bottom (1); autumn: long bands fanning out from one far point (4). 2 thin feather clouds and 3 fleecy rows are kept as spare looks (window.__ckV) */
+  cuT+=dtM; const V=window.__ckV||(S.season===4?4:1), fr=v=>v-Math.floor(v), rnd=(i,k)=>fr(Math.sin(i*127.1+k*311.7)*43758.5453), wrap=(v,sp)=>((v%sp)+sp)%sp, m=cc.match(/[\d.]+/g), col=al=>'rgba('+m[0]+','+m[1]+','+m[2]+','+(+m[3]*al).toFixed(2)+')';
+  const puff=(x,base,sz,seed,al)=>{ const n=4+Math.floor(rnd(seed,1)*3), D=[]; for(let i=0;i<n;i++){ const u=i/(n-1), hp=Math.sin(u*Math.PI); D.push([x+(u-0.5)*sz*2.2, base-sz*(0.2+0.6*hp*(0.6+0.4*rnd(seed,i+9))), sz*(0.4+0.4*hp*(0.7+0.3*rnd(seed,i+17)))]); } g.fillStyle=col(al); for(let y=Math.floor(base-sz*1.5);y<=base;y++){ let x0=1e9,x1=-1e9; D.forEach(d=>{ const dy=y+0.5-d[1]; if(Math.abs(dy)>=d[2]) return; const w=Math.sqrt(d[2]*d[2]-dy*dy); x0=Math.min(x0,d[0]-w); x1=Math.max(x1,d[0]+w); }); if(x1>x0) g.fillRect(Math.round(x0),y,Math.max(1,Math.round(x1-x0)),1); } g.fillStyle=col(al*0.45); g.fillRect(Math.round(x-sz*0.9),Math.round(base)+1,Math.round(sz*1.8),1); };
+  const feather=(x,y,len,seed,al)=>{ for(let k=0;k<4;k++){ const l=len*(1-k*0.22), ox=k*len*0.16+rnd(seed,k)*3, oy=k*2; g.fillStyle=col(al*(1-k*0.18)); for(let q=0;q<l;q++){ const u=q/l, yy=y+oy-u*len*0.16-(u>0.8?(u-0.8)*len*0.5:0); g.fillRect(Math.round(x+ox+q),Math.round(yy),1,1); } } };
+  const fleece=(x,y,cols,rows,seed,al)=>{ for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){ if(rnd(seed+r*7,c)<0.18) continue; const px=Math.round(x+c*4+(r%2)*2+r*0.8), py=Math.round(y+r*3-c*0.35), w=2+(rnd(seed+r,c+30)>0.5?1:0); g.fillStyle=col(al*(0.75+0.25*rnd(seed+c,r+50))); g.fillRect(px,py,w,1); g.fillRect(px+(w>2?1:0),py-1,w>2?1:2,1); } };
+  if(V===4){ /* long bands of cloud fanning out over the whole sky from one far point low behind the shop — wide overhead, thin where they meet; ribbed, with feathered edges, swaying very slowly */
+   const vx=W*0.55, vy=66, RY=[[-2.72,0.24],[-2.2,0.16],[-1.6,0.125],[-1.02,0.1],[-0.6,0.075]]; for(let y=0;y<vy-3;y++) for(let x=0;x<W;x++){ const dx=x+0.5-vx, dy=y+0.5-vy, r=Math.hypot(dx,dy), th=Math.atan2(dy,dx); let al=0; for(let i=0;i<RY.length;i++){ const d=Math.abs(th-(RY[i][0]+0.03*Math.sin(cuT*0.12+i*1.7)))/RY[i][1]+(rnd(x*3+i,y)-0.5)*0.35; if(d<1) al=Math.max(al,(1-d*d)*(0.88+0.12*Math.sin(r*0.85+i*2+cuT*0.2))); } if(al>0.05){ g.fillStyle=col(Math.min(1,al*1.25)*Math.min(1,(r-6)/14)); g.fillRect(x,y,1,1); } } }
+  else if(V===1){ const sp=W+80; for(let i=0;i<7;i++){ const sz=4+rnd(i,71)*4; puff(wrap(i*sp/7+rnd(i,73)*10+cuT*(0.2+0.15*rnd(i,74)),sp)-40,10+((i*3)%7)*13+rnd(i,75)*5,sz,i*11+201,0.6); } for(let i=0;i<9;i++){ const sz=7+rnd(i,3)*8; puff(wrap(i*sp/9+rnd(i,5)*12+cuT*(0.35+0.25*rnd(i,6)),sp)-40,14+((i*5)%9)*10.5+rnd(i,7)*5,sz,i*13+7,0.95); } }   /* small pale ones behind, big ones in front, down the whole height */
+  else if(V===2){ const sp=W+70; for(let i=0;i<10;i++) feather(wrap(i*sp/10+rnd(i,21)*10+cuT*(0.5+0.3*rnd(i,22)),sp)-35,8+((i*7)%10)*9+rnd(i,23)*4,11+rnd(i,24)*13,i*17+3,0.85); for(let i=0;i<2;i++) puff(wrap(i*sp/2+14+cuT*0.3,sp)-35,30+i*44,4+rnd(i,31)*2,i*5+90,0.9); }
+  else { const sp=W+70; for(let i=0;i<3;i++) fleece(wrap(i*sp/3+rnd(i,41)*12+cuT*0.3,sp)-40,10+i*30+rnd(i,42)*5,7+Math.floor(rnd(i,43)*4),3+Math.floor(rnd(i,44)*2),i*23+11,0.9); for(let i=0;i<5;i++) feather(wrap(i*sp/5+rnd(i,51)*10+cuT*0.55,sp)-35,5+((i*3)%5)*19+rnd(i,53)*4,10+rnd(i,54)*10,i*19+5,0.8); for(let i=0;i<2;i++) puff(wrap(i*sp/2+20+cuT*0.4,sp)-35,26+i*52,4.5+rnd(i,61)*2.5,i*5+70,0.95); } }
+ else { g.fillStyle=cc; const ck=Math.min(1,W/160), ci=Math.max(1,Math.round(3*ck)); clouds.forEach(c=>{ if(window.__cuV===4&&(S.season===2||S.season===3)) return; const x=c.x*ck|0,y=((S.season===1||S.season===4)?c.ys:c.y)|0,w=Math.max(9,c.w*ck)|0   /* spring: clouds all the way down the sky */,h=Math.max(4,c.h*Math.max(0.7,ck))|0; g.fillRect(x+ci,y,w-ci*2,h); g.fillRect(x,y+2,w,h-3); g.fillRect(x+w*0.25|0,y-3,w*0.4|0,4); }); }
  skyTex.needsUpdate=true; }
 
 /* ---- size tuning: width/depth/height/person scale are live; kitchen depth + curtain need a reload ---- */
@@ -957,7 +975,7 @@ aclockTex.magFilter=T3.NearestFilter;
 const clockTex=aclockTex;
 const clockTexOut=wclockTex;
 // Instagram follower counter (flip cards) on the sign above the door
-const IGK='yeomni4-ig'; S.ig=Math.max(43500,lsGet(IGK,43500)|0); S.igPrev=S.ig; S.igT=9;
+const IGK='yeomni4-ig'; S.ig=43636;   /* 가기전에: hovers around 43,636 (±10) */ S.igPrev=S.ig; S.igT=9;
 const igTex=canvasTex(136,80,(g,w,h)=>{ g.fillStyle='#d9dbdd'; g.fillRect(0,0,w,h); g.fillStyle='#8c919b'; g.fillRect(2,2,w-4,h-4); g.fillStyle='#eceef0'; g.fillRect(4,4,w-8,h-8);
  // pixel instagram glyph
  const gx=8, gy=26, G=['.#######.','#.......#','#..###.##','#.#...#.#','#.#...#.#','#.#...#.#','#..###..#','#.......#','.#######.'], C=['#f9a03f','#e1306c','#c13584','#833ab4'];
@@ -2567,7 +2585,7 @@ let lightN=8+Math.random()*10;
 const _gv=new T3.Vector3(), _gv2=new T3.Vector3();
 function updLighting(dt){
  const d=simDate(), h=hourOf(d), st=sunTimes(d), keys=skyKeys(st.rise,st.set);
- { const q=h-st.set; skyQ=q; skyCC=q>0.05&&q<0.62?'rgba(110,40,80,0.75)':q>=0.62&&q<1.15?'rgba(30,42,98,0.88)':q>=1.15&&q<2.1?'rgba(24,30,72,0.85)':null; }   /* clouds: plum under the red glow, navy in the purple and the evening */
+ { const q=h-st.set; skyQ=q; skyH=h; skyCC=q>0.05&&q<0.62?'rgba(110,40,80,0.75)':q>=0.62&&q<1.15?'rgba(30,42,98,0.88)':q>=1.15&&q<2.1?'rgba(24,30,72,0.85)':null; }   /* clouds: plum under the red glow, navy in the purple and the evening */
  let i=0; while(i<keys.length-2&&h>=keys[i+1][0]) i++; const a=keys[i],b=keys[i+1]; const t=clamp((h-a[0])/((b[0]-a[0])||1),0,1);
  const top=mixHex(a[1],b[1],t), bot=mixHex(a[2],b[2],t), sunC=mixHex(a[3],b[3],t); let sunI=lerp(a[4],b[4],t); const ambC=mixHex(a[5],b[5],t); let ambI=lerp(a[6],b[6],t);
  const wet=S.rainAmt; top.lerp(_c1.set('#848d96'),wet*0.5); bot.lerp(_c1.set('#aab2ba'),wet*0.5); sunI*=1-wet*0.6; ambI*=1-wet*0.15;
@@ -3206,7 +3224,7 @@ if(!S.mp){ S.heroT=(S.heroT==null?18:S.heroT)-dt; if(S.heroT<=0&&!agents.some(a=
  if(S.visitNo>=lastVisit+10){ lastVisit=S.visitNo; cleanDue=true; }
  agents.slice().forEach(a=>{ const think=!S.mp||MP.isHost(); if(a.kind==='guest'){ if(think) guestBrain(a,dt); } else if(a.kind==='walker') walkerBrain(a,dt); else if(!a.leaving&&(think||!a.netPose)) staffBrain(a); a.update(dt); if(a.dead){ if(a.kind==='staff'){ const i=staff.indexOf(a); if(i>=0) staff.splice(i,1); } if(a===player) tourEnd(); a.remove(); } });
  const h=hourOf(simDate()); let tmp=(h>11&&h<17?1.15:0.95)*(S.rain?0.8:1); if(S.season===3) tmp*=1.9; if(S.season===5) tmp*=0.45; if(S.season===4) tmp*=0.8;
- cups.forEach(c=>c.update(dt,0)); S._igA=(S._igA||0)+dt; if(S._igA>26+Math.random()*24){ S._igA=0; igBump(1); } if(S.igT<0.6){ S.igT+=dt; redraw(igTex); }
+ cups.forEach(c=>c.update(dt,0)); S._igA=(S._igA||0)+dt; if(S._igA>7+Math.random()*9){ S._igA=0; const dv=S.ig>=43646?-1:S.ig<=43626?1:(Math.random()<0.5?-1:1); igBump(dv); } if(S.igT<0.6){ S.igT+=dt; redraw(igTex); }
  tubs.forEach(t=>{ t.mesh.scale.y=lerp(t.mesh.scale.y,Math.max(0.06,t.level),1-Math.exp(-dt*8)); t.lumps.forEach(l=>l.scale.y=0.4+0.6*t.level); });
  const nearDoor=agents.some(a=>Math.hypot(a.pos.x-DOOR_X,a.pos.z-BZ1)<1.0)||!!(window.AUTO&&window.AUTO.nearDoor()); S.doorA=lerp(S.doorA,nearDoor&&phaseCache!=='closed'?1:0,1-Math.exp(-dt*(nearDoor?10:4))); doorPivot.rotation.y=-1.35*S.doorA;
  for(let i=dirty.length-1;i>=0;i--){ if(!cups.has(dirty[i])) dirty.splice(i,1); }
@@ -5690,9 +5708,11 @@ function wxSky(){
 }
 /* ---- umbrellas ---- */
 function mkUmb(parent){
-  var G=window.__wxg||(window.__wxg={can:new THREE.ConeGeometry(1.25,0.5,10),pole:new THREE.CylinderGeometry(0.035,0.035,2.0,5),cube:new THREE.BoxGeometry(0.11,0.11,0.11)});
+  var G=window.__wxg||(window.__wxg={can:new THREE.ConeGeometry(1.25,0.5,10,1,false,0,Math.PI),can2:new THREE.ConeGeometry(1.25,0.5,10,1,false,Math.PI,Math.PI),tip:new THREE.SphereGeometry(0.13,7,5),pole:new THREE.CylinderGeometry(0.035,0.035,2.0,5),cube:new THREE.BoxGeometry(0.11,0.11,0.11)});
   var g=new THREE.Group(),can=new THREE.Mesh(G.can,new THREE.MeshLambertMaterial({color:0xe5484d})),pole=new THREE.Mesh(G.pole,new THREE.MeshLambertMaterial({color:0x4a3a2a}));
-  pole.position.set(0.5,2.1,0.3);can.position.set(0.3,3.2,0.2);g.add(pole);g.add(can);parent.add(g);return {g:g,c:can};}
+  pole.position.set(0.5,2.1,0.3);can.position.set(0.3,3.2,0.2);g.add(pole);g.add(can);parent.add(g);
+  /* the canopy is two halves: one colour for somebody just walking by; everybody visiting the shop carries one in the two flavours of their ice cream, with a little round knob on top */
+  var h2=new THREE.Mesh(G.can2,new THREE.MeshLambertMaterial({color:0xe5484d})),tip=new THREE.Mesh(G.tip,new THREE.MeshLambertMaterial({color:0xff2d8a}));tip.position.y=0.3;tip.visible=false;can.add(h2);can.add(tip);can.userData.h2=h2;can.userData.tip=tip;can.userData.base=0xe5484d;return {g:g,c:can};}
 function wxUC(){var c=[0xe5484d,0x2f6bff,0xffd23f,0x2fb7b0,0xf47fb0,0x7a4bd6,0x1a1a1f,0xffffff,0x4cbf6b];return c[(Math.random()*c.length)|0];}
 var FU=[0,1,2,3].map(function(){var u=mkUmb(scene);u.g.scale.setScalar(1.4);u.g.visible=false;return {g:u.g,c:u.c,on:false,t0:0,v:new THREE.Vector3(),sp:new THREE.Vector3()};});
 /* ---- shared point / line shader (per-vertex alpha) ---- */
@@ -5828,7 +5848,7 @@ function wxPose(P,s,mv,q){
     var has=md==='rain';   /* 오기전에: on a rainy day everyone outside has an umbrella up */
     P.uo+=((has&&out?1:0)-P.uo)*0.18;
     var show=has&&P.uo>0.04;P.umg.visible=show;
-    if(show){P.umc.scale.set(P.uo,1,P.uo);P.umg.rotation.z=-0.42*WXG.g+Math.sin(s*2.1+q)*0.03;if(!P.cup.visible){P.aR.rotation.x=-0.75;P.aR.rotation.z=0;}}
+    if(show){var ud=P.umc.userData;ud.ice=!(P.__fl&&P.__fl.pass);   /* everybody coming to the shop, before and after; only people just walking by keep a plain one */ if(ud.ice){P.umc.material.color.copy(P.cA.color);ud.h2.material.color.copy(P.cB.color);ud.tip.visible=true;}else{P.umc.material.color.setHex(ud.base);ud.h2.material.color.setHex(ud.base);ud.tip.visible=false;}P.umc.scale.set(P.uo,1,P.uo);P.umg.rotation.z=-0.42*WXG.g+Math.sin(s*2.1+q)*0.03;if(!P.cup.visible){P.aR.rotation.x=-0.75;P.aR.rotation.z=0;}}
     if(P.blownT>0&&s-P.blownT<1.7){P.aL.rotation.x=P.aR.rotation.x=-2.7+Math.sin(s*14)*0.3;P.aL.rotation.z=0.25;P.aR.rotation.z=-0.25;}
     else if(P.blownT>0&&!P.slow){P.aL.rotation.z=0;P.aR.rotation.z=0;}
   }
@@ -5843,7 +5863,7 @@ function wxBlow(){
   if(!f)return;
   var P=c[(Math.random()*c.length)|0];
   P.blownT=(typeof simT!=='undefined'?simT:0)+0.001;P.umg.visible=false;
-  f.on=true;f.t0=wxLast;f.g.visible=true;f.c.material.color.copy(P.umc.material.color);f.c.scale.set(1,1,1);
+  f.on=true;f.t0=wxLast;f.g.visible=true;f.c.material.color.copy(P.umc.material.color);f.c.userData.h2.material.color.copy(P.umc.userData.h2.material.color);f.c.userData.tip.visible=P.umc.userData.tip.visible;f.c.userData.tip.material.color.copy(P.umc.userData.tip.material.color);f.c.scale.set(1,1,1);
   f.g.position.set(P.g.position.x+0.4,4.3,P.g.position.z);f.g.rotation.set(0,0,0);
   f.v.set(5.5+Math.random()*2,2.6+Math.random()*1.6,(Math.random()-0.5)*3);f.sp.set(3+Math.random()*3,0,2+Math.random()*3);
 }
@@ -7541,7 +7561,7 @@ function applyV(P,V){P.lastV=V;
   P.faceT.needsUpdate=true;
   P.cane.visible=!!V.cane;
   if(V.fr)P.g.scale.set(1.26*V.sc*0.76,1.26*V.sc,1.26*V.sc*0.76);else P.g.scale.setScalar(1.26*(V.sc||1));   /* 오기전에: guests a touch smaller (they crowded each other) */
-  P.belly.visible=!!V.preg;if(P.badge)P.badge.forEach(function(b){b.visible=!!V.preg;});P.ur=Math.random();P.blownT=0;P.uo=0;P.lx=null;P.umc.material.color.setHex(wxUC());if(!V.preg){P.fw.forEach(function(f){f.visible=false;});P.body.rotation.set(0,0,0);P.aL.rotation.z=0;P.aR.rotation.z=0;}P.slow=!!V.preg;P.bub.userData.fl=!!V.preg;P.bub.scale.set(V.preg?1.6:1.1,V.preg?1.08:0.74,1);
+  P.belly.visible=!!V.preg;if(P.badge)P.badge.forEach(function(b){b.visible=!!V.preg;});P.ur=Math.random();P.blownT=0;P.uo=0;P.lx=null;P.umc.userData.base=wxUC();P.umc.userData.ice=false;P.umc.userData.tip.material.color.setHex([0xff2d8a,0xe5262b,0x1f5bff,0xffd400,0x12b84a,0xff7a00,0x8a2be2,0x00b8e6][(Math.random()*8)|0]);   /* the knob: a strong primary or hot pink, picked once with the person */P.umc.material.color.setHex(P.umc.userData.base);if(!V.preg){P.fw.forEach(function(f){f.visible=false;});P.body.rotation.set(0,0,0);P.aL.rotation.z=0;P.aR.rotation.z=0;}P.slow=!!V.preg;P.bub.userData.fl=!!V.preg;P.bub.scale.set(V.preg?1.6:1.1,V.preg?1.08:0.74,1);
   (function(){var nmv=(V.name||'').trim().slice(0,24),u=P.nm.userData;if(u.name!==nmv){u.name=nmv;var c=u.cv.getContext('2d');c.clearRect(0,0,144,40);
     if(nmv){c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
       var fit=function(t,fs){do{c.font='bold '+fs+'px sans-serif';fs--;}while(c.measureText(t).width>136&&fs>8);};
@@ -8530,6 +8550,7 @@ document.head.appendChild(css);
 
 /* ---- D+ ---- */
 var PXF={'A':'01110,10001,10001,11111,10001,10001,10001','B':'11110,10001,10001,11110,10001,10001,11110','C':'01110,10001,10000,10000,10000,10001,01110','D':'11110,10001,10001,10001,10001,10001,11110','E':'11111,10000,10000,11110,10000,10000,11111','F':'11111,10000,10000,11110,10000,10000,10000','G':'01110,10001,10000,10111,10001,10001,01111','H':'10001,10001,10001,11111,10001,10001,10001','I':'01110,00100,00100,00100,00100,00100,01110','L':'10000,10000,10000,10000,10000,10000,11111','M':'10001,11011,10101,10101,10001,10001,10001','N':'10001,11001,10101,10011,10001,10001,10001','O':'01110,10001,10001,10001,10001,10001,01110','P':'11110,10001,10001,11110,10000,10000,10000','R':'11110,10001,10001,11110,10100,10010,10001','S':'01111,10000,10000,01110,00001,00001,11110','T':'11111,00100,00100,00100,00100,00100,00100','U':'10001,10001,10001,10001,10001,10001,01110','W':'10001,10001,10001,10101,10101,11011,10001','Y':'10001,10001,01010,00100,00100,00100,00100','Z':'11111,00001,00010,00100,01000,10000,11111','0':'01110,10001,10011,10101,11001,10001,01110','1':'00100,01100,00100,00100,00100,00100,01110','2':'01110,10001,00001,00110,01000,10000,11111','3':'11110,00001,00001,01110,00001,00001,11110','4':'00010,00110,01010,10010,11111,00010,00010','5':'11111,10000,11110,00001,00001,10001,01110','6':'01110,10000,10000,11110,10001,10001,01110','7':'11111,00001,00010,00100,01000,01000,01000','8':'01110,10001,10001,01110,10001,10001,01110','9':'01110,10001,10001,01111,00001,00001,01110',',':'00000,00000,00000,00000,00000,00100,01000','+':'00000,00100,00100,11111,00100,00100,00000',' ':'00000,00000,00000,00000,00000,00000,00000'};
+window.PXF5=PXF;
 function pxImg(t,oc,fc,ns){var W=t.length*6+4,H=11,c=document.createElement('canvas');c.width=W;c.height=H;var g=c.getContext('2d');
   function put(col,ox,oy,fill){for(var i=0;i<t.length;i++){g.fillStyle=(fill&&i>=ns[0]&&i<ns[1])?fc:col;var gl=PXF[t[i]];if(!gl)continue;var rows=gl.split(',');for(var r=0;r<7;r++)for(var q=0;q<5;q++)if(rows[r][q]==='1')g.fillRect(2+i*6+q+ox,2+r+oy,1,1);}}
   for(var dx=-1;dx<=1;dx++)for(var dy=-1;dy<=1;dy++)if(dx||dy)put(oc,dx,dy);put('#ffffff',0,0,true);return {u:c.toDataURL(),w:W};}
