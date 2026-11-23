@@ -2753,6 +2753,8 @@ function updCamera(dt){
  const fp=activeCam()===fpCam; if(!fp) fpShow();
  const inside=!S.noIn&&(S.forceIn||S.zoom>=INZ||(S.mode==='tour'&&!S.fp&&player&&zoneOf(player.pos)!=='out'));
  viewMode=fp?'fp':inside?'in':'out';
+ /* 가기전에: a view that has been dragged aside still turns about the middle of the base plate: the drag is carried round with the turn, so the plate spins in place wherever it sits on the screen instead of swinging round an off-centre point */
+ { const dA=S.camAng-(S.__pa==null?S.camAng:S.__pa); S.__pa=S.camAng; if(dA&&Math.abs(dA)<1&&!S.forceIn&&S.mode==='iso'&&!S.fp&&(S.panX||S.panZ)){ const c_=Math.cos(dA), s_=Math.sin(dA), px=S.panX, pz=S.panZ; S.panX=px*c_+pz*s_; S.panZ=-px*s_+pz*c_; if(S._cx!=null&&S._cz!=null){ const bz=S._cz-pz, ox=S._cx, oz=pz; S._cx=ox*c_+oz*s_; S._cz=bz+(-ox*s_+oz*c_); } } }
  let cx=S.panX, cy=2.0*TUNE.h, cz=1.4*TUNE.d+S.panZ, zoom=S.zoom;
  if(viewMode==='in'){ cy=S._cyOvr!=null?S._cyOvr:0.9*TUNE.h; cz=-0.5*TUNE.d+S.panZ; if(S.forceIn) zoom=Math.max(zoom,INZ); }
  else { cy=3.7*TUNE.h+(S.cyOut||0); cz=-0.175+S.panZ; }   /* 가기전에: the view turns about the middle of the square base plate (x 0, z -0.175), so the plate spins in place instead of swinging */
