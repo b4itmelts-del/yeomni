@@ -9873,7 +9873,7 @@ window.__ph='rt';
     /* the two buttons at the top right: little labels pointing at them */
     function sideHint(){ try{ if(!document.getElementById('sideHintCss')){ var c=document.createElement('style'); c.id='sideHintCss';
         c.textContent='.sideHint{position:fixed;z-index:35;pointer-events:none;display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:12px;background:rgba(10,10,14,.86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#fff;font:400 12.5px/1.3 var(--sans,sans-serif);letter-spacing:.03em;white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,.35);opacity:0;transform:translateY(-50%);animation:startIn .35s ease-out 0s 1 both}.sideHint i{font-style:normal;font-size:20px;font-weight:700;display:inline-block;animation:sideBob 1.1s ease-in-out infinite}@keyframes sideBob{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}'; document.head.appendChild(c); }
-      var L=[['shell','안내문 보기,,'],['viewReset','시점 초기화,,']], els=[];
+      var L=[['shell','안내문 보기,,'],['viewReset','시점 초기화,,'],['dbtn','시간대 변경,,']], els=[];   /* 가기전에: and the round day button at the bottom right */
       L.forEach(function(q){ var b=document.getElementById(q[0]); if(!b) return; var d=document.createElement('div'); d.className='sideHint'; d.innerHTML='<span>'+q[1]+'</span><i>→</i>'; document.body.appendChild(d); els.push([d,b]); });
       var live=true; (function pos(){ if(!live) return; requestAnimationFrame(pos); els.forEach(function(e){ var r=e[1].getBoundingClientRect(); if(!r.width) return; e[0].style.top=(r.top+r.height/2)+'px'; e[0].style.right=(innerWidth-r.left+6)+'px'; }); })();
       (function chk(){ if(!els.length||!els[0][0].parentNode){ live=false; return; } setTimeout(chk,300); })(); }catch(e){} }
