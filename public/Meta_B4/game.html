@@ -2524,7 +2524,7 @@ const HLT=(()=>{ const c=document.createElement('canvas'); c.width=128; c.height
 function carBeam(c){ if(c.beam) return c.beam; const m=new T3.Mesh(new T3.PlaneGeometry(4.2,2.1),new T3.MeshBasicMaterial({map:HLT,transparent:true,opacity:0,depthWrite:false,blending:T3.AdditiveBlending})); m.rotation.x=-Math.PI/2; m.rotation.z=Math.PI; m.renderOrder=4; m.frustumCulled=false; scene.add(m); c.beam=m; return m; }
 /* 가기전에: winter nights, after closing — instead of a car, now and then Rudolph and the other reindeer come slowly down the road pulling the sleigh with nobody in it; they stop in front of the shop, look at it for a while, and trot on. As they pass out of sight Santa comes running down the road after them, waving */
 const RSL=(()=>{ const bx=(w,h,d,c,x,y,z,par,basic)=>{ const m=new T3.Mesh(new T3.BoxGeometry(w,h,d),basic?new T3.MeshBasicMaterial({color:c}):new T3.MeshLambertMaterial({color:c})); m.position.set(x,y,z); par.add(m); return m; };
- let santa=null, nextAt=0;
+ let santa=null, nextAt=0; const _hv=new T3.Vector3(), DOOR=[0.8*TUNE.w,4.0*TUNE.d];
  function mkSleigh(){ const g=new T3.Group(), in_=new T3.Group(); g.add(in_); in_.rotation.y=Math.PI; in_.scale.setScalar(1.55);   /* the model looks down +x; the road runs toward -x */
   const body=new T3.Group(); body.position.x=1.0; in_.add(body); bx(0.9,0.32,0.56,'#c8262c',0,0.38,0,body); bx(0.22,0.5,0.56,'#c8262c',-0.4,0.5,0,body); bx(0.16,0.18,0.56,'#c8262c',0.46,0.5,0,body); bx(0.92,0.04,0.58,'#e8b730',0,0.56,0,body);
   [-0.25,0.25].forEach(z=>{ bx(1.2,0.04,0.05,'#e8b730',0.05,0.04,z,body); bx(0.05,0.2,0.05,'#e8b730',-0.3,0.15,z,body); bx(0.05,0.2,0.05,'#e8b730',0.3,0.15,z,body); bx(0.05,0.12,0.05,'#e8b730',0.66,0.1,z,body); });
@@ -2547,10 +2547,10 @@ const RSL=(()=>{ const bx=(w,h,d,c,x,y,z,par,basic)=>{ const m=new T3.Mesh(new T
  function spawn(){ if(!night()||cars.some(c=>c.kind==='sleigh')||santa||(window.__roofSl&&window.__roofSl())) return false;   /* not while Santa's sleigh is up on the roof */ const g=mkSleigh(); scene.add(g); const c={g,len:4.6,kind:'sleigh',x:17.5,v:1.5,st:'in',t:0}; g.position.set(c.x*TUNE.w,0.02,CAR_Z*TUNE.d); cars.push(c); return true; }
  /* the sleigh's own little script, run from the car loop: trot in, stop before the shop, look, trot on; then Santa */
  function drive(c,dt){ const D=c.g.userData.deer, tt=performance.now()/1000; let v=c.v, look=0;
-  if(c.st==='in'){ const d=c.x-5.8; v=Math.min(v,Math.max(0.12,d*1.2)); if(d<0.03){ c.st='stop'; c.t=0; } }   /* the reindeer are well ahead of the hitch point: this puts the whole team in front of the door */
-  else if(c.st==='stop'){ v=0; look=c.t<0.5?c.t/0.5:c.t>4.2?Math.max(0,1-(c.t-4.2)/0.6):1; if(c.t>5){ c.st='drive'; c.v=1.9; } }
+  if(c.st==='in'){ const d=c.x-5.8; v=Math.min(v,Math.max(0.12,d*1.2)); look=0.55*clamp(1-d/5.5,0,1); if(d<0.03){ c.st='stop'; c.t=0; } }   /* still walking up, the heads already begin to come round toward the shop */   /* the reindeer are well ahead of the hitch point: this puts the whole team in front of the door */
+  else if(c.st==='stop'){ v=0; look=c.t<0.7?0.55+0.45*(c.t/0.7):c.t>4.0?Math.max(0,1-(c.t-4.0)/0.9):1; if(c.t>5.2){ c.st='drive'; c.v=1.9; } }   /* standing: the heads come right round to the door, hold, turn back to the road — and only then do they set off */
   else if(!c.called&&c.x<-3.2){ c.called=1; runSanta(); }
-  D.forEach((q,i)=>{ q.legs.forEach((lg,k)=>{ lg.rotation.z=v>0.05?Math.sin(tt*9+k*1.6+i)*0.55*Math.min(1,v):0; }); q.d.position.y=v>0.05?Math.abs(Math.sin(tt*9+i))*0.03:0; q.hd.rotation.y=-0.95*look; q.hd.rotation.z=look?Math.sin(tt*1.3+i*2)*0.08:0; }); { const G_=c.g.userData.glow, k=0.75+0.25*Math.sin(tt*3.1); if(G_){ G_[0].material.opacity=0.5*k; G_[1].material.opacity=0.55*k; } }
+  D.forEach((q,i)=>{ q.legs.forEach((lg,k)=>{ lg.rotation.z=v>0.05?Math.sin(tt*9+k*1.6+i)*0.55*Math.min(1,v):0; }); q.d.position.y=v>0.05?Math.abs(Math.sin(tt*9+i))*0.03:0; { q.hd.getWorldPosition(_hv); const yw=clamp(Math.atan2(DOOR[1]-_hv.z,-(DOOR[0]-_hv.x)),-1.45,1.45)*look; q.yaw=(q.yaw||0)+(yw-(q.yaw||0))*Math.min(1,dt*5); q.hd.rotation.y=q.yaw; q.hd.rotation.z=look>0.9?Math.sin(tt*1.3+i*2)*0.07:0; } });   /* each head aims at the middle of the door from where that reindeer stands */ { const G_=c.g.userData.glow, k=0.75+0.25*Math.sin(tt*3.1); if(G_){ G_[0].material.opacity=0.5*k; G_[1].material.opacity=0.55*k; } }
   return v; }
  function runSanta(){ if(santa) return; const g=mkSanta(); scene.add(g); santa={g,x:15.5,t:0}; g.position.set(santa.x*TUNE.w,0.02,CAR_Z*TUNE.d); try{ if(window.__logoSay) window.__logoSay('🎅 "루돌프!! 같이 가!!"',5200); }catch(e){} }
  function tick(dt){ if(santa){ const q=santa, U=q.g.userData, tt=(q.t+=dt); q.x-=4.4*dt; q.g.position.x=q.x*TUNE.w; q.g.visible=Math.abs(q.x*TUNE.w)<((window.PLINTH&&window.PLINTH.x1)||7.5)+1.5&&GFADE.value<0.5;
@@ -4900,6 +4900,7 @@ function frame(now){ window.__nokF=(window.__nokF||0)+1; if(false){ requestAnima
  (function(){ let bad=0, lastDbg=null, fixes=0; setInterval(()=>{ try{
    if(document.visibilityState&&document.visibilityState!=='visible'){ bad=0; return; }
    if(window.__tourFp){ bad=0; return; }   /* a first-person visit holds new teams back on purpose */
+   if(S.season===5&&(S.__clo||0)>0.5){ bad=0; return; }   /* 가기전에: on a winter night after closing the road is empty on purpose — an empty street is not a stuck guest flow (this check used to rebuild the flow and then reload the page while one waited for the sleigh) */
    const open=!!(window.AUTO_UI&&AUTO_UI.mood&&AUTO_UI.mood()!=='night')&&!window.PRE; const fd=window.__flowDbg; const ticking=!!fd&&fd!==lastDbg; lastDbg=fd;
    const anyone=(window.__people||[]).some(P=>P.g.visible&&isFinite(P.g.position.x)&&isFinite(P.g.position.z));
    const overdue=open&&!!fd&&fd.groups===0&&fd.next<=2.1;   /* a team is due and none gets made */
