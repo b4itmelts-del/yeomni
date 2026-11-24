@@ -9847,7 +9847,7 @@ window.__ph='rt';
     if(glowT>=0){ var u=(now-glowT)/8000; if((u>=1&&!iGlow)||B){ clearGlow(); } else { /* two glows of 4 s each */ var k=(u*2)%1, a=Math.sin(k*Math.PI); if(iGlow) a=on?(0.75+0.25*Math.sin(now/1000*Math.PI*2*0.8)):Math.max(0,1-te/0.5); if(GL.wm) GL.wm.opacity=0.58*a; if(GL.em) GL.em.opacity=0.95*a; if(GL.emF) GL.emF.opacity=0.7*a; var _S=new THREE.Matrix4(); GL.forEach(function(g){ var sm_=g.userData.src; if(!sm_||!g.isLineSegments) return; sm_.updateMatrixWorld(); var k=g.userData.k, c=g.userData.ce; _S.makeScale(k,k,k).setPosition(c.x*(1-k),c.y*(1-k),c.z*(1-k)); g.matrix.multiplyMatrices(sm_.matrixWorld,_S); g.matrixWorldNeedsUpdate=true;
           var hid=false, v=sm_; while(v){ if(!v.visible) hid=true; v=v.parent; } g.material=GL.em; g.visible=!(hid||faded(g.userData.it)); });   /* 가기전에: the bright edges are always hidden by walls like the thing itself — nothing shows through; behind a wall you have to zoom in (the wall fades) to see it light up */ if(GL.hm) GL.hm.forEach(function(h){ h.opacity=1.0*a; });  } }
     var aC=0, aR=0;
-    if(!on&&te<3){ var q=0.5-0.5*Math.cos(te*Math.PI*2); aC=q; aR=q; }     /* let go: the dots blink three times, then calm */
+    if(!on&&te<2){ var q=0.5-0.5*Math.cos(te*Math.PI*2); aC=q; aR=q; }     /* let go: the dots blink twice, then calm */
     var show=!B&&!document.getElementById('objPop')&&!window.__hintsOn&&(aC>0.001||aR>0.001);
     if(DOT){ DOT.opacity=aC; RING.opacity=aR; } var c=cam();
     REG.forEach(function(it){ var L=(B||!show)?[]:meshes(it); if(!L.length){ if(B) it.vis=false; hideDot(it); return; }
